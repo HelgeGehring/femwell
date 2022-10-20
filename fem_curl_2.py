@@ -53,10 +53,6 @@ t_ij = asm(t_tt_ij, basis, epsilon=basis0.interpolate(epsilon)) \
 eigenValues, eigenVectors = solve(*condense(s_ij, t_ij, D=mesh.boundary_nodes()),
                                   solver=solver_eigen_scipy(k=6, sigma=1, which='LM'))
 
-idx = eigenValues.argsort()[::-1]
-eigenValues = eigenValues[idx]
-eigenVectors = eigenVectors[:, idx]
-
 print(eigenValues)
 
 plot(basis.split_bases()[0], eigenVectors[basis.split_indices()[0], 0], ax=draw(mesh, boundaries_only=True),
