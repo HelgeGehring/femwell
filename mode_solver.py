@@ -1,6 +1,5 @@
-"""Waveguide cutoff analysis."""
+"""Waveguide analysis based on (34.1.2) in https://launchpadlibrarian.net/83776282/fenics-book-2011-10-27-final.pdf."""
 
-import numpy as np
 import skfem
 from skfem import *
 from skfem.helpers import *
@@ -43,6 +42,7 @@ B = bform.assemble(basis, epsilon=basis0.interpolate(epsilon))
 
 lams, xs = solve(*condense(A, B, D=basis.get_dofs()),
                  solver=solver_eigen_scipy_sym(k=5, sigma=k0 ** 2 * 2.5 ** 2))
+# ~2.5 is the expected effective refractive index of the mode
 
 if __name__ == "__main__":
     print(np.sqrt(lams) / k0)
