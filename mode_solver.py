@@ -1,4 +1,6 @@
 """Waveguide analysis based on (34.1.2) in https://launchpadlibrarian.net/83776282/fenics-book-2011-10-27-final.pdf."""
+import scipy.linalg
+import scipy.sparse.linalg
 
 import skfem
 from skfem import *
@@ -24,10 +26,10 @@ def aform(E_t, E_z, v_t, v_z, w):
     return one_over_u_r * curl(E_t) * curl(v_t) - k0 ** 2 * w['epsilon'] * dot(E_t, v_t)
 
 
-@BilinearForm
-def gauge(E_t, E_z, lam, v_t, v_z, mu, w):
-    # set div E = 0 using a Lagrange multiplier
-    return dot(grad(lam), v_t) + dot(E_t, grad(mu)) + lam * v_z + E_z * mu
+# @BilinearForm
+# def gauge(E_t, E_z, lam, v_t, v_z, mu, w):
+# set div E = 0 using a Lagrange multiplier
+#    return dot(grad(lam), v_t) + dot(E_t, grad(mu))
 
 
 @BilinearForm
@@ -40,15 +42,32 @@ A = aform.assemble(basis, epsilon=basis0.interpolate(epsilon))
 B = bform.assemble(basis, epsilon=basis0.interpolate(epsilon))
 # C = gauge.assemble(basis, epsilon=basis0.interpolate(epsilon))
 
-lams, xs = solve(*condense(A, B, D=basis.get_dofs()),
-                 solver=solver_eigen_scipy_sym(k=5, sigma=k0 ** 2 * 2.5 ** 2))
-# ~2.5 is the expected effective refractive index of the mode
+# lams, xs = solve(*condense(A, B, D=basis.get_dofs()),
+#                 solver=solver_eigen_scipy_sym(k=10, sigma=k0 ** 2 * 2.5 ** 2))
+
+lams, xs = scipy.linalg.eig(A.todense(), B.todense())
+# lams, xs = scipy.sparse.linalg.eigs(A, M=B, which='LM', sigma=k0 ** 2 * 2.5 ** 2)
+
+
+idx = lams.argsort()[::-1]
+lams = lams[idx]
+xs = xs[:, idx]
+xs = xs.astype(float)
 
 if __name__ == "__main__":
-    print(np.sqrt(lams) / k0)
+    print([lam for lam in np.sort(np.sqrt(np.real(lams)) / k0) if lam > 0])
+    # ~2.5 is the expected effective refractive index of the mode
 
     (Et, Etbasis), (Ez, Ezbasis), *_ = basis.split(xs[:, 0])
-    print(np.max(np.abs(Et)), np.max(np.abs(Ez)))
+    print(np.sum(np.abs(Et)), np.sum(np.abs(Ez)))
 
     Etbasis.plot(Et).show()
     Ezbasis.plot(Ez, colorbar=True).show()
+
+    plot_basis = Etbasis.with_element(ElementVector(ElementTriP0()))
+    Etp = plot_basis.project(Etbasis.interpolate(Et))
+    (Etpx, plotx_basis), (Etpy, ploty_basis) = plot_basis.split(Etp)
+
+    plotx_basis.plot(Etpx, colorbar=True, shading='gouraud').show()
+    ploty_basis.plot(Etpy, colorbar=True, shading='gouraud').show()
+    Ezbasis.plot(Ez, colorbar=True, shading='gouraud').show()
