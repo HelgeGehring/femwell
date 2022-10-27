@@ -45,9 +45,7 @@ B_ = PETSc.Mat().createAIJ(size=B.shape, csr=(B.indptr, B.indices, B.data))
 
 eps = SLEPc.EPS().create()
 eps.setOperators(A_, B_)
-eps.setType(SLEPc.EPS.Type.KRYLOVSCHUR)
-st = eps.getST()
-st.setType(SLEPc.ST.Type.SINVERT)
+eps.getST().setType(SLEPc.ST.Type.SINVERT)
 eps.setWhichEigenpairs(SLEPc.EPS.Which.TARGET_MAGNITUDE)
 eps.setTarget(k0 ** 2 * np.max(epsilon) ** 2)
 eps.setDimensions(20)
@@ -59,17 +57,16 @@ for i in range(eps.getConverged()):
     val = eps.getEigenpair(i, xr, xi)
     lams.append(val)
     xs.append(np.array(xr) + 1j * np.array(xi))
-lams = np.array(lams)
+lams = np.sqrt(lams) / k0
 xs = np.array(xs).T
 
 if __name__ == "__main__":
-    print([lam for lam in np.sort(np.sqrt(np.real(lams)) / k0) if lam > 0])
-    # ~2.5 is the expected effective refractive index of the mode
+    print(lams)
 
     idx = 0
     xs = np.real(xs)
     (Et, Etbasis), (Ez, Ezbasis), *_ = basis.split(xs[:, idx])
-    print(np.sqrt(np.real(lams[idx])) / k0, np.sqrt(lams[idx]) / k0)
+    print(lams[idx])
     print(np.sum(np.abs(Et)), np.sum(np.abs(Ez)))
 
     Etbasis.plot(Et).show()
