@@ -1,4 +1,4 @@
-"""Waveguide analysis based on (34.1.2) in https://doi.org/10.1080/02726340290084012."""
+"""Waveguide analysis based on https://doi.org/10.1080/02726340290084012."""
 import numpy as np
 import scipy.linalg
 import scipy.sparse.linalg
