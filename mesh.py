@@ -9,7 +9,6 @@ from shapely.ops import split, linemerge
 
 from collections import OrderedDict
 
-
 class MeshTracker():
     def __init__(self, model, atol=1E-3):
         '''
@@ -135,15 +134,18 @@ class MeshTracker():
         exterior_vertices = []
         hole_loops = []
 
+        # Parse polygon
+
+
         # Parse holes
         for polygon_hole in list(shapely_xy_polygon.interiors):
             hole_vertices = []
-            for vertex in shapely.geometry.MultiPoint(polygon_hole.coords):
+            for vertex in shapely.geometry.MultiPoint(polygon_hole.coords).geoms:
                 gmsh_point = self.add_get_point(vertex, label)
                 hole_vertices.append(vertex)
             hole_loops.append(self.xy_channel_loop_from_vertices(hole_vertices, label))
         # Parse boundary
-        for vertex in shapely.geometry.MultiPoint(shapely_xy_polygon.exterior.coords):
+        for vertex in shapely.geometry.MultiPoint(shapely_xy_polygon.exterior.coords).geoms:
             gmsh_point = self.add_get_point(vertex, label)
             exterior_vertices.append(vertex)
         channel_loop = self.xy_channel_loop_from_vertices(exterior_vertices, label)
@@ -186,8 +188,10 @@ def mesh_from_polygons(
     for first_index, (first_name, first_polygons) in enumerate(polygon_dict.items()):
         first_polygons = polygons_tiled_dict[first_name]
         if first_polygons.type == "MultiPolygon":
+            multi = True
             first_polygons = first_polygons.geoms
         else:
+            multi= False
             first_polygons = [first_polygons]
         broken_polygons = []
         for first_polygon in first_polygons:
@@ -209,11 +213,15 @@ def mesh_from_polygons(
                         if intersections.is_empty:
                             continue
                         else:
-                            for intersection in intersections:
-                                new_coords_start, new_coords_end = intersection.boundary
+                            for intersection in intersections.geoms:
+                                new_coords_start, new_coords_end = intersection.boundary.geoms
                                 first_exterior_line = linemerge(split(first_exterior_line, new_coords_start))
                                 first_exterior_line = linemerge(split(first_exterior_line, new_coords_end))
-        polygons_broken_dict[first_name] = Polygon(first_exterior_line)
+            broken_polygons.append(Polygon(first_exterior_line))
+        if multi == True:
+            polygons_broken_dict[first_name] = MultiPolygon(broken_polygons)
+        else:
+            polygons_broken_dict[first_name] = broken_polygons[0]
     
     # Add surfaces, reusing lines to simplify at early stage
     meshtracker = MeshTracker(model=model)
