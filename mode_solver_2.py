@@ -1,84 +1,79 @@
 """Waveguide analysis based on https://doi.org/10.1080/02726340290084012."""
 import numpy as np
 
-import skfem
-from skfem import BilinearForm, Basis, ElementTriN0, ElementTriP0, ElementTriP1, ElementVector
+from skfem import BilinearForm, Basis, ElementTriN0, ElementTriP0, ElementTriP1, ElementVector, Mesh
 from skfem.helpers import curl, grad, dot, inner
 
-mesh = skfem.Mesh.load('mesh.msh')
-basis = Basis(mesh, ElementTriN0() * ElementTriP1())
 
-basis0 = basis.with_element(ElementTriP0())
-epsilon = basis0.zeros()
-epsilon[basis0.get_dofs(elements='Core')] = 3.4777 ** 2
-epsilon[basis0.get_dofs(elements='Cladding')] = 1.444 ** 2
-# basis0.plot(epsilon, colorbar=True).show()
+def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r):
+    k0 = 2 * np.pi / wavelength
 
-wavelength = 1.55
-k0 = 2 * np.pi / wavelength
-one_over_u_r = 1
+    basis = basis_epsilon_r.with_element(ElementTriN0() * ElementTriP1())
 
+    @BilinearForm
+    def aform(e_t, e_z, v_t, v_z, w):
+        return 1 / mu_r * curl(e_t) * curl(v_t) \
+               - k0 ** 2 * w['epsilon'] * dot(e_t, v_t) \
+               - 1 / mu_r * dot(grad(e_z), v_t) \
+               + w['epsilon'] * inner(e_t, grad(v_z)) + w['epsilon'] * e_z * v_z
 
-@BilinearForm
-def aform(E_t, E_z, v_t, v_z, w):
-    return one_over_u_r * curl(E_t) * curl(v_t) \
-           - k0 ** 2 * w['epsilon'] * dot(E_t, v_t) \
-           - one_over_u_r * dot(grad(E_z), v_t) \
-           + w['epsilon'] * inner(E_t, grad(v_z)) + w['epsilon'] * E_z * v_z
+    @BilinearForm
+    def bform(e_t, e_z, v_t, v_z, w):
+        return - 1 / mu_r * dot(e_t, v_t)
 
+    A = aform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
+    B = bform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
 
-@BilinearForm
-def bform(E_t, E_z, v_t, v_z, w):
-    return - one_over_u_r * dot(E_t, v_t)
+    # lams, xs = solve(*condense(A, B, D=basis.get_dofs()),
+    #                solver=solver_eigen_scipy_sym(k=10, sigma=k0 ** 2 * 2.5 ** 2))
+    from petsc4py import PETSc
+    from slepc4py import SLEPc
 
+    A_ = PETSc.Mat().createAIJ(size=A.shape, csr=(A.indptr, A.indices, A.data))
+    B_ = PETSc.Mat().createAIJ(size=B.shape, csr=(B.indptr, B.indices, B.data))
 
-A = aform.assemble(basis, epsilon=basis0.interpolate(epsilon))
-B = bform.assemble(basis, epsilon=basis0.interpolate(epsilon))
+    eps = SLEPc.EPS().create()
+    eps.setOperators(A_, B_)
+    eps.getST().setType(SLEPc.ST.Type.SINVERT)
+    eps.setWhichEigenpairs(SLEPc.EPS.Which.TARGET_MAGNITUDE)
+    eps.setTarget(k0 ** 2 * np.max(epsilon_r) ** 2)
+    eps.setDimensions(20)
+    eps.solve()
 
-# lams, xs = solve(*condense(A, B, D=basis.get_dofs()),
-#                solver=solver_eigen_scipy_sym(k=10, sigma=k0 ** 2 * 2.5 ** 2))
-from petsc4py import PETSc
-from slepc4py import SLEPc
+    xr, xi = A_.getVecs()
+    lams, xs = [], []
+    for i in range(eps.getConverged()):
+        lams.append(eps.getEigenpair(i, xr, xi))
+        xs.append(np.array(xr) + 1j * np.array(xi))
 
-A_ = PETSc.Mat().createAIJ(size=A.shape, csr=(A.indptr, A.indices, A.data))
-B_ = PETSc.Mat().createAIJ(size=B.shape, csr=(B.indptr, B.indices, B.data))
+    return np.sqrt(lams) / k0, basis, np.array(xs).T
 
-eps = SLEPc.EPS().create()
-eps.setOperators(A_, B_)
-eps.setType(SLEPc.EPS.Type.KRYLOVSCHUR)
-st = eps.getST()
-st.setType(SLEPc.ST.Type.SINVERT)
-eps.setWhichEigenpairs(SLEPc.EPS.Which.TARGET_MAGNITUDE)
-eps.setTarget(k0 ** 2 * np.max(epsilon) ** 2)
-eps.setDimensions(20)
-eps.solve()
-
-xr, xi = A_.getVecs()
-lams, xs = [], []
-for i in range(eps.getConverged()):
-    val = eps.getEigenpair(i, xr, xi)
-    lams.append(val)
-    xs.append(np.array(xr) + 1j * np.array(xi))
-lams = np.array(lams)
-xs = np.array(xs).T
 
 if __name__ == "__main__":
-    print([lam for lam in np.sort(np.sqrt(np.real(lams)) / k0) if lam > 0])
-    # ~2.5 is the expected effective refractive index of the mode
+    mesh = Mesh.load('mesh.msh')
+    basis0 = Basis(mesh, ElementTriP0(), intorder=4)
+    epsilon = basis0.zeros()
+    epsilon[basis0.get_dofs(elements='Core')] = 3.4777 ** 2
+    epsilon[basis0.get_dofs(elements='Cladding')] = 1.444 ** 2
+    # basis0.plot(epsilon, colorbar=True).show()
+
+    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1)
+
+    print(lams)
 
     idx = 0
     xs = np.real(xs)
-    (Et, Etbasis), (Ez, Ezbasis), *_ = basis.split(xs[:, idx])
-    print(np.sqrt(np.real(lams[idx])) / k0, np.sqrt(lams[idx]) / k0)
-    print(np.sum(np.abs(Et)), np.sum(np.abs(Ez)))
+    (et, et_basis), (ez, ez_basis), *_ = basis.split(xs[:, idx])
+    print(lams[idx])
+    print(np.sum(np.abs(et)), np.sum(np.abs(ez)))
 
-    Etbasis.plot(Et).show()
-    Ezbasis.plot(Ez, colorbar=True).show()
+    et_basis.plot(et).show()
+    ez_basis.plot(ez, colorbar=True).show()
 
-    plot_basis = Etbasis.with_element(ElementVector(ElementTriP0()))
-    Etp = plot_basis.project(Etbasis.interpolate(Et))
-    (Etpx, plotx_basis), (Etpy, ploty_basis) = plot_basis.split(Etp)
+    plot_basis = et_basis.with_element(ElementVector(ElementTriP0()))
+    et_xy = plot_basis.project(et_basis.interpolate(et))
+    (et_x, et_x_basis), (et_y, et_y_basis) = plot_basis.split(et_xy)
 
-    plotx_basis.plot(Etpx, colorbar=True, shading='gouraud').show()
-    ploty_basis.plot(Etpy, colorbar=True, shading='gouraud').show()
-    Ezbasis.plot(Ez, colorbar=True, shading='gouraud').show()
+    et_x_basis.plot(et_x, colorbar=True, shading='gouraud').show()
+    et_y_basis.plot(et_y, colorbar=True, shading='gouraud').show()
+    ez_basis.plot(ez, colorbar=True, shading='gouraud').show()
