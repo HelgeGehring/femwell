@@ -160,78 +160,48 @@ def mesh_from_polygons(
     resolutions: Optional[Dict[str, float]] = None,
     default_resolution_min: float = 0.01,
     default_resolution_max: float = 0.1,
+    filename: Optional[str] = None,
 ):
 
     import gmsh
 
-    gmsh.initialize()
 
-    geometry = pygmsh.occ.geometry.Geometry()
-    geometry.characteristic_length_min = default_resolution_min
-    geometry.characteristic_length_max = default_resolution_max
+    with pygmsh.occ.geometry.Geometry() as geometry:
 
-    model = geometry.__enter__()
+        gmsh.initialize()
 
-    # Break up surfaces in order so that plane is tiled with non-overlapping layers
-    polygons_tiled_dict = OrderedDict()
-    for lower_index, (lower_name, lower_polygon) in reversed(list(enumerate(polygon_dict.items()))):
-        diff_polygon = lower_polygon
-        for higher_index, (higher_name, higher_polygon) in reversed(list(enumerate(polygon_dict.items()))[:lower_index]):
-            diff_polygon = diff_polygon.difference(higher_polygon)
-        polygons_tiled_dict[lower_name] = diff_polygon
+        # geometry = pygmsh.occ.geometry.Geometry()
+        geometry.characteristic_length_min = default_resolution_min
+        geometry.characteristic_length_max = default_resolution_max
 
-    # print("Tiled")
-    # for key in polygons_tiled_dict.keys():
-    #     print(key, polygons_tiled_dict[key])
+        model = geometry.__enter__()
 
-    # Break up polygon edges so that plane is tiled with no partially overlapping line segments
-    polygons_broken_dict = {}
-    for first_index, (first_name, first_polygons) in enumerate(polygon_dict.items()):
-        first_polygons = polygons_tiled_dict[first_name]
-        if first_polygons.type == "MultiPolygon":
-            multi = True
-            first_polygons = first_polygons.geoms
-        else:
-            multi= False
-            first_polygons = [first_polygons]
-        broken_polygons = []
-        for first_polygon in first_polygons:
-            # Exterior
-            first_exterior_line = LineString(first_polygon.exterior)
-            for second_index, (second_name, second_polygons) in enumerate(polygon_dict.items()):
-                if second_name == first_name:
-                    continue
-                else:
-                    second_polygons = polygons_tiled_dict[first_name]
-                    if second_polygons.type == "MultiPolygon":
-                        second_polygons = second_polygons.geoms
-                    else:
-                        second_polygons = [second_polygons]
-                    for second_polygon in second_polygons:
-                        # Exterior
-                        second_exterior_line = LineString(second_polygon.exterior)
-                        intersections = first_exterior_line.intersection(second_exterior_line)
-                        if intersections.is_empty:
-                            continue
-                        else:
-                            for intersection in intersections.geoms:
-                                new_coords_start, new_coords_end = intersection.boundary.geoms
-                                first_exterior_line = linemerge(split(first_exterior_line, new_coords_start))
-                                first_exterior_line = linemerge(split(first_exterior_line, new_coords_end))
-                        # Interiors
-                        for second_interior_line in second_polygon.interiors:
-                            second_interior_line = LineString(second_interior_line)
-                            intersections = first_exterior_line.intersection(second_interior_line)
-                            if intersections.is_empty:
-                                continue
-                            else:
-                                for intersection in intersections.geoms:
-                                    new_coords_start, new_coords_end = intersection.boundary.geoms
-                                    first_exterior_line = linemerge(split(first_exterior_line, new_coords_start))
-                                    first_exterior_line = linemerge(split(first_exterior_line, new_coords_end))
-            # Interiors
-            first_polygon_interiors = []
-            for first_interior_line in first_polygon.interiors:
+        # Break up surfaces in order so that plane is tiled with non-overlapping layers
+        polygons_tiled_dict = OrderedDict()
+        for lower_index, (lower_name, lower_polygon) in reversed(list(enumerate(polygon_dict.items()))):
+            diff_polygon = lower_polygon
+            for higher_index, (higher_name, higher_polygon) in reversed(list(enumerate(polygon_dict.items()))[:lower_index]):
+                diff_polygon = diff_polygon.difference(higher_polygon)
+            polygons_tiled_dict[lower_name] = diff_polygon
+
+        # print("Tiled")
+        # for key in polygons_tiled_dict.keys():
+        #     print(key, polygons_tiled_dict[key])
+
+        # Break up polygon edges so that plane is tiled with no partially overlapping line segments
+        polygons_broken_dict = {}
+        for first_index, (first_name, first_polygons) in enumerate(polygon_dict.items()):
+            first_polygons = polygons_tiled_dict[first_name]
+            if first_polygons.type == "MultiPolygon":
+                multi = True
+                first_polygons = first_polygons.geoms
+            else:
+                multi= False
+                first_polygons = [first_polygons]
+            broken_polygons = []
+            for first_polygon in first_polygons:
+                # Exterior
+                first_exterior_line = LineString(first_polygon.exterior)
                 for second_index, (second_name, second_polygons) in enumerate(polygon_dict.items()):
                     if second_name == first_name:
                         continue
@@ -244,18 +214,41 @@ def mesh_from_polygons(
                         for second_polygon in second_polygons:
                             # Exterior
                             second_exterior_line = LineString(second_polygon.exterior)
-                            intersections = first_interior_line.intersection(second_exterior_line)
+                            intersections = first_exterior_line.intersection(second_exterior_line)
                             if intersections.is_empty:
                                 continue
                             else:
                                 for intersection in intersections.geoms:
                                     new_coords_start, new_coords_end = intersection.boundary.geoms
-                                    first_interior_line = linemerge(split(first_interior_line, new_coords_start))
-                                    first_interior_line = linemerge(split(first_interior_line, new_coords_end))
+                                    first_exterior_line = linemerge(split(first_exterior_line, new_coords_start))
+                                    first_exterior_line = linemerge(split(first_exterior_line, new_coords_end))
                             # Interiors
                             for second_interior_line in second_polygon.interiors:
                                 second_interior_line = LineString(second_interior_line)
-                                intersections = first_interior_line.intersection(second_interior_line)
+                                intersections = first_exterior_line.intersection(second_interior_line)
+                                if intersections.is_empty:
+                                    continue
+                                else:
+                                    for intersection in intersections.geoms:
+                                        new_coords_start, new_coords_end = intersection.boundary.geoms
+                                        first_exterior_line = linemerge(split(first_exterior_line, new_coords_start))
+                                        first_exterior_line = linemerge(split(first_exterior_line, new_coords_end))
+                # Interiors
+                first_polygon_interiors = []
+                for first_interior_line in first_polygon.interiors:
+                    for second_index, (second_name, second_polygons) in enumerate(polygon_dict.items()):
+                        if second_name == first_name:
+                            continue
+                        else:
+                            second_polygons = polygons_tiled_dict[first_name]
+                            if second_polygons.type == "MultiPolygon":
+                                second_polygons = second_polygons.geoms
+                            else:
+                                second_polygons = [second_polygons]
+                            for second_polygon in second_polygons:
+                                # Exterior
+                                second_exterior_line = LineString(second_polygon.exterior)
+                                intersections = first_interior_line.intersection(second_exterior_line)
                                 if intersections.is_empty:
                                     continue
                                 else:
@@ -263,74 +256,89 @@ def mesh_from_polygons(
                                         new_coords_start, new_coords_end = intersection.boundary.geoms
                                         first_interior_line = linemerge(split(first_interior_line, new_coords_start))
                                         first_interior_line = linemerge(split(first_interior_line, new_coords_end))
-                first_polygon_interiors.append(first_interior_line)
-            broken_polygons.append(Polygon(first_exterior_line, holes=first_polygon_interiors))
-        if multi == True:
-            polygons_broken_dict[first_name] = MultiPolygon(broken_polygons)
+                                # Interiors
+                                for second_interior_line in second_polygon.interiors:
+                                    second_interior_line = LineString(second_interior_line)
+                                    intersections = first_interior_line.intersection(second_interior_line)
+                                    if intersections.is_empty:
+                                        continue
+                                    else:
+                                        for intersection in intersections.geoms:
+                                            new_coords_start, new_coords_end = intersection.boundary.geoms
+                                            first_interior_line = linemerge(split(first_interior_line, new_coords_start))
+                                            first_interior_line = linemerge(split(first_interior_line, new_coords_end))
+                    first_polygon_interiors.append(first_interior_line)
+                broken_polygons.append(Polygon(first_exterior_line, holes=first_polygon_interiors))
+            if multi == True:
+                polygons_broken_dict[first_name] = MultiPolygon(broken_polygons)
+            else:
+                polygons_broken_dict[first_name] = broken_polygons[0]
+
+        print("Broken")
+        for key in polygons_broken_dict.keys():
+            print(key, polygons_broken_dict[key])
+        
+        # Add surfaces, reusing lines to simplify at early stage
+        meshtracker = MeshTracker(model=model)
+        for polygon_name, polygon in reversed(polygons_broken_dict.items()):
+            plane_surface = meshtracker.add_xy_surface(polygon, polygon_name)
+            model.add_physical(plane_surface, f"{polygon_name}")
+
+        # Refinement in surfaces
+        n = 0
+        refinement_fields = []
+        for label, resolution in resolutions.items():
+            # Inside surface
+            mesh_resolution = resolution["resolution"]
+            gmsh.model.mesh.field.add("MathEval", n)
+            gmsh.model.mesh.field.setString(n, "F", f"{mesh_resolution}")
+            gmsh.model.mesh.field.add("Restrict", n+1)
+            gmsh.model.mesh.field.setNumber(n+1, "InField", n)
+            gmsh.model.mesh.field.setNumbers(n+1, "SurfacesList", meshtracker.get_gmsh_xy_surfaces_from_label(label))
+            # Around surface
+            mesh_distance = resolution["distance"]
+            gmsh.model.mesh.field.add("Distance", n+2)
+            gmsh.model.mesh.field.setNumbers(n+2, "CurvesList", meshtracker.get_gmsh_xy_lines_from_label(label))
+            gmsh.model.mesh.field.setNumber(n+2, "Sampling", 100)
+            gmsh.model.mesh.field.add("Threshold", n+3)
+            gmsh.model.mesh.field.setNumber(n+3, "InField", n+2)
+            gmsh.model.mesh.field.setNumber(n+3, "SizeMin", mesh_resolution)
+            gmsh.model.mesh.field.setNumber(n+3, "SizeMax", default_resolution_max)
+            gmsh.model.mesh.field.setNumber(n+3, "DistMin", 0)
+            gmsh.model.mesh.field.setNumber(n+3, "DistMax", mesh_distance)
+            # Save and increment
+            refinement_fields.append(n+1)
+            refinement_fields.append(n+3)
+            n += 4
+
+        # Use the smallest element size overall
+        gmsh.model.mesh.field.add("Min", n)
+        gmsh.model.mesh.field.setNumbers(n, "FieldsList", refinement_fields)
+        gmsh.model.mesh.field.setAsBackgroundMesh(n)
+
+        gmsh.model.mesh.MeshSizeFromPoints = 0
+        gmsh.model.mesh.MeshSizeFromCurvature = 0
+        gmsh.model.mesh.MeshSizeExtendFromBoundary = 0
+
+        # Fuse edges (bandaid)
+        # gmsh.model.occ.synchronize()
+        # gmsh.model.occ.removeAllDuplicates()
+        # gmsh.model.occ.synchronize()
+
+        # Extract all unique lines (TODO: identify interfaces in label)
+        i = 0
+        for line in meshtracker.gmsh_xy_lines:
+            model.add_physical(line, f"line_{i}")
+            i += 1
+
+        if filename:
+            mesh = geometry.generate_mesh(dim=2, verbose=True)
+            gmsh.write(f"{filename}")
         else:
-            polygons_broken_dict[first_name] = broken_polygons[0]
+            mesn = geometry.generate_mesh(dim=2, verbose=True)
 
-    print("Broken")
-    for key in polygons_broken_dict.keys():
-        print(key, polygons_broken_dict[key])
-    
-    # Add surfaces, reusing lines to simplify at early stage
-    meshtracker = MeshTracker(model=model)
-    for polygon_name, polygon in reversed(polygons_broken_dict.items()):
-        plane_surface = meshtracker.add_xy_surface(polygon, polygon_name)
-        model.add_physical(plane_surface, f"{polygon_name}")
-
-    # Refinement in surfaces
-    n = 0
-    refinement_fields = []
-    for label, resolution in resolutions.items():
-        # Inside surface
-        mesh_resolution = resolution["resolution"]
-        gmsh.model.mesh.field.add("MathEval", n)
-        gmsh.model.mesh.field.setString(n, "F", f"{mesh_resolution}")
-        gmsh.model.mesh.field.add("Restrict", n+1)
-        gmsh.model.mesh.field.setNumber(n+1, "InField", n)
-        gmsh.model.mesh.field.setNumbers(n+1, "SurfacesList", meshtracker.get_gmsh_xy_surfaces_from_label(label))
-        # Around surface
-        mesh_distance = resolution["distance"]
-        gmsh.model.mesh.field.add("Distance", n+2)
-        gmsh.model.mesh.field.setNumbers(n+2, "CurvesList", meshtracker.get_gmsh_xy_lines_from_label(label))
-        gmsh.model.mesh.field.setNumber(n+2, "Sampling", 100)
-        gmsh.model.mesh.field.add("Threshold", n+3)
-        gmsh.model.mesh.field.setNumber(n+3, "InField", n+2)
-        gmsh.model.mesh.field.setNumber(n+3, "SizeMin", mesh_resolution)
-        gmsh.model.mesh.field.setNumber(n+3, "SizeMax", default_resolution_max)
-        gmsh.model.mesh.field.setNumber(n+3, "DistMin", 0)
-        gmsh.model.mesh.field.setNumber(n+3, "DistMax", mesh_distance)
-        # Save and increment
-        refinement_fields.append(n+1)
-        refinement_fields.append(n+3)
-        n += 4
-
-    # Use the smallest element size overall
-    gmsh.model.mesh.field.add("Min", n)
-    gmsh.model.mesh.field.setNumbers(n, "FieldsList", refinement_fields)
-    gmsh.model.mesh.field.setAsBackgroundMesh(n)
-
-    gmsh.model.mesh.MeshSizeFromPoints = 0
-    gmsh.model.mesh.MeshSizeFromCurvature = 0
-    gmsh.model.mesh.MeshSizeExtendFromBoundary = 0
-
-    # Fuse edges (bandaid)
-    # gmsh.model.occ.synchronize()
-    # gmsh.model.occ.removeAllDuplicates()
-    # gmsh.model.occ.synchronize()
-
-    # Extract all unique lines (TODO: identify interfaces in label)
-    i = 0
-    for line in meshtracker.gmsh_xy_lines:
-        model.add_physical(line, f"line_{i}")
-        i += 1
-
-    # Perform meshing
-    geometry.generate_mesh(dim=2, verbose=True)
-
-    return geometry
+        return mesh
+        
 
 if __name__ == "__main__":
 
@@ -380,11 +388,11 @@ if __name__ == "__main__":
     # resolutions["clad"] = {"resolution": 0.1, "dist_min": 0.01, "dist_max": 0.3}
 
 
-    mesh = mesh_from_polygons(polygons, resolutions)
+    mesh = mesh_from_polygons(polygons, resolutions, filename="mesh.msh")
 
-    gmsh.write("mesh.msh")
-    gmsh.clear()
-    mesh.__exit__()
+    # gmsh.write("mesh.msh")
+    # gmsh.clear()
+    # mesh.__exit__()
 
     import meshio
 
