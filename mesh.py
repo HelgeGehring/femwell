@@ -4,8 +4,8 @@ import numpy as np
 import pygmsh
 import gmsh
 import shapely
-from shapely.geometry import Point, LineString, Polygon
-from shapely.ops import split, triangulate
+from shapely.geometry import Point, LineString, Polygon, MultiPolygon
+from shapely.ops import split, linemerge
 
 from collections import OrderedDict
 
@@ -175,23 +175,51 @@ def mesh_from_polygons(
 
     # Break up surfaces in order so that plane is tiled with non-overlapping layers
     polygons_tiled_dict = OrderedDict()
-    full_edge_list = {}
     for lower_index, (lower_name, lower_polygon) in reversed(list(enumerate(polygon_dict.items()))):
         diff_polygon = lower_polygon
         for higher_index, (higher_name, higher_polygon) in reversed(list(enumerate(polygon_dict.items()))[:lower_index]):
             diff_polygon = diff_polygon.difference(higher_polygon)
         polygons_tiled_dict[lower_name] = diff_polygon
+
+    # Break up polygon edges so that plane is tiled with no partially overlapping line segments
+    polygons_broken_dict = {}
+    for first_index, (first_name, first_polygons) in enumerate(polygon_dict.items()):
+        first_polygons = polygons_tiled_dict[first_name]
+        if first_polygons.type == "MultiPolygon":
+            first_polygons = first_polygons.geoms
+        else:
+            first_polygons = [first_polygons]
+        broken_polygons = []
+        for first_polygon in first_polygons:
+            # Exterior
+            first_exterior_line = LineString(first_polygon.exterior)
+            for second_index, (second_name, second_polygons) in enumerate(polygon_dict.items()):
+                if second_name == first_name:
+                    continue
+                else:
+                    second_polygons = polygons_tiled_dict[first_name]
+                    if second_polygons.type == "MultiPolygon":
+                        second_polygons = second_polygons.geoms
+                    else:
+                        second_polygons = [second_polygons]
+                    for second_polygon in second_polygons:
+                        second_exterior_line = LineString(second_polygon.exterior)
+                        intersections = first_exterior_line.intersection(second_exterior_line)
+                        # Add intersection boundary to first linestring
+                        if intersections.is_empty:
+                            continue
+                        else:
+                            for intersection in intersections:
+                                new_coords_start, new_coords_end = intersection.boundary
+                                first_exterior_line = linemerge(split(first_exterior_line, new_coords_start))
+                                first_exterior_line = linemerge(split(first_exterior_line, new_coords_end))
+        polygons_broken_dict[first_name] = Polygon(first_exterior_line)
     
     # Add surfaces, reusing lines to simplify at early stage
     meshtracker = MeshTracker(model=model)
-    for polygon_name, polygon in reversed(polygons_tiled_dict.items()):
+    for polygon_name, polygon in reversed(polygons_broken_dict.items()):
         plane_surface = meshtracker.add_xy_surface(polygon, polygon_name)
         model.add_physical(plane_surface, f"{polygon_name}")
-
-    # Remove duplicated lines to clean up partially overlapping edges
-    gmsh.model.occ.synchronize()
-    gmsh.model.occ.removeAllDuplicates()
-    gmsh.model.occ.synchronize()
 
     # Refinement in surfaces
     n = 0
@@ -283,7 +311,7 @@ if __name__ == "__main__":
     polygons["box"] = box
 
     resolutions = {}
-    resolutions["core"] = {"resolution": 0.02, "distance": 0.5}
+    resolutions["core"] = {"resolution": 0.02, "distance": 1}
     resolutions["core2"] = {"resolution": 0.01, "distance": 0.5}
     # resolutions["clad"] = {"resolution": 0.1, "dist_min": 0.01, "dist_max": 0.3}
 
