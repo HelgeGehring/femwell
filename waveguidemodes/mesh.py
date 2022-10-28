@@ -326,13 +326,13 @@ if __name__ == "__main__":
 
     mesh = mesh_from_polygons(polygons, resolutions)
 
-    gmsh.write("mesh.msh")
+    gmsh.write("../mesh.msh")
     gmsh.clear()
     mesh.__exit__()
 
     import meshio
 
-    mesh_from_file = meshio.read("mesh.msh")
+    mesh_from_file = meshio.read("../mesh.msh")
 
     def create_mesh(mesh, cell_type, prune_z=True):
         cells = mesh.get_cells_type(cell_type)

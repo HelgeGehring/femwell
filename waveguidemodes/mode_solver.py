@@ -38,6 +38,7 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r):
     eps.setWhichEigenpairs(SLEPc.EPS.Which.TARGET_MAGNITUDE)
     eps.setTarget(k0 ** 2 * np.max(epsilon_r) ** 2)
     eps.setDimensions(20)
+    #eps.setTolerances(1e-8)
     eps.solve()
 
     xr, xi = A_.getVecs()
@@ -50,11 +51,13 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r):
 
 
 if __name__ == "__main__":
-    mesh = Mesh.load('mesh.msh')
+    mesh = Mesh.load('../mesh.msh')
     basis0 = Basis(mesh, ElementTriP0(), intorder=4)
     epsilon = basis0.zeros()
-    epsilon[basis0.get_dofs(elements='Core')] = 3.4777 ** 2
-    epsilon[basis0.get_dofs(elements='Cladding')] = 1.444 ** 2
+    epsilon[basis0.get_dofs(elements='core')] = 3.4777 ** 2
+    epsilon[basis0.get_dofs(elements='core2')] = 3.5777 ** 2
+    epsilon[basis0.get_dofs(elements='clad')] = 1.444 ** 2
+    epsilon[basis0.get_dofs(elements='box')] = 1.444 ** 2
     # basis0.plot(epsilon, colorbar=True).show()
 
     lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1)
