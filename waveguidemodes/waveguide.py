@@ -8,42 +8,41 @@ from waveguidemodes.mode_solver import compute_modes
 from waveguidemodes.mesh import mesh_from_polygons
 import gmsh
 
-wsim = 2
-hclad = 1
-hbox = 1
-wcore = 0.5
-hcore = 0.22
 
-polygons = OrderedDict()
+def mesh_waveguide(wsim, hclad, hbox, wcore, hcore):
+    polygons = OrderedDict(
+        core=Polygon([
+            (-wcore / 2, -hcore / 2),
+            (-wcore / 2, hcore / 2),
+            (wcore / 2, hcore / 2),
+            (wcore / 2, -hcore / 2),
+        ]),
+        clad=Polygon([
+            (-wsim / 2, -hcore / 2),
+            (-wsim / 2, -hcore / 2 + hclad),
+            (wsim / 2, -hcore / 2 + hclad),
+            (wsim / 2, -hcore / 2),
+        ]),
+        box=Polygon([
+            (-wsim / 2, -hcore / 2),
+            (-wsim / 2, -hcore / 2 - hbox),
+            (wsim / 2, -hcore / 2 - hbox),
+            (wsim / 2, -hcore / 2),
+        ])
+    )
 
-polygons["core"] = Polygon([
-    (-wcore / 2, -hcore / 2),
-    (-wcore / 2, hcore / 2),
-    (wcore / 2, hcore / 2),
-    (wcore / 2, -hcore / 2),
-])
-polygons["clad"] = Polygon([
-    (-wsim / 2, -hcore / 2),
-    (-wsim / 2, -hcore / 2 + hclad),
-    (wsim / 2, -hcore / 2 + hclad),
-    (wsim / 2, -hcore / 2),
-])
-polygons["box"] = Polygon([
-    (-wsim / 2, -hcore / 2),
-    (-wsim / 2, -hcore / 2 - hbox),
-    (wsim / 2, -hcore / 2 - hbox),
-    (wsim / 2, -hcore / 2),
-])
+    resolutions = {
+        'core': {"resolution": 0.02, "distance": 1}
+    }
 
-resolutions = {
-    'core': {"resolution": 0.02, "distance": 1}
-}
+    mesh = mesh_from_polygons(polygons, resolutions)
 
-mesh = mesh_from_polygons(polygons, resolutions)
+    gmsh.write("../mesh.msh")
+    gmsh.clear()
+    mesh.__exit__()
 
-gmsh.write("../mesh.msh")
-gmsh.clear()
-mesh.__exit__()
+
+mesh_waveguide(wsim=2, hclad=1, hbox=1, wcore=0.5, hcore=0.22)
 
 mesh = Mesh.load('../mesh.msh')
 basis0 = Basis(mesh, ElementTriP0(), intorder=4)
