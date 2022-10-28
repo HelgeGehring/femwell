@@ -331,7 +331,8 @@ def mesh_from_polygons(
             model.add_physical(line, f"line_{i}")
             i += 1
 
-            mesh = geometry.generate_mesh(dim=2, verbose=True)
+        mesh = geometry.generate_mesh(dim=2, verbose=True)
+
         if filename:
             gmsh.write(f"{filename}")
 
