@@ -7,20 +7,19 @@ from skfem.helpers import curl, grad, dot, inner
 
 def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r):
     k0 = 2 * np.pi / wavelength
-    one_over_mu_r = 1 / mu_r
 
     basis = basis_epsilon_r.with_element(ElementTriN0() * ElementTriP1())
 
     @BilinearForm
     def aform(e_t, e_z, v_t, v_z, w):
-        return one_over_mu_r * curl(e_t) * curl(v_t) \
+        return 1 / mu_r * curl(e_t) * curl(v_t) \
                - k0 ** 2 * w['epsilon'] * dot(e_t, v_t) \
-               - one_over_mu_r * dot(grad(e_z), v_t) \
+               - 1 / mu_r * dot(grad(e_z), v_t) \
                + w['epsilon'] * inner(e_t, grad(v_z)) + w['epsilon'] * e_z * v_z
 
     @BilinearForm
     def bform(e_t, e_z, v_t, v_z, w):
-        return - one_over_mu_r * dot(e_t, v_t)
+        return - 1 / mu_r * dot(e_t, v_t)
 
     A = aform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
     B = bform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
