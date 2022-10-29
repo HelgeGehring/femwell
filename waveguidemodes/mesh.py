@@ -382,8 +382,8 @@ if __name__ == "__main__":
     polygons["box"] = box
 
     resolutions = {}
-    resolutions["core"] = {"resolution": 0.01, "distance": 3}
-    resolutions["core2"] = {"resolution": 0.01, "distance": 0.5}
+    resolutions["core"] = {"resolution": 0.02, "distance": 0.5}
+    resolutions["core2"] = {"resolution": 0.02, "distance": 0.5}
     # resolutions["clad"] = {"resolution": 0.1, "dist_min": 0.01, "dist_max": 0.3}
 
 

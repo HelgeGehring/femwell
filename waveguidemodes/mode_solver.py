@@ -5,7 +5,7 @@ from skfem import BilinearForm, Basis, ElementTriN0, ElementTriP0, ElementTriP1,
 from skfem.helpers import curl, grad, dot, inner
 
 
-def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r):
+def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
     k0 = 2 * np.pi / wavelength
 
     basis = basis_epsilon_r.with_element(ElementTriN0() * ElementTriP1())
@@ -37,8 +37,8 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r):
     eps.getST().setType(SLEPc.ST.Type.SINVERT)
     eps.setWhichEigenpairs(SLEPc.EPS.Which.TARGET_MAGNITUDE)
     eps.setTarget(k0 ** 2 * np.max(epsilon_r) ** 2)
-    eps.setDimensions(20)
-    #eps.setTolerances(1e-8)
+    eps.setDimensions(num_modes)
+    # eps.setTolerances(1e-8)
     eps.solve()
 
     xr, xi = A_.getVecs()
@@ -51,7 +51,7 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r):
 
 
 if __name__ == "__main__":
-    mesh = Mesh.load('../mesh.msh')
+    mesh = Mesh.load('mesh.msh')
     basis0 = Basis(mesh, ElementTriP0(), intorder=4)
     epsilon = basis0.zeros()
     epsilon[basis0.get_dofs(elements='core')] = 3.4777 ** 2
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     epsilon[basis0.get_dofs(elements='box')] = 1.444 ** 2
     # basis0.plot(epsilon, colorbar=True).show()
 
-    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1)
+    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=5)
 
     print(lams)
 
