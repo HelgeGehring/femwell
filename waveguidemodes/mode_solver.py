@@ -50,7 +50,6 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
 
     xs = np.array(xs)
     lams = np.array(lams)
-    print(xs.shape, len(lams))
     xs[:, basis.split_indices()[1]] /= np.sqrt(lams[:, np.newaxis])
 
     return np.sqrt(lams) / k0, basis, xs
