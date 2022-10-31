@@ -11,8 +11,6 @@ from waveguidemodes.mode_solver import compute_modes
 from waveguidemodes.waveguide import mesh_waveguide
 
 if __name__ == '__main__':
-    # basis0.plot(epsilon, colorbar=True).show()
-
     num_modes = 10
     widths = np.linspace(.3, 1.5, 100)
     all_lams = np.zeros((widths.shape[0], num_modes))
@@ -34,14 +32,13 @@ if __name__ == '__main__':
         xs = np.real(xs)
 
         for idx in range(num_modes):
-            (et, et_basis), (ez, ez_basis), *_ = basis.split(xs[:, idx])
+            (et, et_basis), (ez, ez_basis), *_ = basis.split(xs[idx])
             plot_basis = et_basis.with_element(ElementVector(ElementTriP0()))
             et_xy = plot_basis.project(et_basis.interpolate(et))
             (et_x, et_x_basis), (et_y, et_y_basis) = plot_basis.split(et_xy)
             all_te_fracs[i, idx] = np.sum(et_x ** 2, axis=0) / np.sum(et_x ** 2 + et_y ** 2, axis=0)
 
     for lams, te_fracs in zip(all_lams.T, all_te_fracs.T):
-        print(te_fracs, cm.seismic(te_fracs))
         plt.plot(widths, lams)
         plt.scatter(widths, lams, c=cm.seismic(2 * (te_fracs - .5)))
     plt.show()
