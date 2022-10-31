@@ -1,4 +1,5 @@
 """Waveguide analysis based on https://doi.org/10.1080/02726340290084012."""
+import matplotlib.pyplot as plt
 import numpy as np
 
 from skfem import BilinearForm, Basis, ElementTriN0, ElementTriP0, ElementTriP1, ElementVector, Mesh
@@ -47,7 +48,37 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
         lams.append(eps.getEigenpair(i, xr, xi))
         xs.append(np.array(xr) + 1j * np.array(xi))
 
-    return np.sqrt(lams) / k0, basis, np.array(xs).T
+    xs = np.array(xs)
+    lams = np.array(lams)
+    print(xs.shape, len(lams))
+    xs[:, basis.split_indices()[1]] /= np.sqrt(lams[:, np.newaxis])
+
+    return np.sqrt(lams) / k0, basis, xs
+
+
+def plot_mode(basis, mode, plot_vectors=False):
+    mode = np.real(mode)
+    (et, et_basis), (ez, ez_basis) = basis.split(mode)
+
+    if plot_vectors:
+        fig, axs = plt.subplots(1, 2)
+        et_basis.plot(et, ax=axs[0])
+        ez_basis.plot(ez, ax=axs[1], colorbar=True)
+        return fig, axs
+
+    plot_basis = et_basis.with_element(ElementVector(ElementTriP0()))
+    et_xy = plot_basis.project(et_basis.interpolate(et))
+    (et_x, et_x_basis), (et_y, et_y_basis) = plot_basis.split(et_xy)
+
+    fig, axs = plt.subplots(1, 3)
+    for ax in axs:
+        ax.set_aspect(1)
+    et_x_basis.plot(et_x, colorbar=True, shading='gouraud', ax=axs[0], vmin=np.min(mode), vmax=np.max(mode))
+    et_y_basis.plot(et_y, colorbar=True, shading='gouraud', ax=axs[1], vmin=np.min(mode), vmax=np.max(mode))
+    ez_basis.plot(ez, colorbar=True, shading='gouraud', ax=axs[2], vmin=np.min(mode), vmax=np.max(mode))
+    plt.tight_layout()
+
+    return fig, axs
 
 
 if __name__ == "__main__":
@@ -64,19 +95,5 @@ if __name__ == "__main__":
 
     print(lams)
 
-    idx = 0
-    xs = np.real(xs)
-    (et, et_basis), (ez, ez_basis), *_ = basis.split(xs[:, idx])
-    print(lams[idx])
-    print(np.sum(np.abs(et)), np.sum(np.abs(ez)))
-
-    et_basis.plot(et).show()
-    ez_basis.plot(ez, colorbar=True).show()
-
-    plot_basis = et_basis.with_element(ElementVector(ElementTriP0()))
-    et_xy = plot_basis.project(et_basis.interpolate(et))
-    (et_x, et_x_basis), (et_y, et_y_basis) = plot_basis.split(et_xy)
-
-    et_x_basis.plot(et_x, colorbar=True, shading='gouraud').show()
-    et_y_basis.plot(et_y, colorbar=True, shading='gouraud').show()
-    ez_basis.plot(ez, colorbar=True, shading='gouraud').show()
+    plot_mode(basis, xs[0])
+    plt.show()
