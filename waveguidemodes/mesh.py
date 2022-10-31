@@ -330,11 +330,10 @@ def mesh_from_polygons(
             model.add_physical(line, f"{meshtracker.xy_lines_main_labels[index]}_{meshtracker.xy_lines_secondary_labels[index]}_{i}")
             i += 1
 
+        mesh = geometry.generate_mesh(dim=2, verbose=True)
+
         if filename:
-            mesh = geometry.generate_mesh(dim=2, verbose=True)
             gmsh.write(f"{filename}")
-        else:
-            mesn = geometry.generate_mesh(dim=2, verbose=True)
 
         return mesh
         
