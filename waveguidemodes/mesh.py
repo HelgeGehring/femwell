@@ -331,10 +331,11 @@ def mesh_from_polygons(
             model.add_physical(line, f"line_{i}")
             i += 1
 
-        mesh = geometry.generate_mesh(dim=2, verbose=True)
-
         if filename:
+            mesh = geometry.generate_mesh(dim=2, verbose=True)
             gmsh.write(f"{filename}")
+        else:
+            mesn = geometry.generate_mesh(dim=2, verbose=True)
 
         return mesh
         
@@ -382,8 +383,8 @@ if __name__ == "__main__":
     polygons["box"] = box
 
     resolutions = {}
-    resolutions["core"] = {"resolution": 0.02, "distance": 0.5}
-    resolutions["core2"] = {"resolution": 0.02, "distance": 0.5}
+    resolutions["core"] = {"resolution": 0.01, "distance": 5}
+    resolutions["core2"] = {"resolution": 0.01, "distance": 5}
     # resolutions["clad"] = {"resolution": 0.1, "dist_min": 0.01, "dist_max": 0.3}
 
 
