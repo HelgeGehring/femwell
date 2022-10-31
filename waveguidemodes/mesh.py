@@ -217,7 +217,7 @@ def mesh_from_polygons(
                             if intersections.is_empty:
                                 continue
                             else:
-                                for intersection in intersections.geoms:
+                                for intersection in intersections.geoms if hasattr(intersections, 'geoms') else [intersections]:
                                     new_coords_start, new_coords_end = intersection.boundary.geoms
                                     first_exterior_line = linemerge(split(first_exterior_line, new_coords_start))
                                     first_exterior_line = linemerge(split(first_exterior_line, new_coords_end))
@@ -252,7 +252,7 @@ def mesh_from_polygons(
                                 if intersections.is_empty:
                                     continue
                                 else:
-                                    for intersection in intersections.geoms:
+                                    for intersection in intersections.geoms if hasattr(intersections, 'geoms') else [intersections]:
                                         new_coords_start, new_coords_end = intersection.boundary.geoms
                                         first_interior_line = linemerge(split(first_interior_line, new_coords_start))
                                         first_interior_line = linemerge(split(first_interior_line, new_coords_end))
