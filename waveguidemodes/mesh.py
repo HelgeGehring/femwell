@@ -21,7 +21,8 @@ class MeshTracker():
         self.points_labels = []
         self.shapely_xy_lines = []
         self.gmsh_xy_lines = []
-        self.xy_lines_labels = []
+        self.xy_lines_main_labels = []
+        self.xy_lines_secondary_labels = []
         self.gmsh_xy_surfaces = []
         self.xy_surfaces_labels = []
         self.model = model
@@ -56,7 +57,7 @@ class MeshTracker():
         return entities
 
     def get_gmsh_xy_lines_from_label(self, label):
-        indices = [idx for idx, value in enumerate(self.xy_lines_labels) if value == label]
+        indices = [idx for idx, value in enumerate(self.xy_lines_main_labels) if value == label]
         entities = []
         for index in indices:
             entities.append(self.gmsh_xy_lines[index]._id)
@@ -116,11 +117,13 @@ class MeshTracker():
         index, orientation = self.get_xy_line_index_and_orientation(shapely_xy_point1, shapely_xy_point2)
         if index is not None:
             gmsh_line = self.gmsh_xy_lines[index]
+            self.xy_lines_secondary_labels[index] = label
         else:
             gmsh_line = self.model.add_line(self.add_get_point(shapely_xy_point1), self.add_get_point(shapely_xy_point2))
             self.shapely_xy_lines.append(shapely.geometry.LineString([shapely_xy_point1, shapely_xy_point2]))
             self.gmsh_xy_lines.append(gmsh_line)
-            self.xy_lines_labels.append(label)
+            self.xy_lines_main_labels.append(label)
+            self.xy_lines_secondary_labels.append(None)
         return gmsh_line, orientation
 
     def add_xy_surface(self, shapely_xy_polygon, label=None):
@@ -159,7 +162,7 @@ def mesh_from_polygons(
     polygon_dict: OrderedDict,
     resolutions: Optional[Dict[str, float]] = None,
     default_resolution_min: float = 0.01,
-    default_resolution_max: float = 0.1,
+    default_resolution_max: float = 0.5,
     filename: Optional[str] = None,
 ):
 
@@ -184,12 +187,8 @@ def mesh_from_polygons(
                 diff_polygon = diff_polygon.difference(higher_polygon)
             polygons_tiled_dict[lower_name] = diff_polygon
 
-        # print("Tiled")
-        # for key in polygons_tiled_dict.keys():
-        #     print(key, polygons_tiled_dict[key])
-
         # Break up polygon edges so that plane is tiled with no partially overlapping line segments
-        polygons_broken_dict = {}
+        polygons_broken_dict = OrderedDict()
         for first_index, (first_name, first_polygons) in enumerate(polygon_dict.items()):
             first_polygons = polygons_tiled_dict[first_name]
             if first_polygons.type == "MultiPolygon":
@@ -206,7 +205,7 @@ def mesh_from_polygons(
                     if second_name == first_name:
                         continue
                     else:
-                        second_polygons = polygons_tiled_dict[first_name]
+                        second_polygons = polygons_tiled_dict[second_name]
                         if second_polygons.type == "MultiPolygon":
                             second_polygons = second_polygons.geoms
                         else:
@@ -236,11 +235,12 @@ def mesh_from_polygons(
                 # Interiors
                 first_polygon_interiors = []
                 for first_interior_line in first_polygon.interiors:
+                    first_interior_line = LineString(first_interior_line)
                     for second_index, (second_name, second_polygons) in enumerate(polygon_dict.items()):
                         if second_name == first_name:
                             continue
                         else:
-                            second_polygons = polygons_tiled_dict[first_name]
+                            second_polygons = polygons_tiled_dict[second_name]
                             if second_polygons.type == "MultiPolygon":
                                 second_polygons = second_polygons.geoms
                             else:
@@ -273,16 +273,15 @@ def mesh_from_polygons(
                 polygons_broken_dict[first_name] = MultiPolygon(broken_polygons)
             else:
                 polygons_broken_dict[first_name] = broken_polygons[0]
-
-        print("Broken")
-        for key in polygons_broken_dict.keys():
-            print(key, polygons_broken_dict[key])
         
         # Add surfaces, reusing lines to simplify at early stage
         meshtracker = MeshTracker(model=model)
-        for polygon_name, polygon in reversed(polygons_broken_dict.items()):
+        for polygon_name, polygon in polygons_broken_dict.items():
             plane_surface = meshtracker.add_xy_surface(polygon, polygon_name)
             model.add_physical(plane_surface, f"{polygon_name}")
+
+        # for key in polygons_broken_dict.keys():
+        #     print(key, meshtracker.get_gmsh_xy_lines_from_label(key))
 
         # Refinement in surfaces
         n = 0
@@ -327,8 +326,8 @@ def mesh_from_polygons(
 
         # Extract all unique lines (TODO: identify interfaces in label)
         i = 0
-        for line in meshtracker.gmsh_xy_lines:
-            model.add_physical(line, f"line_{i}")
+        for index, line in enumerate(meshtracker.gmsh_xy_lines):
+            model.add_physical(line, f"{meshtracker.xy_lines_main_labels[index]}_{meshtracker.xy_lines_secondary_labels[index]}_{i}")
             i += 1
 
         if filename:
@@ -347,10 +346,10 @@ if __name__ == "__main__":
     wsim = 2
     hclad = 2
     hbox = 2
-    offset_core = -0.1
-    offset_core2 = 1
     wcore = 0.5
     hcore = 0.22
+    offset_core = -0.1
+    offset_core2 = 1
     core = Polygon([
             Point(-wcore/2, -hcore/2 + offset_core),
             Point(-wcore/2, hcore/2 + offset_core),
@@ -383,8 +382,8 @@ if __name__ == "__main__":
     polygons["box"] = box
 
     resolutions = {}
-    resolutions["core"] = {"resolution": 0.01, "distance": 5}
-    resolutions["core2"] = {"resolution": 0.01, "distance": 5}
+    resolutions["core"] = {"resolution": 0.01, "distance": 0.5}
+    resolutions["core2"] = {"resolution": 0.01, "distance": 0.5}
     # resolutions["clad"] = {"resolution": 0.1, "dist_min": 0.01, "dist_max": 0.3}
 
 
