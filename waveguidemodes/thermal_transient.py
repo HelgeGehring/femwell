@@ -118,13 +118,13 @@ if __name__ == '__main__':
     )
 
     resolutions = dict(
-        core={"resolution": 0.02, "distance": 1},
-        clad={"resolution": 0.4, "distance": 1},
-        box={"resolution": 0.4, "distance": 1},
+        core={"resolution": 0.05, "distance": 1},
+        clad={"resolution": 1, "distance": 1},
+        box={"resolution": 1, "distance": 1},
         heater={"resolution": 0.05, "distance": 1}
     )
 
-    mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=.1)
+    mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=.4)
 
     mesh = Mesh.load('mesh.msh')
 
@@ -145,19 +145,50 @@ if __name__ == '__main__':
 
     thermal_diffusivity_p0 *= 1e12  # 1e-12 -> conversion from m^2 -> um^2
 
-    dt = .1e-6
+    dt = .4e-6
     steps = 200
+    current = lambda t: 0.007 * ((t < dt * steps / 10) + (t > dt * steps / 2))
     basis, temperatures = solve_thermal_transient(basis0, thermal_conductivity_p0,
                                                   specific_conductivity={"heater": 2.3e6},
-                                                  currents={"heater": lambda t: 0.007 if t < dt*50 else 0},
+                                                  currents={"heater": current},
                                                   dt=dt,
                                                   steps=steps
                                                   )
 
-    times = np.array([dt*i for i in range(steps)])
-    plt.plot(times*1e6, np.sum(temperatures, axis=-1))
+    times = np.array([dt * i for i in range(steps)])
+    plt.plot(times * 1e6, np.mean(temperatures, axis=-1))
     plt.show()
 
-    for temperature in temperatures:
-        basis.plot(temperature, vmin=0, vmax=np.max(temperatures))
-        plt.show()
+    from tqdm.auto import tqdm
+
+    neffs = []
+    for temperature in tqdm(temperatures):
+        # basis.plot(temperature, vmin=0, vmax=np.max(temperatures))
+        # plt.show()
+
+        from waveguidemodes.mode_solver import compute_modes, plot_mode
+
+        temperature0 = basis0.project(basis.interpolate(temperature))
+        epsilon = basis0.zeros() + (1.444 + 1.00e-5 * temperature0) ** 2
+        epsilon[basis0.get_dofs(elements='core')] = \
+            (3.4777 + 1.86e-4 * temperature0[basis0.get_dofs(elements='core')]) ** 2
+        # basis0.plot(epsilon, colorbar=True).show()
+
+        lams, basis_modes, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1)
+
+        print(lams)
+
+        # plot_mode(basis, xs[0])
+        # plt.show()
+
+        neffs.append(np.real(lams[0]))
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.set_xlabel('Time [us]')
+    ax.set_ylabel('Current [mA]')
+    ax.plot(times * 1e6, current(times), 'b-o')
+    ax2 = ax.twinx()
+    ax2.set_ylabel('Phase shift')
+    ax2.plot(times * 1e6, 2 * np.pi / 1.55 * (neffs - neffs[0]) * 320, 'r-o')
+    plt.show()
