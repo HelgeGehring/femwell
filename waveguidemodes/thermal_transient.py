@@ -4,13 +4,10 @@ from collections import OrderedDict
 import numpy as np
 from scipy.sparse.linalg import splu
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-from matplotlib.animation import FuncAnimation
 from shapely.geometry import Polygon
 
 from skfem import asm, ElementTriP0, ElementTriP1, BilinearForm, LinearForm, Basis, Mesh, penalize
 from skfem.helpers import dot
-from skfem.visuals.matplotlib import draw, plot
 
 from waveguidemodes.mesh import mesh_from_polygons
 from waveguidemodes.thermal import solve_thermal, calc_joule_conductivity_rhs
