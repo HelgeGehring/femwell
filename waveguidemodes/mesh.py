@@ -159,7 +159,7 @@ class MeshTracker():
 
 
 def mesh_from_polygons(
-    polygon_dict: OrderedDict,
+    shapes_dict: OrderedDict,
     resolutions: Optional[Dict[str, float]] = None,
     default_resolution_min: float = 0.01,
     default_resolution_max: float = 0.5,
@@ -179,18 +179,18 @@ def mesh_from_polygons(
 
         model = geometry.__enter__()
 
-        # Break up surfaces in order so that plane is tiled with non-overlapping layers
-        polygons_tiled_dict = OrderedDict()
-        for lower_index, (lower_name, lower_polygon) in reversed(list(enumerate(polygon_dict.items()))):
-            diff_polygon = lower_polygon
-            for higher_index, (higher_name, higher_polygon) in reversed(list(enumerate(polygon_dict.items()))[:lower_index]):
-                diff_polygon = diff_polygon.difference(higher_polygon)
-            polygons_tiled_dict[lower_name] = diff_polygon
+        # Break up shapes in order so that plane is tiled with non-overlapping layers
+        shapes_tiled_dict = OrderedDict()
+        for lower_index, (lower_name, lower_shape) in reversed(list(enumerate(shapes_dict.items()))):
+            diff_shape = lower_shape
+            for higher_index, (higher_name, higher_shape) in reversed(list(enumerate(shapes_dict.items()))[:lower_index]):
+                diff_shape = diff_shape.difference(higher_shape)
+            shapes_tiled_dict[lower_name] = diff_shape
 
-        # Break up polygon edges so that plane is tiled with no partially overlapping line segments
+        # Break up lines and polygon edges so that plane is tiled with no partially overlapping line segments
         polygons_broken_dict = OrderedDict()
-        for first_index, (first_name, first_polygons) in enumerate(polygon_dict.items()):
-            first_polygons = polygons_tiled_dict[first_name]
+        for first_index, (first_name, first_polygons) in enumerate(shapes_dict.items()):
+            first_polygons = shapes_tiled_dict[first_name]
             if first_polygons.type == "MultiPolygon":
                 multi = True
                 first_polygons = first_polygons.geoms
@@ -201,11 +201,11 @@ def mesh_from_polygons(
             for first_polygon in first_polygons:
                 # Exterior
                 first_exterior_line = LineString(first_polygon.exterior)
-                for second_index, (second_name, second_polygons) in enumerate(polygon_dict.items()):
+                for second_index, (second_name, second_polygons) in enumerate(shapes_dict.items()):
                     if second_name == first_name:
                         continue
                     else:
-                        second_polygons = polygons_tiled_dict[second_name]
+                        second_polygons = shapes_tiled_dict[second_name]
                         if second_polygons.type == "MultiPolygon":
                             second_polygons = second_polygons.geoms
                         else:
@@ -236,11 +236,11 @@ def mesh_from_polygons(
                 first_polygon_interiors = []
                 for first_interior_line in first_polygon.interiors:
                     first_interior_line = LineString(first_interior_line)
-                    for second_index, (second_name, second_polygons) in enumerate(polygon_dict.items()):
+                    for second_index, (second_name, second_polygons) in enumerate(shapes_dict.items()):
                         if second_name == first_name:
                             continue
                         else:
-                            second_polygons = polygons_tiled_dict[second_name]
+                            second_polygons = shapes_tiled_dict[second_name]
                             if second_polygons.type == "MultiPolygon":
                                 second_polygons = second_polygons.geoms
                             else:
@@ -350,6 +350,14 @@ if __name__ == "__main__":
     hcore = 0.22
     offset_core = -0.1
     offset_core2 = 1
+    left_edge = LineString([Point(-wsim/2, -hcore/2  - hbox), 
+                            Point(-wsim/2, hcore/2 + hclad)])
+    right_edge = LineString([Point(wsim/2, -hcore/2  - hbox), 
+                            Point(wsim/2, hcore/2 + hclad)])
+    top_edge = LineString([Point(-wsim/2, hcore/2 + hclad), 
+                            Point(wsim/2, hcore/2 + hclad)])
+    bottom_edge = LineString([Point(-wsim/2, -hcore/2  - hbox), 
+                            Point(wsim/2, -hcore/2  - hbox)])
     core = Polygon([
             Point(-wcore/2, -hcore/2 + offset_core),
             Point(-wcore/2, hcore/2 + offset_core),
@@ -375,19 +383,24 @@ if __name__ == "__main__":
             Point(wsim/2, -hcore/2),
         ])
 
-    polygons = OrderedDict()
-    polygons["core"] = core 
-    polygons["core2"] = core2
-    polygons["clad"] = clad
-    polygons["box"] = box
+    shapes = OrderedDict()
+    shapes["left_edge"] = left_edge
+    shapes["right_edge"] = right_edge
+    shapes["top_edge"] = top_edge
+    shapes["bottom_edge"] = bottom_edge
+    shapes["core"] = core 
+    shapes["core2"] = core2
+    shapes["clad"] = clad
+    shapes["box"] = box
 
     resolutions = {}
-    resolutions["core"] = {"resolution": 0.01, "distance": 0.5}
-    resolutions["core2"] = {"resolution": 0.01, "distance": 0.5}
+    resolutions["core"] = {"resolution": 0.05, "distance": 0}
+    resolutions["core_clad"] = {"resolution": 0.01, "distance": 0.5}
+    resolutions["bottom_edge"] = {"resolution": 0.05, "distance": 0.5}
     # resolutions["clad"] = {"resolution": 0.1, "dist_min": 0.01, "dist_max": 0.3}
 
 
-    mesh = mesh_from_polygons(polygons, resolutions, filename="mesh.msh")
+    mesh = mesh_from_polygons(shapes, resolutions, filename="mesh.msh")
 
     # gmsh.write("mesh.msh")
     # gmsh.clear()
