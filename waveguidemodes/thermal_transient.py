@@ -21,6 +21,8 @@ def solve_thermal_transient(
         thermal_conductivity,
         specific_conductivity: Dict[str, float],
         currents,
+        dt,
+        steps
 ):
     @BilinearForm
     def conduction(u, v, w):
@@ -30,10 +32,10 @@ def solve_thermal_transient(
     def unit_load(v, _):
         return v
 
-    basis, temperature = solve_thermal(basis0, thermal_conductivity, specific_conductivity, currents)
+    basis, temperature = solve_thermal(basis0, thermal_conductivity, specific_conductivity,
+                                       {domain: current(0) for domain, current in currents.items()})
 
     basis = basis0.with_element(ElementTriP1())
-    joule_heating_rhs = calc_joule_conductivity_rhs(basis, specific_conductivity, currents)
 
     @BilinearForm
     def diffusivity_laplace(u, v, w):
@@ -56,9 +58,7 @@ def solve_thermal_transient(
         thermal_conductivity=basis0.interpolate(thermal_conductivity_p0),
     )
 
-    dt = 0.1e-6
     theta = 0.5  # Crank–Nicolson
-    steps = 200
 
     L0, M0 = penalize(L, M, D=basis.get_dofs(mesh.boundaries["box_None_14"]))
     A = M0 + theta * L0 * dt
@@ -66,66 +66,16 @@ def solve_thermal_transient(
 
     backsolve = splu(A.T).solve  # .T as splu prefers CSC
 
-    def evolve(
-            t: float, u: np.ndarray, heating: np.ndarray
-    ) -> Iterator[Tuple[float, np.ndarray]]:
-        i = 0
-        while True:
-            t_temperature[i] = t, np.mean(u)
-            i += 1
-            yield t, u
-            t, u = t + dt, backsolve(B @ u + heating * dt)
+    t = 0
+    temperatures = []
+    for i in range(steps):
+        joule_heating_rhs = calc_joule_conductivity_rhs(basis, specific_conductivity,
+                                                        {domain: current(t) for domain, current in
+                                                         currents.items()})
+        t, temperature = t + dt, backsolve(B @ temperature + joule_heating_rhs * dt)
+        temperatures.append(temperature)
 
-    ax = draw(mesh, boundaries_only=True)
-    ax.set_axis_on()
-    ax = plot(mesh, temperature, ax=ax, shading="gouraud")
-    title = ax.set_title("t = 0.00")
-    field = ax.get_children()[1]  # vertex-based temperature-colour
-    fig = ax.get_figure()
-
-    divider = make_axes_locatable(ax)
-    cax = divider.append_axes("right", size="5%", pad=0.05)
-    fig.colorbar(field, cax=cax)
-
-    def update(event):
-        t, u = event
-        title.set_text(f"$t$ = {t * 1e6:.2f}us")
-        field.set_array(u)
-
-    t_temperature = np.zeros((steps + 2, 2))
-    animation = FuncAnimation(
-        fig,
-        update,
-        evolve(0.0, temperature * 0.01, joule_heating_rhs),
-        repeat=False,
-        interval=30,
-        save_count=steps,
-    )
-    animation.save("heater_up.gif", "imagemagick")
-    t_temperature_up = t_temperature
-
-    t_temperature = np.zeros((steps + 2, 2))
-    animation = FuncAnimation(
-        fig,
-        update,
-        evolve(0.0, temperature, 0),
-        repeat=False,
-        interval=30,
-        save_count=steps,
-    )
-    animation.save("heater_down.gif", "imagemagick")
-    t_temperature_down = t_temperature
-
-    plt.figure()
-    plt.plot(t_temperature[:-1, 0] * 1e6, t_temperature_up[:-1, 1])
-    plt.plot(t_temperature[:-1, 0] * 1e6, t_temperature_down[:-1, 1])
-    plt.plot(
-        t_temperature[:-1, 0] * 1e6, t_temperature[:-1, 1] * 0 + np.mean(temperature)
-    )
-    plt.xlabel("Time [us]")
-    plt.ylabel("Average temperature offset [T]")
-    plt.savefig("heater.svg", bbox_inches="tight")
-    plt.show()
+    return basis, temperatures
 
 
 if __name__ == '__main__':
@@ -195,6 +145,19 @@ if __name__ == '__main__':
 
     thermal_diffusivity_p0 *= 1e12  # 1e-12 -> conversion from m^2 -> um^2
 
-    solve_thermal_transient(basis0, thermal_conductivity_p0,
-                            specific_conductivity={"heater": 2.3e6},
-                            currents={"heater": 0.007})
+    dt = .1e-6
+    steps = 200
+    basis, temperatures = solve_thermal_transient(basis0, thermal_conductivity_p0,
+                                                  specific_conductivity={"heater": 2.3e6},
+                                                  currents={"heater": lambda t: 0.007 if t < dt*50 else 0},
+                                                  dt=dt,
+                                                  steps=steps
+                                                  )
+
+    times = np.array([dt*i for i in range(steps)])
+    plt.plot(times*1e6, np.sum(temperatures, axis=-1))
+    plt.show()
+
+    for temperature in temperatures:
+        basis.plot(temperature, vmin=0, vmax=np.max(temperatures))
+        plt.show()
