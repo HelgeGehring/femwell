@@ -158,6 +158,16 @@ class MeshTracker():
         return gmsh_surface
 
 
+def break_line(line, other_line):
+    intersections = line.intersection(other_line)
+    if not intersections.is_empty:
+        for intersection in intersections.geoms if hasattr(intersections, 'geoms') else [intersections]:
+            new_coords_start, new_coords_end = intersection.boundary.geoms
+            line = linemerge(split(line, new_coords_start))
+            line = linemerge(split(line, new_coords_end))
+    return line
+
+
 def mesh_from_polygons(
     shapes_dict: OrderedDict,
     resolutions: Optional[Dict[str, float]] = None,
@@ -191,48 +201,25 @@ def mesh_from_polygons(
         polygons_broken_dict = OrderedDict()
         for first_index, (first_name, first_polygons) in enumerate(shapes_dict.items()):
             first_polygons = shapes_tiled_dict[first_name]
-            if first_polygons.type == "MultiPolygon":
-                multi = True
-                first_polygons = first_polygons.geoms
-            else:
-                multi= False
-                first_polygons = [first_polygons]
             broken_polygons = []
-            for first_polygon in first_polygons:
-                # Exterior
+            for first_polygon in first_polygons.geoms if hasattr(first_polygons, 'geoms') else [first_polygons]:
+                # First line exterior
                 first_exterior_line = LineString(first_polygon.exterior)
                 for second_index, (second_name, second_polygons) in enumerate(shapes_dict.items()):
+                    # Do not compare to itself
                     if second_name == first_name:
                         continue
                     else:
                         second_polygons = shapes_tiled_dict[second_name]
-                        if second_polygons.type == "MultiPolygon":
-                            second_polygons = second_polygons.geoms
-                        else:
-                            second_polygons = [second_polygons]
-                        for second_polygon in second_polygons:
-                            # Exterior
+                        for second_polygon in second_polygons.geoms if hasattr(second_polygons, 'geoms') else [second_polygons]:
+                            # Second line exterior
                             second_exterior_line = LineString(second_polygon.exterior)
-                            intersections = first_exterior_line.intersection(second_exterior_line)
-                            if intersections.is_empty:
-                                continue
-                            else:
-                                for intersection in intersections.geoms if hasattr(intersections, 'geoms') else [intersections]:
-                                    new_coords_start, new_coords_end = intersection.boundary.geoms
-                                    first_exterior_line = linemerge(split(first_exterior_line, new_coords_start))
-                                    first_exterior_line = linemerge(split(first_exterior_line, new_coords_end))
-                            # Interiors
+                            first_exterior_line = break_line(first_exterior_line, second_exterior_line)
+                            # Second line interiors
                             for second_interior_line in second_polygon.interiors:
                                 second_interior_line = LineString(second_interior_line)
-                                intersections = first_exterior_line.intersection(second_interior_line)
-                                if intersections.is_empty:
-                                    continue
-                                else:
-                                    for intersection in intersections.geoms:
-                                        new_coords_start, new_coords_end = intersection.boundary.geoms
-                                        first_exterior_line = linemerge(split(first_exterior_line, new_coords_start))
-                                        first_exterior_line = linemerge(split(first_exterior_line, new_coords_end))
-                # Interiors
+                                first_exterior_line = break_line(first_exterior_line, second_interior_line)
+                # First line interiors
                 first_polygon_interiors = []
                 for first_interior_line in first_polygon.interiors:
                     first_interior_line = LineString(first_interior_line)
@@ -241,47 +228,24 @@ def mesh_from_polygons(
                             continue
                         else:
                             second_polygons = shapes_tiled_dict[second_name]
-                            if second_polygons.type == "MultiPolygon":
-                                second_polygons = second_polygons.geoms
-                            else:
-                                second_polygons = [second_polygons]
-                            for second_polygon in second_polygons:
+                            for second_polygon in second_polygons.geoms if hasattr(second_polygons, 'geoms') else [second_polygons]:
                                 # Exterior
                                 second_exterior_line = LineString(second_polygon.exterior)
-                                intersections = first_interior_line.intersection(second_exterior_line)
-                                if intersections.is_empty:
-                                    continue
-                                else:
-                                    for intersection in intersections.geoms if hasattr(intersections, 'geoms') else [intersections]:
-                                        new_coords_start, new_coords_end = intersection.boundary.geoms
-                                        first_interior_line = linemerge(split(first_interior_line, new_coords_start))
-                                        first_interior_line = linemerge(split(first_interior_line, new_coords_end))
+                                first_interior_line = break_line(first_interior_line, second_exterior_line)
                                 # Interiors
                                 for second_interior_line in second_polygon.interiors:
                                     second_interior_line = LineString(second_interior_line)
                                     intersections = first_interior_line.intersection(second_interior_line)
-                                    if intersections.is_empty:
-                                        continue
-                                    else:
-                                        for intersection in intersections.geoms:
-                                            new_coords_start, new_coords_end = intersection.boundary.geoms
-                                            first_interior_line = linemerge(split(first_interior_line, new_coords_start))
-                                            first_interior_line = linemerge(split(first_interior_line, new_coords_end))
+                                    first_interior_line = break_line(first_interior_line, second_interior_line)
                     first_polygon_interiors.append(first_interior_line)
                 broken_polygons.append(Polygon(first_exterior_line, holes=first_polygon_interiors))
-            if multi == True:
-                polygons_broken_dict[first_name] = MultiPolygon(broken_polygons)
-            else:
-                polygons_broken_dict[first_name] = broken_polygons[0]
-        
+            polygons_broken_dict[first_name] = MultiPolygon(broken_polygons) if len(broken_polygons) > 1 else broken_polygons[0]
+            
         # Add surfaces, reusing lines to simplify at early stage
         meshtracker = MeshTracker(model=model)
         for polygon_name, polygon in polygons_broken_dict.items():
             plane_surface = meshtracker.add_xy_surface(polygon, polygon_name)
             model.add_physical(plane_surface, f"{polygon_name}")
-
-        # for key in polygons_broken_dict.keys():
-        #     print(key, meshtracker.get_gmsh_xy_lines_from_label(key))
 
         # Refinement in surfaces
         n = 0
