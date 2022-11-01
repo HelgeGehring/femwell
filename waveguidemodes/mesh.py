@@ -4,7 +4,7 @@ import numpy as np
 import pygmsh
 import gmsh
 import shapely
-from shapely.geometry import Point, LineString, Polygon, MultiPolygon, LinearRing
+from shapely.geometry import Point, LineString, Polygon, MultiPolygon, LinearRing, MultiLineString
 from shapely.ops import split, linemerge
 
 from collections import OrderedDict
@@ -116,15 +116,15 @@ class MeshTracker():
         """
         index, orientation = self.get_xy_segment_index_and_orientation(shapely_xy_point1, shapely_xy_point2)
         if index is not None:
-            gmsh_line = self.gmsh_xy_segments[index]
+            gmsh_segment = self.gmsh_xy_segments[index]
             self.xy_segments_secondary_labels[index] = label
         else:
-            gmsh_line = self.model.add_line(self.add_get_point(shapely_xy_point1), self.add_get_point(shapely_xy_point2))
+            gmsh_segment = self.model.add_line(self.add_get_point(shapely_xy_point1), self.add_get_point(shapely_xy_point2))
             self.shapely_xy_segments.append(shapely.geometry.LineString([shapely_xy_point1, shapely_xy_point2]))
-            self.gmsh_xy_segments.append(gmsh_line)
+            self.gmsh_xy_segments.append(gmsh_segment)
             self.xy_segments_main_labels.append(label)
             self.xy_segments_secondary_labels.append(None)
-        return gmsh_line, orientation
+        return gmsh_segment, orientation
 
     def add_get_xy_line(self, shapely_xy_curve, label):
         """
@@ -135,20 +135,12 @@ class MeshTracker():
         """
         segments = []
         for shapely_xy_point1, shapely_xy_point2 in zip(shapely_xy_curve.coords[:-1], shapely_xy_curve.coords[1:]):
-            index, orientation = self.get_xy_segment_index_and_orientation(shapely_xy_point1, shapely_xy_point2)
-            if index is not None:
-                gmsh_line = self.gmsh_xy_segments[index]
-                self.xy_segments_secondary_labels[index] = label
+            gmsh_segment, orientation = self.add_get_xy_segment(Point(shapely_xy_point1), Point(shapely_xy_point2), label)
+            if orientation:
+                segments.append(gmsh_segment)
             else:
-                gmsh_line = self.model.add_line(self.add_get_point(shapely_xy_point1), self.add_get_point(shapely_xy_point2))
-                self.shapely_xy_segments.append(shapely.geometry.LineString([shapely_xy_point1, shapely_xy_point2]))
-                self.gmsh_xy_segments.append(gmsh_line)
-                self.xy_segments_main_labels.append(label)
-                self.xy_segments_secondary_labels.append(None)
-
-        channel_loop = self.model.add_curve_loop(edges)
-
-        return gmsh_line, orientation
+                segments.append(-gmsh_segment)
+        self.model.add_physical(segments, f"{label}")
 
     def add_xy_surface(self, shapely_xy_polygon, label=None):
         """
@@ -178,17 +170,17 @@ class MeshTracker():
         gmsh_surface = self.model.add_plane_surface(channel_loop, holes=hole_loops)
         self.gmsh_xy_surfaces.append(gmsh_surface)
         self.xy_surfaces_labels.append(label)
-
-        return gmsh_surface
+        self.model.add_physical(gmsh_surface, f"{label}")
 
 
 def break_line(line, other_line):
     intersections = line.intersection(other_line)
     if not intersections.is_empty:
         for intersection in intersections.geoms if hasattr(intersections, 'geoms') else [intersections]:
-            new_coords_start, new_coords_end = intersection.boundary.geoms
-            line = linemerge(split(line, new_coords_start))
-            line = linemerge(split(line, new_coords_end))
+            if intersection.type != 'Point':
+                new_coords_start, new_coords_end = intersection.boundary.geoms
+                line = linemerge(split(line, new_coords_start))
+                line = linemerge(split(line, new_coords_end))
     return line
 
 
@@ -223,58 +215,64 @@ def mesh_from_polygons(
 
         # Break up lines and polygon edges so that plane is tiled with no partially overlapping line segments
         polygons_broken_dict = OrderedDict()
-        for first_index, (first_name, first_polygons) in enumerate(shapes_dict.items()):
-            first_polygons = shapes_tiled_dict[first_name]
-            broken_polygons = []
-            for first_polygon in first_polygons.geoms if hasattr(first_polygons, 'geoms') else [first_polygons]:
+        lines_broken_dict = OrderedDict()
+        for first_index, (first_name, first_shape) in enumerate(shapes_dict.items()):
+            first_shape = shapes_tiled_dict[first_name]
+            broken_shapes = []
+            for first_shape in first_shape.geoms if hasattr(first_shape, 'geoms') else [first_shape]:
                 # First line exterior
-                first_exterior_line = LineString(first_polygon.exterior)
-                for second_index, (second_name, second_polygons) in enumerate(shapes_dict.items()):
+                first_exterior_line = LineString(first_shape.exterior) if first_shape.type == "Polygon" else first_shape
+                for second_index, (second_name, second_shapes) in enumerate(shapes_dict.items()):
                     # Do not compare to itself
                     if second_name == first_name:
                         continue
                     else:
-                        second_polygons = shapes_tiled_dict[second_name]
-                        for second_polygon in second_polygons.geoms if hasattr(second_polygons, 'geoms') else [second_polygons]:
+                        second_shapes = shapes_tiled_dict[second_name]
+                        for second_shape in second_shapes.geoms if hasattr(second_shapes, 'geoms') else [second_shapes]:
                             # Second line exterior
-                            second_exterior_line = LineString(second_polygon.exterior)
+                            second_exterior_line = LineString(second_shape.exterior) if second_shape.type == "Polygon" else second_shape
                             first_exterior_line = break_line(first_exterior_line, second_exterior_line)
                             # Second line interiors
-                            for second_interior_line in second_polygon.interiors:
+                            for second_interior_line in second_shape.interiors if second_shape.type == "Polygon" else []:
                                 second_interior_line = LineString(second_interior_line)
                                 first_exterior_line = break_line(first_exterior_line, second_interior_line)
                 # First line interiors
-                first_polygon_interiors = []
-                for first_interior_line in first_polygon.interiors:
-                    first_interior_line = LineString(first_interior_line)
-                    for second_index, (second_name, second_polygons) in enumerate(shapes_dict.items()):
-                        if second_name == first_name:
-                            continue
-                        else:
-                            second_polygons = shapes_tiled_dict[second_name]
-                            for second_polygon in second_polygons.geoms if hasattr(second_polygons, 'geoms') else [second_polygons]:
-                                # Exterior
-                                second_exterior_line = LineString(second_polygon.exterior)
-                                first_interior_line = break_line(first_interior_line, second_exterior_line)
-                                # Interiors
-                                for second_interior_line in second_polygon.interiors:
-                                    second_interior_line = LineString(second_interior_line)
-                                    intersections = first_interior_line.intersection(second_interior_line)
-                                    first_interior_line = break_line(first_interior_line, second_interior_line)
-                    first_polygon_interiors.append(first_interior_line)
-                broken_polygons.append(Polygon(first_exterior_line, holes=first_polygon_interiors))
-            polygons_broken_dict[first_name] = MultiPolygon(broken_polygons) if len(broken_polygons) > 1 else broken_polygons[0]
+                if first_shape.type == "Polygon" or first_shape.type == "MultiPolygon":
+                    first_shape_interiors = []
+                    for first_interior_line in first_shape.interiors:
+                        first_interior_line = LineString(first_interior_line)
+                        for second_index, (second_name, second_shapes) in enumerate(shapes_dict.items()):
+                            if second_name == first_name:
+                                continue
+                            else:
+                                second_shapes = shapes_tiled_dict[second_name]
+                                for second_shape in second_shapes.geoms if hasattr(second_shapes, 'geoms') else [second_shapes]:
+                                    # Exterior
+                                    second_exterior_line = LineString(second_shape.exterior) if second_shape.type == "Polygon" else second_shape
+                                    first_interior_line = break_line(first_interior_line, second_exterior_line)
+                                    # Interiors
+                                    for second_interior_line in second_shape.interiors if second_shape.type == "Polygon" else []:
+                                        second_interior_line = LineString(second_interior_line)
+                                        intersections = first_interior_line.intersection(second_interior_line)
+                                        first_interior_line = break_line(first_interior_line, second_interior_line)
+                        first_shape_interiors.append(first_interior_line)
+                if first_shape.type == "Polygon" or first_shape.type == "MultiPolygon": 
+                    broken_shapes.append(Polygon(first_exterior_line, holes=first_shape_interiors))
+                else:
+                    broken_shapes.append(LineString(first_exterior_line))
+            if first_shape.type == "Polygon" or first_shape.type == "MultiPolygon": 
+                polygons_broken_dict[first_name] = MultiPolygon(broken_shapes) if len(broken_shapes) > 1 else broken_shapes[0]
+            else:
+                lines_broken_dict[first_name] = MultiLineString(broken_shapes) if len(broken_shapes) > 1 else broken_shapes[0]
         
         # Add lines, reusing line segments
-        for polygon_name, polygon in polygons_broken_dict.items():
-            plane_surface = meshtracker.add_xy_surface(polygon, polygon_name)
-            model.add_physical(plane_surface, f"{polygon_name}")
+        meshtracker = MeshTracker(model=model)
+        for line_name, line in lines_broken_dict.items():
+            meshtracker.add_get_xy_line(line, line_name)
 
         # Add surfaces, reusing lines to simplify at early stage
-        meshtracker = MeshTracker(model=model)
         for polygon_name, polygon in polygons_broken_dict.items():
-            plane_surface = meshtracker.add_xy_surface(polygon, polygon_name)
-            model.add_physical(plane_surface, f"{polygon_name}")
+            meshtracker.add_xy_surface(polygon, polygon_name)
 
         # Refinement in surfaces
         n = 0
@@ -346,21 +344,13 @@ if __name__ == "__main__":
 
     # Lines can be added, which is useful to define boundary conditions at various simulation edges
     left_edge = LineString([Point(-wsim/2, -hcore/2  - hbox), 
-                            Point(-wsim/2, hcore/2 + hclad)])
+                            Point(-wsim/2, -hcore/2 + hclad)])
     right_edge = LineString([Point(wsim/2, -hcore/2  - hbox), 
-                            Point(wsim/2, hcore/2 + hclad)])
-    top_edge = LineString([Point(-wsim/2, hcore/2 + hclad), 
-                            Point(wsim/2, hcore/2 + hclad)])
+                            Point(wsim/2, -hcore/2 + hclad)])
+    top_edge = LineString([Point(-wsim/2, -hcore/2 + hclad), 
+                            Point(wsim/2, -hcore/2 + hclad)])
     bottom_edge = LineString([Point(-wsim/2, -hcore/2  - hbox), 
                             Point(wsim/2, -hcore/2  - hbox)])
-
-    # # A LinearRing will become a closed loop (curved loop) of lines, which can be used to define domains
-    # mode_subdomain = LinearRing([[-wmode, -wmode],
-    #                             [-wmode, wmode],
-    #                             [wmode, wmode],
-    #                             [wmode, -wmode],
-    #                             [-wmode, -wmode],
-    # ])
 
     # Polygons not only have an edge, but an interior
     core = Polygon([
@@ -394,7 +384,6 @@ if __name__ == "__main__":
     shapes["right_edge"] = right_edge
     shapes["top_edge"] = top_edge
     shapes["bottom_edge"] = bottom_edge
-    # shapes["mode_subdomain"] = mode_subdomain
     shapes["core"] = core 
     shapes["core2"] = core2
     shapes["clad"] = clad
@@ -405,7 +394,9 @@ if __name__ == "__main__":
     resolutions = {}
     resolutions["core"] = {"resolution": 0.05, "distance": 0}
     resolutions["core_clad"] = {"resolution": 0.01, "distance": 0.5}
+    resolutions["clad_box"] = {"resolution": 0.01, "distance": 0.5}
     resolutions["bottom_edge"] = {"resolution": 0.05, "distance": 0.5}
+    resolutions["left_edge"] = {"resolution": 0.05, "distance": 0.5}
     # resolutions["clad"] = {"resolution": 0.1, "dist_min": 0.01, "dist_max": 0.3}
 
 

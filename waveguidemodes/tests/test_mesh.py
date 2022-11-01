@@ -71,27 +71,40 @@ def test_inclusion():
     mesh = mesh_from_polygons(shapes, resolutions = {})
     assert True 
 
-# def test_geometry_with_hole():
-#     outer = Polygon([
-#             Point(-5, -5),
-#             Point(-5, 5),
-#             Point(5, 5),
-#             Point(5, -5),
-#         ], 
-#         [Point(-2, -2),
-#         Point(-2, 2),
-#         Point(2, 2),
-#         Point(2, -2),
-#         ], 
-#         )
-#     inner = Polygon([
-#             Point(-5, -5),
-#             Point(-5, 5),
-#             Point(5, 5),
-#             Point(5, -5),
-#         ])
+def test_lines():
+    
+    wmode = 1
+    wsim = 2
+    hclad = 2
+    hbox = 2
+    wcore = 0.5
+    hcore = 0.22
+    offset_core = -0.1
+    offset_core2 = 1
 
-#     shapes = OrderedDict()
-#     shapes["outer"] = outer 
-#     shapes["inner"] = inner
-#     assert True 
+    # Lines can be added, which is useful to define boundary conditions at various simulation edges
+    left_edge = LineString([Point(-wsim/2, -hcore/2  - hbox), 
+                            Point(-wsim/2, -hcore/2 + hclad)])
+    right_edge = LineString([Point(wsim/2, -hcore/2  - hbox), 
+                            Point(wsim/2, -hcore/2 + hclad)])
+    top_edge = LineString([Point(-wsim/2, -hcore/2 + hclad), 
+                            Point(wsim/2, -hcore/2 + hclad)])
+    bottom_edge = LineString([Point(-wsim/2, -hcore/2  - hbox), 
+                            Point(wsim/2, -hcore/2  - hbox)])
+
+    # The order in which objects are inserted into the OrderedDict determines overrrides
+    shapes = OrderedDict()
+    shapes["left_edge"] = left_edge
+    shapes["right_edge"] = right_edge
+    shapes["top_edge"] = top_edge
+    shapes["bottom_edge"] = bottom_edge
+
+    shapes.update(geometry(wsim = wsim, 
+                            hclad = hclad, 
+                            hbox = hbox, 
+                            wcore = wcore, 
+                            hcore = hcore, 
+                            offset_core = offset_core
+                            ))
+    mesh = mesh_from_polygons(shapes, resolutions = {})
+    assert True
