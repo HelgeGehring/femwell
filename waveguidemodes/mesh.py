@@ -160,7 +160,7 @@ class MeshTracker():
 
 def mesh_from_polygons(
     polygon_dict: OrderedDict,
-    resolutions: Optional[Dict[str, float]] = None,
+    resolutions: Optional[Dict[str, Dict[str, float]]] = None,
     default_resolution_min: float = 0.01,
     default_resolution_max: float = 0.5,
     filename: Optional[str] = None,
@@ -273,7 +273,7 @@ def mesh_from_polygons(
                 polygons_broken_dict[first_name] = MultiPolygon(broken_polygons)
             else:
                 polygons_broken_dict[first_name] = broken_polygons[0]
-        
+
         # Add surfaces, reusing lines to simplify at early stage
         meshtracker = MeshTracker(model=model)
         for polygon_name, polygon in polygons_broken_dict.items():
@@ -336,7 +336,7 @@ def mesh_from_polygons(
             gmsh.write(f"{filename}")
 
         return mesh
-        
+
 
 if __name__ == "__main__":
 
@@ -375,7 +375,7 @@ if __name__ == "__main__":
         ])
 
     polygons = OrderedDict()
-    polygons["core"] = core 
+    polygons["core"] = core
     polygons["core2"] = core2
     polygons["clad"] = clad
     polygons["box"] = box
