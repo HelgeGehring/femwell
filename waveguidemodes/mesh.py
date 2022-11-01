@@ -4,7 +4,7 @@ import numpy as np
 import pygmsh
 import gmsh
 import shapely
-from shapely.geometry import Point, LineString, Polygon, MultiPolygon
+from shapely.geometry import Point, LineString, Polygon, MultiPolygon, LinearRing
 from shapely.ops import split, linemerge
 
 from collections import OrderedDict
@@ -19,10 +19,10 @@ class MeshTracker():
         self.shapely_points = []
         self.gmsh_points = []
         self.points_labels = []
-        self.shapely_xy_lines = []
-        self.gmsh_xy_lines = []
-        self.xy_lines_main_labels = []
-        self.xy_lines_secondary_labels = []
+        self.shapely_xy_segments = []
+        self.gmsh_xy_segments = []
+        self.xy_segments_main_labels = []
+        self.xy_segments_secondary_labels = []
         self.gmsh_xy_surfaces = []
         self.xy_surfaces_labels = []
         self.model = model
@@ -37,9 +37,9 @@ class MeshTracker():
                 return index
         return None
 
-    def get_xy_line_index_and_orientation(self, xy_point1, xy_point2):
+    def get_xy_segment_index_and_orientation(self, xy_point1, xy_point2):
         xy_line = shapely.geometry.LineString([xy_point1, xy_point2])
-        for index, shapely_line in enumerate(self.shapely_xy_lines):
+        for index, shapely_line in enumerate(self.shapely_xy_segments):
             if xy_line.equals(shapely_line):
                 first_xy_line, last_xy_line = xy_line.boundary.geoms
                 first_xy, last_xy = shapely_line.boundary.geoms
@@ -57,10 +57,10 @@ class MeshTracker():
         return entities
 
     def get_gmsh_xy_lines_from_label(self, label):
-        indices = [idx for idx, value in enumerate(self.xy_lines_main_labels) if value == label]
+        indices = [idx for idx, value in enumerate(self.xy_segments_main_labels) if value == label]
         entities = []
         for index in indices:
-            entities.append(self.gmsh_xy_lines[index]._id)
+            entities.append(self.gmsh_xy_segments[index]._id)
         return entities
 
     def get_gmsh_xy_surfaces_from_label(self, label):
@@ -76,7 +76,7 @@ class MeshTracker():
     def xy_channel_loop_from_vertices(self, vertices, label):
         edges = []
         for vertex1, vertex2 in [(vertices[i], vertices[i + 1]) for i in range(0, len(vertices)-1)]:
-            gmsh_line, orientation = self.add_get_xy_line(vertex1, vertex2, label)
+            gmsh_line, orientation = self.add_get_xy_segment(vertex1, vertex2, label)
             if orientation:
                 edges.append(gmsh_line)
             else:
@@ -106,24 +106,48 @@ class MeshTracker():
         return gmsh_point
 
 
-    def add_get_xy_line(self, shapely_xy_point1, shapely_xy_point2, label):
+    def add_get_xy_segment(self, shapely_xy_point1, shapely_xy_point2, label):
         """
-        Add a shapely line to the gmsh model in the xy plane, or retrieve the existing gmsh model line with equivalent coordinates (within tol.)
+        Add a shapely segment (2-point line) to the gmsh model in the xy plane, or retrieve the existing gmsh segment with equivalent coordinates (within tol.)
 
         Args:
             shapely_xy_point1 (shapely.geometry.Point): first x, y coordinates
             shapely_xy_point2 (shapely.geometry.Point): second x, y coordinates
         """
-        index, orientation = self.get_xy_line_index_and_orientation(shapely_xy_point1, shapely_xy_point2)
+        index, orientation = self.get_xy_segment_index_and_orientation(shapely_xy_point1, shapely_xy_point2)
         if index is not None:
-            gmsh_line = self.gmsh_xy_lines[index]
-            self.xy_lines_secondary_labels[index] = label
+            gmsh_line = self.gmsh_xy_segments[index]
+            self.xy_segments_secondary_labels[index] = label
         else:
             gmsh_line = self.model.add_line(self.add_get_point(shapely_xy_point1), self.add_get_point(shapely_xy_point2))
-            self.shapely_xy_lines.append(shapely.geometry.LineString([shapely_xy_point1, shapely_xy_point2]))
-            self.gmsh_xy_lines.append(gmsh_line)
-            self.xy_lines_main_labels.append(label)
-            self.xy_lines_secondary_labels.append(None)
+            self.shapely_xy_segments.append(shapely.geometry.LineString([shapely_xy_point1, shapely_xy_point2]))
+            self.gmsh_xy_segments.append(gmsh_line)
+            self.xy_segments_main_labels.append(label)
+            self.xy_segments_secondary_labels.append(None)
+        return gmsh_line, orientation
+
+    def add_get_xy_line(self, shapely_xy_curve, label):
+        """
+        Add a shapely line (multi-point line) to the gmsh model in the xy plane, or retrieve the existing gmsh segment with equivalent coordinates (within tol.)
+
+        Args:
+            shapely_xy_curve (shapely.geometry.LineString): curve
+        """
+        segments = []
+        for shapely_xy_point1, shapely_xy_point2 in zip(shapely_xy_curve.coords[:-1], shapely_xy_curve.coords[1:]):
+            index, orientation = self.get_xy_segment_index_and_orientation(shapely_xy_point1, shapely_xy_point2)
+            if index is not None:
+                gmsh_line = self.gmsh_xy_segments[index]
+                self.xy_segments_secondary_labels[index] = label
+            else:
+                gmsh_line = self.model.add_line(self.add_get_point(shapely_xy_point1), self.add_get_point(shapely_xy_point2))
+                self.shapely_xy_segments.append(shapely.geometry.LineString([shapely_xy_point1, shapely_xy_point2]))
+                self.gmsh_xy_segments.append(gmsh_line)
+                self.xy_segments_main_labels.append(label)
+                self.xy_segments_secondary_labels.append(None)
+
+        channel_loop = self.model.add_curve_loop(edges)
+
         return gmsh_line, orientation
 
     def add_xy_surface(self, shapely_xy_polygon, label=None):
@@ -240,7 +264,12 @@ def mesh_from_polygons(
                     first_polygon_interiors.append(first_interior_line)
                 broken_polygons.append(Polygon(first_exterior_line, holes=first_polygon_interiors))
             polygons_broken_dict[first_name] = MultiPolygon(broken_polygons) if len(broken_polygons) > 1 else broken_polygons[0]
-            
+        
+        # Add lines, reusing line segments
+        for polygon_name, polygon in polygons_broken_dict.items():
+            plane_surface = meshtracker.add_xy_surface(polygon, polygon_name)
+            model.add_physical(plane_surface, f"{polygon_name}")
+
         # Add surfaces, reusing lines to simplify at early stage
         meshtracker = MeshTracker(model=model)
         for polygon_name, polygon in polygons_broken_dict.items():
@@ -290,8 +319,8 @@ def mesh_from_polygons(
 
         # Extract all unique lines (TODO: identify interfaces in label)
         i = 0
-        for index, line in enumerate(meshtracker.gmsh_xy_lines):
-            model.add_physical(line, f"{meshtracker.xy_lines_main_labels[index]}_{meshtracker.xy_lines_secondary_labels[index]}_{i}")
+        for index, line in enumerate(meshtracker.gmsh_xy_segments):
+            model.add_physical(line, f"{meshtracker.xy_segments_main_labels[index]}_{meshtracker.xy_segments_secondary_labels[index]}_{i}")
             i += 1
 
         mesh = geometry.generate_mesh(dim=2, verbose=True)
@@ -306,6 +335,7 @@ if __name__ == "__main__":
 
     import gmsh
 
+    wmode = 1
     wsim = 2
     hclad = 2
     hbox = 2
@@ -313,6 +343,8 @@ if __name__ == "__main__":
     hcore = 0.22
     offset_core = -0.1
     offset_core2 = 1
+
+    # Lines can be added, which is useful to define boundary conditions at various simulation edges
     left_edge = LineString([Point(-wsim/2, -hcore/2  - hbox), 
                             Point(-wsim/2, hcore/2 + hclad)])
     right_edge = LineString([Point(wsim/2, -hcore/2  - hbox), 
@@ -321,6 +353,16 @@ if __name__ == "__main__":
                             Point(wsim/2, hcore/2 + hclad)])
     bottom_edge = LineString([Point(-wsim/2, -hcore/2  - hbox), 
                             Point(wsim/2, -hcore/2  - hbox)])
+
+    # # A LinearRing will become a closed loop (curved loop) of lines, which can be used to define domains
+    # mode_subdomain = LinearRing([[-wmode, -wmode],
+    #                             [-wmode, wmode],
+    #                             [wmode, wmode],
+    #                             [wmode, -wmode],
+    #                             [-wmode, -wmode],
+    # ])
+
+    # Polygons not only have an edge, but an interior
     core = Polygon([
             Point(-wcore/2, -hcore/2 + offset_core),
             Point(-wcore/2, hcore/2 + offset_core),
@@ -346,16 +388,20 @@ if __name__ == "__main__":
             Point(wsim/2, -hcore/2),
         ])
 
+    # The order in which objects are inserted into the OrderedDict determines overrrides
     shapes = OrderedDict()
     shapes["left_edge"] = left_edge
     shapes["right_edge"] = right_edge
     shapes["top_edge"] = top_edge
     shapes["bottom_edge"] = bottom_edge
+    # shapes["mode_subdomain"] = mode_subdomain
     shapes["core"] = core 
     shapes["core2"] = core2
     shapes["clad"] = clad
     shapes["box"] = box
 
+    # The resolution dict is not ordered, and can be used to set mesh resolution at various element
+    # The edge of a polygon and another polygon (or entire simulation domain) will form a line object that can be refined independently
     resolutions = {}
     resolutions["core"] = {"resolution": 0.05, "distance": 0}
     resolutions["core_clad"] = {"resolution": 0.01, "distance": 0.5}
