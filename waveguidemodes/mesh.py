@@ -185,8 +185,8 @@ def break_line(line, other_line):
 
 
 def mesh_from_polygons(
-    shapes_dict: OrderedDict,
-    resolutions: Optional[Dict[str, float]] = None,
+    polygon_dict: OrderedDict,
+    resolutions: Optional[Dict[str, Dict[str, float]]] = None,
     default_resolution_min: float = 0.01,
     default_resolution_max: float = 0.5,
     filename: Optional[str] = None,
@@ -327,7 +327,7 @@ def mesh_from_polygons(
             gmsh.write(f"{filename}")
 
         return mesh
-        
+
 
 if __name__ == "__main__":
 
