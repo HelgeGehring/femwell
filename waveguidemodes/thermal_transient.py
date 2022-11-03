@@ -166,8 +166,6 @@ if __name__ == '__main__':
                                                   steps=steps
                                                   )
 
-    print(np.unique(temperatures[0]/temperatures[-1]))
-
     times = np.array([dt * i for i in range(steps)])
     plt.xlabel('Time [us]')
     plt.ylabel('Average temperature')
