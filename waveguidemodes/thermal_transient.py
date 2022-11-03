@@ -166,14 +166,23 @@ if __name__ == '__main__':
                                                   steps=steps
                                                   )
 
+    print(np.unique(temperatures[0]/temperatures[-1]))
+
     times = np.array([dt * i for i in range(steps)])
+    plt.xlabel('Time [us]')
+    plt.ylabel('Average temperature')
     plt.plot(times * 1e6, np.mean(temperatures, axis=-1))
     plt.show()
 
+    for i in range(0, steps, 100):
+        basis.plot(temperatures[i], vmin=0, vmax=np.max(temperatures)).show()
+
+    # Calculate modes
+    """
     from tqdm.auto import tqdm
 
     neffs = []
-    for temperature in tqdm(temperatures):
+    for i, temperature in enumerate(tqdm(temperatures)):
         # basis.plot(temperature, vmin=0, vmax=np.max(temperatures))
         # plt.show()
 
@@ -203,3 +212,4 @@ if __name__ == '__main__':
     ax2.set_ylabel('Phase shift')
     ax2.plot(times * 1e6, 2 * np.pi / 1.55 * (neffs - neffs[0]) * 320, 'r-o')
     plt.show()
+    """
