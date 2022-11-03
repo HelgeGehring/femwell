@@ -11,31 +11,11 @@ from skfem.helpers import dot
 from waveguidemodes.mesh import mesh_from_polygons
 
 
-def calc_joule_conductivity_rhs(
-        basis,
-        specific_conductivity: Dict[str, float],
-        currents,
-):
-    @LinearForm
-    def unit_load(v, _):
-        return v
-
-    joule_heating_rhs = basis.zeros()
-    for domain, current in currents.items():  # sum up the sources for the heating
-        core_basis = Basis(basis.mesh, basis.elem, elements=basis.mesh.subdomains[domain])
-        asm_core_unit_load = asm(unit_load, core_basis)
-        core_area = np.sum(asm_core_unit_load)
-        joule_heating = (current / core_area) ** 2 / specific_conductivity[domain]
-        joule_heating_rhs += joule_heating * asm_core_unit_load
-
-    return joule_heating_rhs
-
-
 def solve_thermal(
         basis0,
         thermal_conductivity,
         specific_conductivity: Dict[str, float],
-        currents,
+        current_densities,
 ):
     """Thermal simulation.
 
@@ -54,7 +34,17 @@ def solve_thermal(
         return dot(w["thermal_conductivity"] * u.grad, v.grad)
 
     basis = basis0.with_element(ElementTriP1())
-    joule_heating_rhs = calc_joule_conductivity_rhs(basis, specific_conductivity, currents)
+
+    @LinearForm
+    def unit_load(v, _):
+        return v
+
+    joule_heating_rhs = basis.zeros()
+    for domain, current in current_densities.items():  # sum up the sources for the heating
+        core_basis = Basis(basis.mesh, basis.elem, elements=basis.mesh.subdomains[domain])
+        asm_core_unit_load = asm(unit_load, core_basis)
+        joule_heating = current ** 2 / specific_conductivity[domain]
+        joule_heating_rhs += joule_heating * asm_core_unit_load
 
     thermal_conductivity_lhs = asm(
         conduction,
@@ -123,7 +113,7 @@ if __name__ == '__main__':
 
     mesh = Mesh.load('mesh.msh')
 
-    currents = np.linspace(0, 10e-3, 10)
+    currents = np.linspace(0.007, 10e-3, 10) / polygons['heater'].area
     neffs = []
 
     from tqdm.auto import tqdm
@@ -131,15 +121,15 @@ if __name__ == '__main__':
     for current in tqdm(currents):
         basis0 = Basis(mesh, ElementTriP0(), intorder=4)
         thermal_conductivity_p0 = basis0.zeros()
-        for domain, value in {"core": 28, "box": 1.38, "clad": 1.38, "heater": 148}.items():
+        for domain, value in {"core": 148, "box": 1.38, "clad": 1.38, "heater": 28}.items():
             thermal_conductivity_p0[basis0.get_dofs(elements=domain)] = value
         thermal_conductivity_p0 *= 1e-12  # 1e-12 -> conversion from 1/m^2 -> 1/um^2
 
         basis, temperature = solve_thermal(basis0, thermal_conductivity_p0,
                                            specific_conductivity={"heater": 2.3e6},
-                                           currents={"heater": current})
-        # basis.plot(temperature)
-        # plt.show()
+                                           current_densities={"heater": current})
+        basis.plot(temperature, colorbar=True)
+        plt.show()
 
         from waveguidemodes.mode_solver import compute_modes, plot_mode
 

@@ -10,37 +10,28 @@ from skfem import asm, ElementTriP0, ElementTriP1, BilinearForm, LinearForm, Bas
 from skfem.helpers import dot
 
 from waveguidemodes.mesh import mesh_from_polygons
-from waveguidemodes.thermal import solve_thermal, calc_joule_conductivity_rhs
+from waveguidemodes.thermal import solve_thermal
 
 
 def solve_thermal_transient(
         basis0,
-        thermal_conductivity,
+        thermal_conductivity_p0,
+        thermal_diffusivity_p0,
         specific_conductivity: Dict[str, float],
-        currents,
+        current_densities,
         dt,
         steps
 ):
-    @BilinearForm
-    def conduction(u, v, w):
-        return dot(w["thermal_conductivity"] * u.grad, v.grad)
-
-    @LinearForm
-    def unit_load(v, _):
-        return v
-
-    basis, temperature = solve_thermal(basis0, thermal_conductivity, specific_conductivity,
-                                       {domain: current(0) for domain, current in currents.items()})
-
-    basis = basis0.with_element(ElementTriP1())
+    basis, temperature = solve_thermal(basis0, thermal_conductivity_p0, specific_conductivity,
+                                       {domain: current(0) for domain, current in current_densities.items()})
 
     @BilinearForm
     def diffusivity_laplace(u, v, w):
-        return dot(u.grad * w["thermal_conductivity"], v.grad)
+        return dot(u.grad * w["thermal_diffusivity"], v.grad)
 
     @BilinearForm
     def mass(u, v, w):
-        return u * v / (w["thermal_diffusivity"] / w["thermal_conductivity"])
+        return u * v
 
     L = asm(
         diffusivity_laplace,
@@ -58,6 +49,7 @@ def solve_thermal_transient(
     theta = 0.5  # Crank–Nicolson
 
     L0, M0 = penalize(L, M, D=basis.get_dofs(mesh.boundaries["box_None_14"]))
+    # L0, M0 = penalize(L, M, D=basis.get_dofs(lambda x: x[1] == np.min(basis.mesh.p[1])))
     A = M0 + theta * L0 * dt
     B = M0 - (1 - theta) * L0 * dt
 
@@ -66,9 +58,22 @@ def solve_thermal_transient(
     t = 0
     temperatures = []
     for i in range(steps):
-        joule_heating_rhs = calc_joule_conductivity_rhs(basis, specific_conductivity,
-                                                        {domain: current(t) for domain, current in
-                                                         currents.items()})
+        joule_heating_rhs = basis.zeros()
+        for domain, current_density in current_densities.items():  # sum up the sources for the heating
+            current_density_p0 = basis0.zeros()
+            current_density_p0[basis0.get_dofs(elements=domain)] = current_density(t)
+
+            @LinearForm
+            def joule_heating(v, w):
+                return w['current_density'] ** 2 / specific_conductivity[domain] * w['thermal_diffusivity'] / w[
+                    'thermal_conductivity'] * v
+
+            joule_heating_rhs += asm(joule_heating, basis,
+                                     thermal_diffusivity=basis0.interpolate(thermal_diffusivity_p0),
+                                     thermal_conductivity=basis0.interpolate(thermal_conductivity_p0),
+                                     current_density=basis0.interpolate(current_density_p0)
+                                     )
+
         t, temperature = t + dt, backsolve(B @ temperature + joule_heating_rhs * dt)
         temperatures.append(temperature)
 
@@ -86,48 +91,56 @@ if __name__ == '__main__':
     offset_heater = 2.2
     h_heater = .14
     w_heater = 2
+    h_silicon = 3
 
     polygons = OrderedDict(
         core=Polygon([
-            (-w_core / 2, -h_core / 2),
-            (-w_core / 2, h_core / 2),
-            (w_core / 2, h_core / 2),
-            (w_core / 2, -h_core / 2),
+            (-w_core / 2, 0),
+            (-w_core / 2, h_core),
+            (w_core / 2, h_core),
+            (w_core / 2, 0),
         ]),
         heater=Polygon([
-            (-w_heater / 2, -h_heater / 2 + offset_heater),
-            (-w_heater / 2, h_heater / 2 + offset_heater),
-            (w_heater / 2, h_heater / 2 + offset_heater),
-            (w_heater / 2, -h_heater / 2 + offset_heater),
+            (-w_heater / 2, offset_heater),
+            (-w_heater / 2, offset_heater + h_heater),
+            (w_heater / 2, offset_heater + h_heater),
+            (w_heater / 2, offset_heater),
         ]),
         clad=Polygon([
-            (-w_sim / 2, -h_core / 2),
-            (-w_sim / 2, -h_core / 2 + h_clad),
-            (w_sim / 2, -h_core / 2 + h_clad),
-            (w_sim / 2, -h_core / 2),
+            (-w_sim / 2, 0),
+            (-w_sim / 2, h_clad),
+            (w_sim / 2, h_clad),
+            (w_sim / 2, 0),
         ]),
         box=Polygon([
-            (-w_sim / 2, -h_core / 2),
-            (-w_sim / 2, -h_core / 2 - h_box),
-            (w_sim / 2, -h_core / 2 - h_box),
-            (w_sim / 2, -h_core / 2),
-        ])
+            (-w_sim / 2, 0),
+            (-w_sim / 2, - h_box),
+            (w_sim / 2, - h_box),
+            (w_sim / 2, 0),
+        ]),
+        # silicon=Polygon([
+        #    (-w_sim / 2, - h_box - h_silicon),
+        #    (-w_sim / 2, - h_box),
+        #    (w_sim / 2, - h_box),
+        #    (w_sim / 2, - h_box - h_silicon),
+        # ]),
     )
 
     resolutions = dict(
         core={"resolution": 0.05, "distance": 1},
         clad={"resolution": 1, "distance": 1},
         box={"resolution": 1, "distance": 1},
+        silicon={"resolution": 1, "distance": 1},
         heater={"resolution": 0.05, "distance": 1}
     )
 
-    mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=.4)
+    mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=.3)
 
     mesh = Mesh.load('mesh.msh')
 
     basis0 = Basis(mesh, ElementTriP0(), intorder=4)
     thermal_conductivity_p0 = basis0.zeros()
-    for domain, value in {"core": 28, "box": 1.38, "clad": 1.38, "heater": 148}.items():
+    for domain, value in {"core": 148, "box": 1.38, "clad": 1.38, "heater": 28}.items():  # , 'silicon': 28
         thermal_conductivity_p0[basis0.get_dofs(elements=domain)] = value
     thermal_conductivity_p0 *= 1e-12  # 1e-12 -> conversion from 1/m^2 -> 1/um^2
 
@@ -137,17 +150,18 @@ if __name__ == '__main__':
         "box": 1.38 / 709 / 2203,
         "clad": 1.38 / 709 / 2203,
         "core": 148 / 711 / 2330,
+        # "silicon": 148 / 711 / 2330,
     }.items():
         thermal_diffusivity_p0[basis0.get_dofs(elements=domain)] = value
 
     thermal_diffusivity_p0 *= 1e12  # 1e-12 -> conversion from m^2 -> um^2
 
-    dt = .4e-6
-    steps = 200
-    current = lambda t: 0.007 * ((t < dt * steps / 10) + (t > dt * steps / 2))
-    basis, temperatures = solve_thermal_transient(basis0, thermal_conductivity_p0,
+    dt = .1e-6
+    steps = 2000
+    current = lambda t: 0.007 / polygons['heater'].area * ((t < dt * steps / 10) + (t > dt * steps / 2))
+    basis, temperatures = solve_thermal_transient(basis0, thermal_conductivity_p0, thermal_diffusivity_p0,
                                                   specific_conductivity={"heater": 2.3e6},
-                                                  currents={"heater": current},
+                                                  current_densities={"heater": current},
                                                   dt=dt,
                                                   steps=steps
                                                   )
@@ -175,7 +189,7 @@ if __name__ == '__main__':
 
         print(lams)
 
-        # plot_mode(basis, xs[0])
+        # plot_mode(basis_modes, xs[0])
         # plt.show()
 
         neffs.append(np.real(lams[0]))
