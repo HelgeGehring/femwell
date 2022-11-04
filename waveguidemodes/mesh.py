@@ -164,6 +164,7 @@ def mesh_from_polygons(
     default_resolution_min: float = 0.01,
     default_resolution_max: float = 0.5,
     filename: Optional[str] = None,
+    gmsh_algorithm: int = 5,
 ):
 
     import gmsh
@@ -176,6 +177,7 @@ def mesh_from_polygons(
         # geometry = pygmsh.occ.geometry.Geometry()
         geometry.characteristic_length_min = default_resolution_min
         geometry.characteristic_length_max = default_resolution_max
+        gmsh.option.setNumber("Mesh.Algorithm", gmsh_algorithm)
 
         model = geometry.__enter__()
 
@@ -381,12 +383,12 @@ if __name__ == "__main__":
     polygons["box"] = box
 
     resolutions = {}
-    resolutions["core"] = {"resolution": 0.01, "distance": 2}
-    resolutions["core2"] = {"resolution": 0.01, "distance": 2}
+    resolutions["core"] = {"resolution": 0.03, "distance": 0.5}
+    resolutions["core2"] = {"resolution": 0.03, "distance": 0.5}
     # resolutions["clad"] = {"resolution": 0.1, "dist_min": 0.01, "dist_max": 0.3}
 
 
-    mesh = mesh_from_polygons(polygons, resolutions, filename="mesh.msh", default_resolution_max=.3)
+    mesh = mesh_from_polygons(polygons, resolutions, filename="mesh.msh", default_resolution_max=.3, gmsh_algorithm=8)
 
     # gmsh.write("mesh.msh")
     # gmsh.clear()
