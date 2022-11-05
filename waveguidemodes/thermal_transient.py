@@ -12,6 +12,9 @@ from skfem.helpers import dot
 from waveguidemodes.mesh import mesh_from_polygons
 from waveguidemodes.thermal import solve_thermal
 
+"""
+implemented like in https://www-users.cse.umn.edu/~arnold/8445.f11/notes.pdf page 81 in the middle of the page
+"""
 
 def solve_thermal_transient(
         basis0,
@@ -73,6 +76,7 @@ def solve_thermal_transient(
                                      thermal_conductivity=basis0.interpolate(thermal_conductivity_p0),
                                      current_density=basis0.interpolate(current_density_p0)
                                      )
+            # basis.plot(joule_heating_rhs).show()
 
         t, temperature = t + dt, backsolve(B @ temperature + joule_heating_rhs * dt)
         temperatures.append(temperature)
@@ -166,10 +170,22 @@ if __name__ == '__main__':
                                                   steps=steps
                                                   )
 
+    basis.plot(temperatures[0] / temperatures[-1], colorbar=True)
+    plt.show()
+
+
+    @LinearForm
+    def unit_load(v, w):
+        return v
+
+
+    M = asm(unit_load, basis)
+
+    print(np.max(temperatures))
     times = np.array([dt * i for i in range(steps)])
     plt.xlabel('Time [us]')
     plt.ylabel('Average temperature')
-    plt.plot(times * 1e6, np.mean(temperatures, axis=-1))
+    plt.plot(times * 1e6, M@np.array(temperatures).T/np.sum(M))
     plt.show()
 
     for i in range(0, steps, 100):
