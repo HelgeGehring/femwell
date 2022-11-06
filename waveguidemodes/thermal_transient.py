@@ -6,7 +6,7 @@ from scipy.sparse.linalg import splu
 import matplotlib.pyplot as plt
 from shapely.geometry import Polygon
 
-from skfem import asm, ElementTriP0, ElementTriP1, BilinearForm, LinearForm, Basis, Mesh, penalize
+from skfem import asm, ElementTriP0, ElementTriP1, BilinearForm, LinearForm, Basis, Mesh, penalize, enforce
 from skfem.helpers import dot
 
 from waveguidemodes.mesh import mesh_from_polygons
@@ -44,9 +44,7 @@ def solve_thermal_transient(
     )
     M = asm(
         mass,
-        basis,
-        thermal_diffusivity=basis0.interpolate(thermal_diffusivity_p0),
-        thermal_conductivity=basis0.interpolate(thermal_conductivity_p0),
+        basis
     )
 
     theta = 0.5  # Crank–Nicolson
