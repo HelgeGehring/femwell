@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse.linalg
 
-from skfem import BilinearForm, Basis, ElementTriN0, ElementTriP0, ElementTriP1, ElementVector, Mesh, condense, solve, solver_eigen_scipy_sym, solver_eigen_slepc
+from skfem import BilinearForm, Basis, ElementTriN0, ElementTriP0, ElementTriP1, ElementVector, Mesh
 from skfem.helpers import curl, grad, dot, inner
 
 
@@ -26,8 +26,6 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
     A = aform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
     B = bform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
 
-    # lams, xs = solve(*condense(A, B, D=basis.get_dofs()),
-    #                solver=solver_eigen_scipy_sym(k=10, sigma=k0 ** 2 * 2.5 ** 2))
     from petsc4py import PETSc
     from slepc4py import SLEPc
 
@@ -40,7 +38,6 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
     eps.setWhichEigenpairs(SLEPc.EPS.Which.TARGET_MAGNITUDE)
     eps.setTarget(k0 ** 2 * np.max(epsilon_r) ** 2)
     eps.setDimensions(num_modes)
-    # eps.setTolerances(1e-8)
     eps.solve()
 
     xr, xi = A_.getVecs()
@@ -58,16 +55,14 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
 
 def calculate_hfield(basis, xs, beta):
     xs = xs.astype(complex)
-    print(xs.dtype)
 
     @BilinearForm
     def aform(e_t, e_z, v_t, v_z, w):
-        return (-1j * e_t[1] + e_z.grad[1]) * v_t[1] + (1j * beta * e_t[0] - e_z.grad[0]) * v_t[0]
-        # return e_t.curl * v_z
+        return (-1j * e_t[1] + e_z.grad[1]) * v_t[1] \
+               + (1j * beta * e_t[0] - e_z.grad[0]) * v_t[0] \
+               + e_t.curl * v_z
 
     a_operator = aform.assemble(basis)
-    print(basis.quadrature)
-    print(a_operator.shape)
 
     @BilinearForm
     def bform(e_t, e_z, v_t, v_z, w):
