@@ -49,8 +49,6 @@ def solve_thermal_transient(
     theta = 0.5  # Crank–Nicolson
 
     L0, M0 = enforce(L, M, D=basis.get_dofs(mesh.boundaries["box_None_14"]))
-    print(L.shape, L0.shape)
-    # L0, M0 = penalize(L, M, D=basis.get_dofs(lambda x: x[1] == np.min(basis.mesh.p[1])))
     A = M0 + theta * L0 * dt
     B = M0 - (1 - theta) * L0 * dt
 
@@ -169,7 +167,7 @@ if __name__ == '__main__':
         return v
 
 
-    M = asm(unit_load, basis)
+    M = unit_load.assemble(basis)
 
     print(np.max(temperatures), np.max(temperatures[0]), np.max(temperatures[-1]))
     times = np.array([dt * i for i in range(steps + 1)])
@@ -179,12 +177,10 @@ if __name__ == '__main__':
     plt.show()
 
     for i in range(0, steps, 100):
-        fig, ax = plt.subplots()
-        ax.set_aspect(1)
-        subdomains = mesh.subdomains.keys() - {'gmsh:bounding_entities'}
-        for smesh in [mesh.remove_elements(mesh.normalize_elements(subdomains - {k})) for k in subdomains]:
-            smesh.draw(ax=ax, boundaries_only=True)
-        basis.plot(temperatures[i], ax=ax, vmin=0, vmax=np.max(temperatures)).show()
+        fig, ax = plt.subplots(subplot_kw=dict(aspect=1))
+        for subdomain in mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
+            mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
+        basis.plot(temperatures[i], ax=ax, vmin=0, vmax=np.max(temperatures), shading='gouraud').show()
 
     # Calculate modes
     """
