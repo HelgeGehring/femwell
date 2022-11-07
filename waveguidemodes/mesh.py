@@ -392,7 +392,7 @@ if __name__ == "__main__":
     # The resolution dict is not ordered, and can be used to set mesh resolution at various element
     # The edge of a polygon and another polygon (or entire simulation domain) will form a line object that can be refined independently
     resolutions = {}
-    resolutions["core"] = {"resolution": 0.05, "distance": 0}
+    resolutions["core"] = {"resolution": 0.01, "distance": 1}
     resolutions["core_clad"] = {"resolution": 0.01, "distance": 0.5}
     resolutions["clad_box"] = {"resolution": 0.01, "distance": 0.5}
     resolutions["bottom_edge"] = {"resolution": 0.05, "distance": 0.5}
