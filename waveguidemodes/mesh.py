@@ -185,7 +185,7 @@ def break_line(line, other_line):
 
 
 def mesh_from_polygons(
-    polygon_dict: OrderedDict,
+    shapes_dict: OrderedDict,
     resolutions: Optional[Dict[str, Dict[str, float]]] = None,
     default_resolution_min: float = 0.01,
     default_resolution_max: float = 0.5,
