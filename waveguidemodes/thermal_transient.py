@@ -49,7 +49,7 @@ def solve_thermal_transient(
 
     theta = 0.5  # Crank–Nicolson
 
-    L0, M0 = penalize(L, M, D=basis.get_dofs(mesh.boundaries["box_None_14"]))
+    L0, M0 = enforce(L, M, D=basis.get_dofs(mesh.boundaries["box_None_14"]))
     print(L.shape, L0.shape)
     # L0, M0 = penalize(L, M, D=basis.get_dofs(lambda x: x[1] == np.min(basis.mesh.p[1])))
     A = M0 + theta * L0 * dt
@@ -67,7 +67,7 @@ def solve_thermal_transient(
 
             @LinearForm
             def joule_heating(v, w):
-                return w['current_density'] ** 2 / specific_conductivity[domain]
+                return w['current_density'] ** 2 / specific_conductivity[domain] * v
 
             joule_heating_rhs += asm(joule_heating, basis,
                                      current_density=basis0.interpolate(current_density_p0)
