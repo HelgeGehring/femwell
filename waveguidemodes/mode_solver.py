@@ -56,15 +56,15 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
 def calculate_hfield(basis, xs, beta):
     xs = xs.astype(complex)
 
-    @BilinearForm
+    @BilinearForm(dtype=np.complex64)
     def aform(e_t, e_z, v_t, v_z, w):
-        return (-1j * e_t[1] + e_z.grad[1]) * v_t[1] \
-               + (1j * beta * e_t[0] - e_z.grad[0]) * v_t[0] \
+        return (-1j * beta * e_t[1] + e_z.grad[1]) * v_t[0] \
+               + (1j * beta * e_t[0] - e_z.grad[0]) * v_t[1] \
                + e_t.curl * v_z
 
     a_operator = aform.assemble(basis)
 
-    @BilinearForm
+    @BilinearForm(dtype=np.complex64)
     def bform(e_t, e_z, v_t, v_z, w):
         return dot(e_t, v_t) + e_z * v_z
 
