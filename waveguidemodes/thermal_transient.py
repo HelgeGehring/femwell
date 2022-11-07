@@ -39,7 +39,6 @@ def solve_thermal_transient(
 
     L = diffusivity_laplace.assemble(
         basis,
-        thermal_diffusivity=basis0.interpolate(thermal_diffusivity_p0),
         thermal_conductivity=basis0.interpolate(thermal_conductivity_p0),
     )
     M = mass.assemble(basis,
@@ -72,10 +71,8 @@ def solve_thermal_transient(
             joule_heating_rhs += asm(joule_heating, basis,
                                      current_density=basis0.interpolate(current_density_p0)
                                      )
-            # basis.plot(joule_heating_rhs).show()
 
         t, temperature = t + dt, backsolve(B @ temperature + joule_heating_rhs * dt)
-        # temperature[basis.get_dofs(mesh.boundaries["box_None_14"])] = 0
         temperatures.append(temperature)
 
     return basis, temperatures
@@ -154,8 +151,6 @@ if __name__ == '__main__':
         # "silicon": 148 / 711 / 2330,
     }.items():
         thermal_diffusivity_p0[basis0.get_dofs(elements=domain)] = value
-    # thermal_diffusivity_p0[:] = 1.38 / 709 / 2203
-
     thermal_diffusivity_p0 *= 1e12  # 1e-12 -> conversion from m^2 -> um^2
 
     dt = .1e-6
@@ -168,9 +163,6 @@ if __name__ == '__main__':
                                                   steps=steps
                                                   )
 
-    basis.plot(temperatures[0] / temperatures[-1], colorbar=True)
-    plt.show()
-
 
     @LinearForm
     def unit_load(v, w):
@@ -180,14 +172,19 @@ if __name__ == '__main__':
     M = asm(unit_load, basis)
 
     print(np.max(temperatures), np.max(temperatures[0]), np.max(temperatures[-1]))
-    times = np.array([dt * i for i in range(steps+1)])
+    times = np.array([dt * i for i in range(steps + 1)])
     plt.xlabel('Time [us]')
     plt.ylabel('Average temperature')
     plt.plot(times * 1e6, M @ np.array(temperatures).T / np.sum(M))
     plt.show()
 
     for i in range(0, steps, 100):
-        basis.plot(temperatures[i], vmin=0, vmax=np.max(temperatures)).show()
+        fig, ax = plt.subplots()
+        ax.set_aspect(1)
+        subdomains = mesh.subdomains.keys() - {'gmsh:bounding_entities'}
+        for smesh in [mesh.remove_elements(mesh.normalize_elements(subdomains - {k})) for k in subdomains]:
+            smesh.draw(ax=ax, boundaries_only=True)
+        basis.plot(temperatures[i], ax=ax, vmin=0, vmax=np.max(temperatures)).show()
 
     # Calculate modes
     """
