@@ -16,6 +16,7 @@ from waveguidemodes.thermal import solve_thermal
 implemented like in https://www-users.cse.umn.edu/~arnold/8445.f11/notes.pdf page 81 in the middle of the page
 """
 
+
 def solve_thermal_transient(
         basis0,
         thermal_conductivity_p0,
@@ -30,26 +31,26 @@ def solve_thermal_transient(
 
     @BilinearForm
     def diffusivity_laplace(u, v, w):
-        return dot(u.grad * w["thermal_diffusivity"], v.grad)
+        return w["thermal_conductivity"] * dot(u.grad, v.grad)
 
     @BilinearForm
     def mass(u, v, w):
-        return u * v
+        return w["thermal_conductivity"] / w["thermal_diffusivity"] * u * v
 
-    L = asm(
-        diffusivity_laplace,
+    L = diffusivity_laplace.assemble(
         basis,
         thermal_diffusivity=basis0.interpolate(thermal_diffusivity_p0),
         thermal_conductivity=basis0.interpolate(thermal_conductivity_p0),
     )
-    M = asm(
-        mass,
-        basis
-    )
+    M = mass.assemble(basis,
+                      thermal_diffusivity=basis0.interpolate(thermal_diffusivity_p0),
+                      thermal_conductivity=basis0.interpolate(thermal_conductivity_p0)
+                      )
 
     theta = 0.5  # Crank–Nicolson
 
     L0, M0 = penalize(L, M, D=basis.get_dofs(mesh.boundaries["box_None_14"]))
+    print(L.shape, L0.shape)
     # L0, M0 = penalize(L, M, D=basis.get_dofs(lambda x: x[1] == np.min(basis.mesh.p[1])))
     A = M0 + theta * L0 * dt
     B = M0 - (1 - theta) * L0 * dt
@@ -57,7 +58,7 @@ def solve_thermal_transient(
     backsolve = splu(A.T).solve  # .T as splu prefers CSC
 
     t = 0
-    temperatures = []
+    temperatures = [temperature]
     for i in range(steps):
         joule_heating_rhs = basis.zeros()
         for domain, current_density in current_densities.items():  # sum up the sources for the heating
@@ -66,17 +67,15 @@ def solve_thermal_transient(
 
             @LinearForm
             def joule_heating(v, w):
-                return w['current_density'] ** 2 / specific_conductivity[domain] * w['thermal_diffusivity'] / w[
-                    'thermal_conductivity'] * v
+                return w['current_density'] ** 2 / specific_conductivity[domain]
 
             joule_heating_rhs += asm(joule_heating, basis,
-                                     thermal_diffusivity=basis0.interpolate(thermal_diffusivity_p0),
-                                     thermal_conductivity=basis0.interpolate(thermal_conductivity_p0),
                                      current_density=basis0.interpolate(current_density_p0)
                                      )
             # basis.plot(joule_heating_rhs).show()
 
         t, temperature = t + dt, backsolve(B @ temperature + joule_heating_rhs * dt)
+        # temperature[basis.get_dofs(mesh.boundaries["box_None_14"])] = 0
         temperatures.append(temperature)
 
     return basis, temperatures
@@ -155,6 +154,7 @@ if __name__ == '__main__':
         # "silicon": 148 / 711 / 2330,
     }.items():
         thermal_diffusivity_p0[basis0.get_dofs(elements=domain)] = value
+    # thermal_diffusivity_p0[:] = 1.38 / 709 / 2203
 
     thermal_diffusivity_p0 *= 1e12  # 1e-12 -> conversion from m^2 -> um^2
 
@@ -179,11 +179,11 @@ if __name__ == '__main__':
 
     M = asm(unit_load, basis)
 
-    print(np.max(temperatures))
-    times = np.array([dt * i for i in range(steps)])
+    print(np.max(temperatures), np.max(temperatures[0]), np.max(temperatures[-1]))
+    times = np.array([dt * i for i in range(steps+1)])
     plt.xlabel('Time [us]')
     plt.ylabel('Average temperature')
-    plt.plot(times * 1e6, M@np.array(temperatures).T/np.sum(M))
+    plt.plot(times * 1e6, M @ np.array(temperatures).T / np.sum(M))
     plt.show()
 
     for i in range(0, steps, 100):
