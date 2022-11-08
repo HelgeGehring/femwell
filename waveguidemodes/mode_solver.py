@@ -45,9 +45,9 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
     lams, xs = [], []
     for i in range(eps.getConverged()):
         lams.append(eps.getEigenpair(i, xr, xi))
-        xs.append(np.array(xr) + 1j * np.array(xi))
+        xs.append(np.array(np.real(xr)))# +0j * np.array(xi))
 
-    xs = np.array(xs)
+    xs = np.array(xs, dtype=complex)
     lams = np.array(lams)
     xs[:, basis.split_indices()[1]] /= 1j * np.sqrt(lams[:, np.newaxis])  # undo the scaling E_3,new = beta * E_3
 
@@ -59,8 +59,8 @@ def calculate_hfield(basis, xs, beta):
 
     @BilinearForm(dtype=np.complex64)
     def aform(e_t, e_z, v_t, v_z, w):
-        return (1j * beta * e_t[1] + e_z.grad[1]) * v_t[0] \
-               + (1j * beta * e_t[0] + e_z.grad[0]) * v_t[1] \
+        return (-1j * beta * e_t[1] + e_z.grad[1]) * v_t[0] \
+               + (1j * beta * e_t[0] - e_z.grad[0]) * v_t[1] \
                + e_t.curl * v_z
 
     a_operator = aform.assemble(basis)
@@ -104,8 +104,8 @@ if __name__ == "__main__":
     mesh = Mesh.load('mesh.msh')
     basis0 = Basis(mesh, ElementTriP0(), intorder=4)
     epsilon = basis0.zeros(dtype=complex)
-    epsilon[basis0.get_dofs(elements='core')] = 3.4777 ** 2
-    epsilon[basis0.get_dofs(elements='core2')] = 3.5777 ** 2
+    epsilon[basis0.get_dofs(elements='core')] = 3.5777 ** 2
+    epsilon[basis0.get_dofs(elements='core2')] = 3.4777 ** 2
     epsilon[basis0.get_dofs(elements='clad')] = 1.444 ** 2
     epsilon[basis0.get_dofs(elements='box')] = 1.444 ** 2
     # basis0.plot(epsilon, colorbar=True).show()
@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
     print(lams)
 
-    plot_mode(basis, np.imag(xs[0]))
+    plot_mode(basis, np.real(xs[0]))
     plt.show()
 
     xbs = calculate_hfield(basis, xs[0], lams[0] * (2 * np.pi / 1.55))
