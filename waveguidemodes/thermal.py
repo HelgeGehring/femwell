@@ -20,10 +20,10 @@ def solve_thermal(
     """Thermal simulation.
 
     Args:
-        basis0: Baisis of the thermal_conductivity
+        basis0: Basis of the thermal_conductivity
         thermal_conductivity: thermal conductivity in W/m‧K.
         specific_conductivity: specific conductivity in S/m.
-        currents: current flowing through the layer in A.
+        current_densities: current densities flowing through the layer in A.
 
     Returns:
         basis, temperature profile
@@ -40,11 +40,9 @@ def solve_thermal(
         return v
 
     joule_heating_rhs = basis.zeros()
-    for domain, current in current_densities.items():  # sum up the sources for the heating
+    for domain, current_density in current_densities.items():  # sum up the sources for the heating
         core_basis = Basis(basis.mesh, basis.elem, elements=basis.mesh.subdomains[domain])
-        asm_core_unit_load = asm(unit_load, core_basis)
-        joule_heating = current ** 2 / specific_conductivity[domain]
-        joule_heating_rhs += joule_heating * asm_core_unit_load
+        joule_heating_rhs += current_density ** 2 / specific_conductivity[domain] * unit_load.assemble(core_basis)
 
     thermal_conductivity_lhs = asm(
         conduction,
