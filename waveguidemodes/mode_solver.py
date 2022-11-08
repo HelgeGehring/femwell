@@ -40,7 +40,8 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
     eps.setDimensions(num_modes)
     eps.solve()
 
-    xr, xi = A_.getVecs()
+    xr, wr = A_.getVecs()
+    xi, wi = A_.getVecs()
     lams, xs = [], []
     for i in range(eps.getConverged()):
         lams.append(eps.getEigenpair(i, xr, xi))
@@ -48,7 +49,7 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
 
     xs = np.array(xs)
     lams = np.array(lams)
-    xs[:, basis.split_indices()[1]] /= np.sqrt(lams[:, np.newaxis])  # undo the scaling E_3,new = beta * E_3
+    xs[:, basis.split_indices()[1]] /= 1j * np.sqrt(lams[:, np.newaxis])  # undo the scaling E_3,new = beta * E_3
 
     return np.sqrt(lams) / k0, basis, xs
 
@@ -58,8 +59,8 @@ def calculate_hfield(basis, xs, beta):
 
     @BilinearForm(dtype=np.complex64)
     def aform(e_t, e_z, v_t, v_z, w):
-        return (-1j * beta * e_t[1] + e_z.grad[1]) * v_t[0] \
-               + (1j * beta * e_t[0] - e_z.grad[0]) * v_t[1] \
+        return (1j * beta * e_t[1] + e_z.grad[1]) * v_t[0] \
+               + (1j * beta * e_t[0] + e_z.grad[0]) * v_t[1] \
                + e_t.curl * v_z
 
     a_operator = aform.assemble(basis)
@@ -74,7 +75,6 @@ def calculate_hfield(basis, xs, beta):
 
 
 def plot_mode(basis, mode, plot_vectors=False, colorbar=True):
-    mode = np.real(mode)
     (et, et_basis), (ez, ez_basis) = basis.split(mode)
 
     if plot_vectors:
@@ -114,10 +114,10 @@ if __name__ == "__main__":
 
     print(lams)
 
-    plot_mode(basis, np.real(xs[0]))
+    plot_mode(basis, np.imag(xs[0]))
     plt.show()
 
-    xbs = calculate_hfield(basis, xs[0], (lams[0] * (2 * np.pi / 1.55)) ** 2)
+    xbs = calculate_hfield(basis, xs[0], lams[0] * (2 * np.pi / 1.55))
 
     plot_mode(basis, np.real(xbs))
     plt.show()
