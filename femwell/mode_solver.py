@@ -45,7 +45,7 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
     lams, xs = [], []
     for i in range(eps.getConverged()):
         lams.append(eps.getEigenpair(i, xr, xi))
-        xs.append(np.array(np.real(xr)))# +0j * np.array(xi))
+        xs.append(np.array(np.real(xr)))  # +0j * np.array(xi))
 
     xs = np.array(xs, dtype=complex)
     lams = np.array(lams)
@@ -78,7 +78,10 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True):
     (et, et_basis), (ez, ez_basis) = basis.split(mode)
 
     if plot_vectors:
-        fig, axs = plt.subplots(1, 2)
+        fig, axs = plt.subplots(1, 2, subplot_kw=dict(aspect=1))
+        for ax in axs:
+            for subdomain in mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
+                mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
         et_basis.plot(et, ax=axs[0])
         ez_basis.plot(ez, ax=axs[1], colorbar=True)
         return fig, axs
@@ -87,9 +90,10 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True):
     et_xy = plot_basis.project(et_basis.interpolate(et))
     (et_x, et_x_basis), (et_y, et_y_basis) = plot_basis.split(et_xy)
 
-    fig, axs = plt.subplots(1, 3)
+    fig, axs = plt.subplots(1, 3, subplot_kw=dict(aspect=1))
     for ax in axs:
-        ax.set_aspect(1)
+        for subdomain in mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
+            mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
 
     cbar = ({'colorbar': colorbar} if colorbar is not False else {})
     et_x_basis.plot(et_x, shading='gouraud', ax=axs[0], **cbar)  # , vmin=np.min(mode), vmax=np.max(mode))
