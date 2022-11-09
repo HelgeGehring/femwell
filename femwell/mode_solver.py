@@ -75,6 +75,8 @@ def calculate_hfield(basis, xs, beta):
 
 
 def plot_mode(basis, mode, plot_vectors=False, colorbar=True):
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+
     (et, et_basis), (ez, ez_basis) = basis.split(mode)
 
     if plot_vectors:
@@ -83,7 +85,11 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True):
             for subdomain in basis.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
                 basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
         et_basis.plot(et, ax=axs[0])
-        ez_basis.plot(ez, ax=axs[1], colorbar=True)
+        ez_basis.plot(ez, ax=axs[1])
+
+        divider = make_axes_locatable(axs[1])
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        plt.colorbar(axs[1].collections[0], cax=cax)
         return fig, axs
 
     plot_basis = et_basis.with_element(ElementVector(ElementTriP0()))
@@ -95,10 +101,15 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True):
         for subdomain in basis.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
             basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
 
-    cbar = ({'colorbar': colorbar} if colorbar is not False else {})
-    et_x_basis.plot(et_x, shading='gouraud', ax=axs[0], **cbar)  # , vmin=np.min(mode), vmax=np.max(mode))
-    et_y_basis.plot(et_y, shading='gouraud', ax=axs[1], **cbar)  # , vmin=np.min(mode), vmax=np.max(mode))
-    ez_basis.plot(ez, shading='gouraud', ax=axs[2], **cbar)  # , vmin=np.min(mode), vmax=np.max(mode))
+    et_x_basis.plot(et_x, shading='gouraud', ax=axs[0])  # , vmin=np.min(mode), vmax=np.max(mode))
+    et_y_basis.plot(et_y, shading='gouraud', ax=axs[1])  # , vmin=np.min(mode), vmax=np.max(mode))
+    ez_basis.plot(ez, shading='gouraud', ax=axs[2])  # , vmin=np.min(mode), vmax=np.max(mode))
+
+    if colorbar:
+        for ax in axs:
+            divider = make_axes_locatable(ax)
+            cax = divider.append_axes("right", size="5%", pad=0.05)
+            plt.colorbar(ax.collections[0], cax=cax)
     plt.tight_layout()
 
     return fig, axs
@@ -158,7 +169,7 @@ if __name__ == "__main__":
 
     print(lams)
 
-    plot_mode(basis, np.real(xs[0]))
+    plot_mode(basis, np.real(xs[0]), plot_vectors=True)
     plt.show()
     plot_mode(basis, np.imag(xs[0]))
     plt.show()
