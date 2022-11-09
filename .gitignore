@@ -3,3 +3,6 @@ dist/
 
 *.msh
 *.png
+*.h5
+*.xdmf
+I.iml
