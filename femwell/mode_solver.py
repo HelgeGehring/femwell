@@ -80,8 +80,8 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True):
     if plot_vectors:
         fig, axs = plt.subplots(1, 2, subplot_kw=dict(aspect=1))
         for ax in axs:
-            for subdomain in mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
-                mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
+            for subdomain in basis.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
+                basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
         et_basis.plot(et, ax=axs[0])
         ez_basis.plot(ez, ax=axs[1], colorbar=True)
         return fig, axs
@@ -92,8 +92,8 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True):
 
     fig, axs = plt.subplots(1, 3, subplot_kw=dict(aspect=1))
     for ax in axs:
-        for subdomain in mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
-            mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
+        for subdomain in basis.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
+            basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
 
     cbar = ({'colorbar': colorbar} if colorbar is not False else {})
     et_x_basis.plot(et_x, shading='gouraud', ax=axs[0], **cbar)  # , vmin=np.min(mode), vmax=np.max(mode))
