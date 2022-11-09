@@ -154,5 +154,7 @@ if __name__ == '__main__':
         neffs.append(np.real(lams[0]))
 
     print(f'Phase shift: {2 * np.pi / 1.55 * (neffs[-1] - neffs[0]) * 320}')
+    plt.xlabel('Power')
+    plt.ylabel('$n_{eff}$')
     plt.plot(currents, neffs)
     plt.show()
