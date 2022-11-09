@@ -101,11 +101,51 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True):
 
 
 if __name__ == "__main__":
+    from shapely.geometry import Polygon
+    from collections import OrderedDict
+    from femwell.mesh import mesh_from_polygons
+
+    w_sim = 4
+    h_clad = 1
+    h_box = 1
+    w_core = 0.5
+    h_core = 0.22
+    offset_heater = 2.2
+    h_heater = .14
+    w_heater = 2
+
+    polygons = OrderedDict(
+        core=Polygon([
+            (-w_core / 2, -h_core / 2),
+            (-w_core / 2, h_core / 2),
+            (w_core / 2, h_core / 2),
+            (w_core / 2, -h_core / 2),
+        ]),
+        clad=Polygon([
+            (-w_sim / 2, -h_core / 2),
+            (-w_sim / 2, -h_core / 2 + h_clad),
+            (w_sim / 2, -h_core / 2 + h_clad),
+            (w_sim / 2, -h_core / 2),
+        ]),
+        box=Polygon([
+            (-w_sim / 2, -h_core / 2),
+            (-w_sim / 2, -h_core / 2 - h_box),
+            (w_sim / 2, -h_core / 2 - h_box),
+            (w_sim / 2, -h_core / 2),
+        ])
+    )
+
+    resolutions = dict(
+        core={"resolution": 0.01, "distance": 1},
+        heater={"resolution": 0.05, "distance": 1}
+    )
+
+    mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=.2)
+
     mesh = Mesh.load('mesh.msh')
     basis0 = Basis(mesh, ElementTriP0(), intorder=4)
     epsilon = basis0.zeros(dtype=complex)
     epsilon[basis0.get_dofs(elements='core')] = 3.4777 ** 2
-    epsilon[basis0.get_dofs(elements='core2')] = 1.444 ** 2
     epsilon[basis0.get_dofs(elements='clad')] = 1.444 ** 2
     epsilon[basis0.get_dofs(elements='box')] = 1.444 ** 2
     # basis0.plot(epsilon, colorbar=True).show()
