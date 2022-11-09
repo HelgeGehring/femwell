@@ -74,13 +74,13 @@ def calculate_hfield(basis, xs, beta):
     return scipy.sparse.linalg.spsolve(b_operator, a_operator @ xs)
 
 
-def plot_mode(basis, mode, plot_vectors=False, colorbar=True):
+def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E'):
     from mpl_toolkits.axes_grid1 import make_axes_locatable
 
     (et, et_basis), (ez, ez_basis) = basis.split(mode)
 
     if plot_vectors:
-        fig, axs = plt.subplots(1, 2, subplot_kw=dict(aspect=1))
+        fig, axs = plt.subplots(2, 1, subplot_kw=dict(aspect=1))
         for ax in axs:
             for subdomain in basis.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
                 basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
@@ -96,11 +96,13 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True):
     et_xy = plot_basis.project(et_basis.interpolate(et))
     (et_x, et_x_basis), (et_y, et_y_basis) = plot_basis.split(et_xy)
 
-    fig, axs = plt.subplots(1, 3, subplot_kw=dict(aspect=1))
+    fig, axs = plt.subplots(3, 1, subplot_kw=dict(aspect=1))
     for ax in axs:
         for subdomain in basis.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
             basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
 
+    for ax, component in zip(axs, 'xyz'):
+        ax.set_title(f'${title}_{component}$')
     et_x_basis.plot(et_x, shading='gouraud', ax=axs[0])  # , vmin=np.min(mode), vmax=np.max(mode))
     et_y_basis.plot(et_y, shading='gouraud', ax=axs[1])  # , vmin=np.min(mode), vmax=np.max(mode))
     ez_basis.plot(ez, shading='gouraud', ax=axs[2])  # , vmin=np.min(mode), vmax=np.max(mode))
@@ -169,7 +171,7 @@ if __name__ == "__main__":
 
     print(lams)
 
-    plot_mode(basis, np.real(xs[0]), plot_vectors=True)
+    plot_mode(basis, np.real(xs[0]))
     plt.show()
     plot_mode(basis, np.imag(xs[0]))
     plt.show()
