@@ -8,7 +8,7 @@ from shapely.geometry import Polygon
 from skfem import asm, ElementTriP0, ElementTriP1, BilinearForm, LinearForm, Basis, solve, condense, Mesh
 from skfem.helpers import dot
 
-from waveguidemodes.mesh import mesh_from_polygons
+from femwell.mesh import mesh_from_polygons
 
 
 def solve_thermal(
@@ -16,6 +16,7 @@ def solve_thermal(
         thermal_conductivity,
         specific_conductivity: Dict[str, float],
         current_densities,
+        fixed_boundaries
 ):
     """Thermal simulation.
 
@@ -49,12 +50,17 @@ def solve_thermal(
         basis,
         thermal_conductivity=basis0.interpolate(thermal_conductivity),
     )
+    print(fixed_boundaries.keys())
+    x = basis.zeros()
+    for key, value in fixed_boundaries.items():
+        x[basis.get_dofs(key)] = value
 
     temperature = solve(
         *condense(
             thermal_conductivity_lhs,
             joule_heating_rhs,
-            D=basis.get_dofs(basis0.mesh.boundaries["box_None_14"]),
+            D={fixed_boundary: basis.get_dofs(fixed_boundary) for fixed_boundary in fixed_boundaries},
+            x=x
         )
     )
 
@@ -107,7 +113,7 @@ if __name__ == '__main__':
         heater={"resolution": 0.05, "distance": 1}
     )
 
-    mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=.1)
+    mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=.4)
 
     mesh = Mesh.load('mesh.msh')
 
@@ -125,11 +131,12 @@ if __name__ == '__main__':
 
         basis, temperature = solve_thermal(basis0, thermal_conductivity_p0,
                                            specific_conductivity={"heater": 2.3e6},
-                                           current_densities={"heater": current})
-        basis.plot(temperature, colorbar=True)
-        plt.show()
+                                           current_densities={"heater": current},
+                                           fixed_boundaries={'box_None_14': 0})
+        # basis.plot(temperature, colorbar=True)
+        # plt.show()
 
-        from waveguidemodes.mode_solver import compute_modes, plot_mode
+        from femwell.mode_solver import compute_modes, plot_mode
 
         temperature0 = basis0.project(basis.interpolate(temperature))
         epsilon = basis0.zeros() + (1.444 + 1.00e-5 * temperature0) ** 2

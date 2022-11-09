@@ -7,8 +7,8 @@ import numpy as np
 
 from skfem import Mesh, Basis, ElementTriP0, ElementVector
 
-from waveguidemodes.mode_solver import compute_modes
-from waveguidemodes.waveguide import mesh_waveguide
+from femwell.mode_solver import compute_modes
+from femwell.waveguide import mesh_waveguide
 
 if __name__ == '__main__':
     num_modes = 10

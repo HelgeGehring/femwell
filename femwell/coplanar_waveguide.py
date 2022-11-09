@@ -11,8 +11,8 @@ import skfem
 from skfem.io.meshio import from_meshio
 from skfem import Mesh, Basis, ElementTriP0, ElementVector
 
-from waveguidemodes.mode_solver import compute_modes, plot_mode
-from waveguidemodes.mesh import mesh_from_polygons
+from femwell.mode_solver import compute_modes, plot_mode
+from femwell.mesh import mesh_from_polygons
 
 
 def mesh_waveguide(filename, wsim, hclad, hsi, wcore, hcore, gap):

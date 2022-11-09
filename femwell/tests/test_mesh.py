@@ -9,7 +9,7 @@ from shapely.ops import split, linemerge
 
 from collections import OrderedDict
 
-from waveguidemodes.mesh import mesh_from_polygons
+from femwell.mesh import mesh_from_polygons
 
 def geometry(wsim, hclad, hbox, wcore, hcore, offset_core):
     core = Polygon([

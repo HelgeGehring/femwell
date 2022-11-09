@@ -6,8 +6,8 @@ from shapely.geometry import Polygon
 
 from skfem import ElementTriP0, Basis, Mesh
 
-from waveguidemodes.mesh import mesh_from_polygons
-from waveguidemodes.thermal import solve_thermal
+from femwell.mesh import mesh_from_polygons
+from femwell.thermal import solve_thermal
 
 # Simulating the TiN TOPS heater in https://doi.org/10.1364/OE.27.010456
 
@@ -95,6 +95,8 @@ basis, temperature = solve_thermal(basis0, thermal_conductivity_p0,
                                    current_densities={
                                        "heater_l": current / (polygons['heater_l'].area + polygons['heater_r'].area),
                                        "heater_r": current / (polygons['heater_l'].area + polygons['heater_r'].area)
-                                   })
+                                   },
+                                   fixed_boundaries={'box_None_24': 100}
+                                   )
 basis.plot(temperature, colorbar=True)
 plt.show()

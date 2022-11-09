@@ -11,8 +11,8 @@ import skfem
 from skfem.io.meshio import from_meshio
 from skfem import Mesh, Basis, ElementTriP0, ElementVector
 
-from waveguidemodes.mode_solver import compute_modes, plot_mode
-from waveguidemodes.mesh import mesh_from_polygons
+from femwell.mode_solver import compute_modes, plot_mode
+from femwell.mesh import mesh_from_polygons
 
 
 def mesh_waveguide(filename, wsim, hclad, hbox, wcore, hcore):
@@ -38,9 +38,9 @@ def mesh_waveguide(filename, wsim, hclad, hbox, wcore, hcore):
     )
 
     resolutions = dict(
-        core={"resolution": 0.01, "distance": 10},
-        clad={"resolution": 0.03, "distance": 10},
-        box={"resolution": 0.03, "distance": 10}
+        core={"resolution": 0.03, "distance": 10},
+        clad={"resolution": 0.06, "distance": 10},
+        box={"resolution": 0.06, "distance": 10}
     )
 
     return mesh_from_polygons(polygons, resolutions, filename=filename, default_resolution_max=.1)
@@ -60,5 +60,5 @@ if __name__ == '__main__':
 
     lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=5)
 
-    fig, axs = plot_mode(basis, xs[0])
+    fig, axs = plot_mode(basis, xs[0], colorbar=False)
     plt.show()

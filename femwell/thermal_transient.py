@@ -9,8 +9,8 @@ from shapely.geometry import Polygon
 from skfem import asm, ElementTriP0, ElementTriP1, BilinearForm, LinearForm, Basis, Mesh, penalize, enforce
 from skfem.helpers import dot
 
-from waveguidemodes.mesh import mesh_from_polygons
-from waveguidemodes.thermal import solve_thermal
+from femwell.mesh import mesh_from_polygons
+from femwell.thermal import solve_thermal
 
 """
 implemented like in https://www-users.cse.umn.edu/~arnold/8445.f11/notes.pdf page 81 in the middle of the page
@@ -23,11 +23,12 @@ def solve_thermal_transient(
         thermal_diffusivity_p0,
         specific_conductivity: Dict[str, float],
         current_densities,
+        fixed_boundaries,
         dt,
         steps
 ):
     basis, temperature = solve_thermal(basis0, thermal_conductivity_p0, specific_conductivity,
-                                       {domain: current(0) for domain, current in current_densities.items()})
+                                       {domain: current(0) for domain, current in current_densities.items()}, fixed_boundaries=fixed_boundaries)
 
     @BilinearForm
     def diffusivity_laplace(u, v, w):
@@ -157,6 +158,7 @@ if __name__ == '__main__':
     basis, temperatures = solve_thermal_transient(basis0, thermal_conductivity_p0, thermal_diffusivity_p0,
                                                   specific_conductivity={"heater": 2.3e6},
                                                   current_densities={"heater": current},
+                                                  fixed_boundaries={'box_None_14': 0},
                                                   dt=dt,
                                                   steps=steps
                                                   )
@@ -191,7 +193,7 @@ if __name__ == '__main__':
         # basis.plot(temperature, vmin=0, vmax=np.max(temperatures))
         # plt.show()
 
-        from waveguidemodes.mode_solver import compute_modes, plot_mode
+        from femwell.mode_solver import compute_modes, plot_mode
 
         temperature0 = basis0.project(basis.interpolate(temperature))
         epsilon = basis0.zeros() + (1.444 + 1.00e-5 * temperature0) ** 2
