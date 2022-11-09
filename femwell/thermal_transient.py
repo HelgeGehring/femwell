@@ -152,8 +152,8 @@ if __name__ == '__main__':
         thermal_diffusivity_p0[basis0.get_dofs(elements=domain)] = value
     thermal_diffusivity_p0 *= 1e12  # 1e-12 -> conversion from m^2 -> um^2
 
-    dt = .1e-6
-    steps = 2000
+    dt = .1e-5
+    steps = 200
     current = lambda t: 0.007 / polygons['heater'].area * ((t < dt * steps / 10) + (t > dt * steps / 2))
     basis, temperatures = solve_thermal_transient(basis0, thermal_conductivity_p0, thermal_diffusivity_p0,
                                                   specific_conductivity={"heater": 2.3e6},
@@ -185,7 +185,7 @@ if __name__ == '__main__':
         basis.plot(temperatures[i], ax=ax, vmin=0, vmax=np.max(temperatures), shading='gouraud').show()
 
     # Calculate modes
-    """
+
     from tqdm.auto import tqdm
 
     neffs = []
@@ -219,4 +219,4 @@ if __name__ == '__main__':
     ax2.set_ylabel('Phase shift')
     ax2.plot(times * 1e6, 2 * np.pi / 1.55 * (neffs - neffs[0]) * 320, 'r-o')
     plt.show()
-    """
+
