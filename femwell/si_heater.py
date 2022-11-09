@@ -98,5 +98,14 @@ basis, temperature = solve_thermal(basis0, thermal_conductivity_p0,
                                    },
                                    fixed_boundaries={'box_None_24': 100}
                                    )
-basis.plot(temperature, colorbar=True)
+
+fig, ax = plt.subplots(subplot_kw=dict(aspect=1))
+for subdomain in mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
+    mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
+basis.plot(temperature, ax=ax)
+
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+divider = make_axes_locatable(ax)
+cax = divider.append_axes("right", size="5%", pad=0.05)
+plt.colorbar(ax.collections[0], cax=cax)
 plt.show()
