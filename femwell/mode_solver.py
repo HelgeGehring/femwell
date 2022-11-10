@@ -45,7 +45,7 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
     lams, xs = [], []
     for i in range(eps.getConverged()):
         lams.append(eps.getEigenpair(i, xr, xi))
-        xs.append(np.array(np.real(xr)))  # +0j * np.array(xi))
+        xs.append(np.array(xr) + 1j * np.array(xi))
 
     xs = np.array(xs, dtype=complex)
     lams = np.array(lams)
@@ -176,7 +176,7 @@ if __name__ == "__main__":
     plot_mode(basis, np.imag(xs[0]))
     plt.show()
 
-    xbs = calculate_hfield(basis, xs[0], lams[0] * (2 * np.pi / 1.55))
+    xbs = calculate_hfield(basis, xs[0], -lams[0] * (2 * np.pi / 1.55))
 
     plot_mode(basis, np.real(xbs))
     plt.show()
