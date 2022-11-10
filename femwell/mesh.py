@@ -191,6 +191,7 @@ def mesh_from_polygons(
     default_resolution_max: float = 0.5,
     filename: Optional[str] = None,
     gmsh_algorithm: int = 5,
+    global_quad: Optional[bool] = False
 ):
 
     import gmsh
@@ -279,16 +280,16 @@ def mesh_from_polygons(
         # Refinement in surfaces
         n = 0
         refinement_fields = []
-        for label, resolution in resolutions.items():
+        for label, mesh_setting in resolutions.items():
             # Inside surface
-            mesh_resolution = resolution["resolution"]
+            mesh_resolution = mesh_setting["resolution"]
             gmsh.model.mesh.field.add("MathEval", n)
             gmsh.model.mesh.field.setString(n, "F", f"{mesh_resolution}")
             gmsh.model.mesh.field.add("Restrict", n+1)
             gmsh.model.mesh.field.setNumber(n+1, "InField", n)
             gmsh.model.mesh.field.setNumbers(n+1, "SurfacesList", meshtracker.get_gmsh_xy_surfaces_from_label(label))
             # Around surface
-            mesh_distance = resolution["distance"]
+            mesh_distance = mesh_setting["distance"]
             gmsh.model.mesh.field.add("Distance", n+2)
             gmsh.model.mesh.field.setNumbers(n+2, "CurvesList", meshtracker.get_gmsh_xy_lines_from_label(label))
             gmsh.model.mesh.field.setNumber(n+2, "Sampling", 100)
@@ -302,6 +303,10 @@ def mesh_from_polygons(
             refinement_fields.append(n+1)
             refinement_fields.append(n+3)
             n += 4
+                
+        if global_quad:        
+            gmsh.option.setNumber("Mesh.Algorithm", 8)
+            gmsh.option.setNumber("Mesh.RecombineAll", 1)
 
         # Use the smallest element size overall
         gmsh.model.mesh.field.add("Min", n)
@@ -395,14 +400,17 @@ if __name__ == "__main__":
     # The edge of a polygon and another polygon (or entire simulation domain) will form a line object that can be refined independently
     resolutions = {}
     resolutions["core"] = {"resolution": 0.01, "distance": 2}
-    resolutions["core_clad"] = {"resolution": 0.01, "distance": 0.5}
-    resolutions["clad_box"] = {"resolution": 0.01, "distance": 0.5}
-    resolutions["bottom_edge"] = {"resolution": 0.01, "distance": 0.5}
-    resolutions["left_edge"] = {"resolution": 0.01, "distance": 0.5}
+    resolutions["core2"] = {"resolution": 0.01, "distance": 2}
+    resolutions["clad"] = {"resolution": 0.05, "distance": 2}
+    resolutions["box"] = {"resolution": 0.05, "distance": 2}
+    # resolutions["core_clad"] = {"resolution": 0.05, "distance": 0.5}
+    # resolutions["clad_box"] = {"resolution": 0.05, "distance": 0.5}
+    # resolutions["bottom_edge"] = {"resolution": 0.05, "distance": 0.5}
+    # resolutions["left_edge"] = {"resolution": 0.05, "distance": 0.5}
     # resolutions["clad"] = {"resolution": 0.1, "dist_min": 0.01, "dist_max": 0.3}
 
-
-    mesh = mesh_from_polygons(shapes, resolutions, filename="mesh.msh", default_resolution_max=.3, gmsh_algorithm=8)
+    quad = False
+    mesh = mesh_from_polygons(shapes, resolutions, filename="mesh.msh", default_resolution_max=.3, global_quad=quad)
 
     # gmsh.write("mesh.msh")
     # gmsh.clear()
@@ -425,5 +433,8 @@ if __name__ == "__main__":
     line_mesh = create_mesh(mesh_from_file, "line", prune_z=True)
     meshio.write("facet_mesh.xdmf", line_mesh)
 
-    triangle_mesh = create_mesh(mesh_from_file, "triangle", prune_z=True)
+    if quad == True:
+        triangle_mesh = create_mesh(mesh_from_file, "quad", prune_z=True)
+    else:
+        triangle_mesh = create_mesh(mesh_from_file, "triangle", prune_z=True)
     meshio.write("mesh.xdmf", triangle_mesh)
