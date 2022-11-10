@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse.linalg
 
-from skfem import BilinearForm, Basis, ElementTriN0, ElementTriP0, ElementTriP1, ElementVector, Mesh
-from skfem.helpers import curl, grad, dot, inner
+from skfem import BilinearForm, Basis, ElementTriN0, ElementTriP0, ElementTriP1, ElementVector, Mesh, Functional
+from skfem.helpers import curl, grad, dot, inner, cross
 
 
 def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
@@ -71,7 +71,16 @@ def calculate_hfield(basis, xs, beta):
 
     b_operator = bform.assemble(basis)
 
-    return scipy.sparse.linalg.spsolve(b_operator, a_operator @ xs)
+    return scipy.sparse.linalg.spsolve(b_operator, a_operator @ xs) * 1j  # Don't understand the 1j yet
+
+
+def calculate_overlap(basis, E_i, H_i, E_j, H_j):
+    @Functional
+    def overlap(w):
+        return cross(np.conj(w['E_i'][0]), w['H_j'][0]) + cross(w['E_j'][0], np.conj(w['H_i'][0]))
+
+    return overlap.assemble(basis, E_i=basis.interpolate(E_i), H_i=basis.interpolate(H_i),
+                            E_j=basis.interpolate(E_j), H_j=basis.interpolate(H_j))
 
 
 def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E'):
@@ -122,10 +131,10 @@ if __name__ == "__main__":
     from collections import OrderedDict
     from femwell.mesh import mesh_from_polygons
 
-    w_sim = 4
+    w_sim = 4 * 2
     h_clad = 1
     h_box = 1
-    w_core = 0.5
+    w_core = 0.5 * 3
     h_core = 0.22
     offset_heater = 2.2
     h_heater = .14
@@ -167,7 +176,7 @@ if __name__ == "__main__":
     epsilon[basis0.get_dofs(elements='box')] = 1.444 ** 2
     # basis0.plot(epsilon, colorbar=True).show()
 
-    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1)
+    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=6)
 
     print(lams)
 
@@ -181,4 +190,22 @@ if __name__ == "__main__":
     plot_mode(basis, np.real(xbs))
     plt.show()
     plot_mode(basis, np.imag(xbs))
+    plt.show()
+
+    integrals = np.zeros((len(lams),) * 2, dtype=complex)
+    for i in range(len(lams)):
+        for j in range(len(lams)):
+            E_i = xs[i]
+            E_j = xs[j]
+            H_i = calculate_hfield(basis, E_i, -lams[i] * (2 * np.pi / 1.55))
+            H_j = calculate_hfield(basis, E_j, -lams[j] * (2 * np.pi / 1.55))
+            integrals[i, j] = calculate_overlap(basis, E_i, H_i, E_j, H_j)
+
+    integrals_normalized = np.zeros((len(lams),) * 2, dtype=complex)
+    for i in range(len(lams)):
+        for j in range(len(lams)):
+            integrals_normalized[i, j] = integrals[i, j] ** 2 / integrals[i, i] / integrals[j, j]
+
+    plt.imshow(np.real(integrals_normalized))
+    plt.colorbar()
     plt.show()
