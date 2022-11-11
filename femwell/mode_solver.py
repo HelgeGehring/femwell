@@ -51,6 +51,10 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
     lams = np.array(lams)
     xs[:, basis.split_indices()[1]] /= 1j * np.sqrt(lams[:, np.newaxis])  # undo the scaling E_3,new = beta * E_3
 
+    for i, lam in enumerate(lams):
+        H = calculate_hfield(basis, xs[i], -np.sqrt(lam))
+        xs[i] /= np.sqrt(calculate_overlap(basis, xs[i], H, xs[i], H))
+
     return np.sqrt(lams) / k0, basis, xs
 
 
@@ -201,11 +205,6 @@ if __name__ == "__main__":
             H_j = calculate_hfield(basis, E_j, -lams[j] * (2 * np.pi / 1.55))
             integrals[i, j] = calculate_overlap(basis, E_i, H_i, E_j, H_j)
 
-    integrals_normalized = np.zeros((len(lams),) * 2, dtype=complex)
-    for i in range(len(lams)):
-        for j in range(len(lams)):
-            integrals_normalized[i, j] = integrals[i, j] ** 2 / integrals[i, i] / integrals[j, j]
-
-    plt.imshow(np.real(integrals_normalized))
+    plt.imshow(np.real(integrals))
     plt.colorbar()
     plt.show()
