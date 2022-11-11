@@ -7,6 +7,7 @@ import numpy as np
 from shapely.geometry import MultiPoint, Polygon, LineString
 from shapely.affinity import translate
 
+nm = 1E-3
 
 def process_component(component, layerstack):
     """Process component polygons to:
@@ -46,7 +47,7 @@ def get_polygon_x_bounds(polygon):
     xs = [p.x for p in get_vertices(polygon)]
     return xs
 
-def get_component_x_bounds(layer_polygons_dict):
+def get_unique_x_bounds(layer_polygons_dict):
     """Return unique x_bounds across all polygon vertices of a layer_polygons_dict
     
         Propagation direction is "x" in component ("z" in mode solver)
@@ -66,15 +67,17 @@ def get_mode_regions(component, layerstack, tol=1E-6):
             component: gdsfactory Component to process
             layerstack: gdsfactory LayerStack to process
         Returns:
-            x_parsed_bounds: x-indices where the 
+            x_changing_bounds: x-bounds where the component needs to be meshed
+            x_not_changing_bounds: x-bounds where there the structure is unchanging (free propagation)
     """
     bbox = gf.components.bbox(bbox=component.bbox).get_polygons()[0][:,1]
     ymin = np.min(bbox)
     ymax = np.max(bbox)
     layer_polygons_dict =  process_component(component, layerstack)
-    x_bounds = get_component_x_bounds(layer_polygons_dict)
+    x_bounds = get_unique_x_bounds(layer_polygons_dict)
 
-    x_parsed_bounds = []
+    x_changing_bounds = []
+    x_not_changing_bounds = []
     for x1, x2 in [
             (x_bounds[i] + tol, x_bounds[i + 1] - tol) for i in range(0, len(x_bounds) - 1)
         ]:
@@ -89,18 +92,31 @@ def get_mode_regions(component, layerstack, tol=1E-6):
                 xsection_x1 = polygons.intersection(line_x1)
                 xsection_x2 = polygons.intersection(line_x2)
 
-                # print(x1, x2, xsection_x1 - tol, xsection_x2 + tol)
-
                 if not xsection_x1.equals(translate(xsection_x2, xoff=x1-x2)):
                     found_different = True
-                    x_parsed_bounds.append([x1-tol, x2+tol])
+                    x_changing_bounds.append([x1-tol, x2+tol])
 
-    return x_parsed_bounds
+        if not found_different:
+            x_not_changing_bounds.append([x1-tol, x2+tol])
 
-def slice_component(component, layerstack):
+    return x_changing_bounds, x_not_changing_bounds
+
+
+def slice_component(component, layerstack, mesh_step=100*nm):
     """Returns minimal list of x-coordinates where cross-section is to be taken."""
-    # for layer in 
-    return True
+    # Process polygon to extract regions of change and free propagation
+    x_changing_bounds, x_not_changing_bounds = get_mode_regions(component, layerstack, tol=1E-6)
+
+    # Where geometry is changing, mesh according to mesh_step
+    x_coordinates = []
+    for x1, x2 in x_changing_bounds:
+        x_coordinates.append(np.arange(x1, x2, mesh_step))
+    # Where not changing, just return the bounds
+    for x1, x2 in x_not_changing_bounds:
+        x_coordinates.append(np.array([x1]))
+
+    # Return sorted bounds
+    return np.sort(np.concatenate(x_coordinates).ravel())
 
 
 def overlap_mesh():
@@ -123,8 +139,12 @@ if __name__ == "__main__":
                                 cross_section = "rib",
                 )
     )
-    straight = c.add_ref(gf.components.straight(20, width = 2, cross_section="rib"))
+    straight = c.add_ref(gf.components.straight(10, width = 2, cross_section="rib"))
     straight.connect("o1", taper.ports["o2"])
+    straight2 = c.add_ref(gf.components.straight(10, width = 2, cross_section="strip"))
+    straight2.connect("o1", straight.ports["o2"])
+    straight = c.add_ref(gf.components.straight(10, width = 2, cross_section="rib"))
+    straight.connect("o1", straight2.ports["o2"])
     taper = c.add_ref(
         gf.components.taper(length = 10.0,
                                 width1 = 0.5,
@@ -133,15 +153,13 @@ if __name__ == "__main__":
                 )
     )
     taper.connect("o2", straight.ports["o2"])
-    taper = c.add_ref(
-        gf.components.taper(length = 10.0,
-                                width1 = 0.5,
-                                width2 = 2,
+    bend = c.add_ref(
+        gf.components.bend_euler(angle = 20.0,
+                                p=0.5,
+                                width=0.5,
                                 cross_section = "strip",
-                ).move([10, -10])
+                ).move([12, -5])
     )
-
-    c.show()
 
     from gdsfactory.tech import get_layer_stack_generic, LayerStack
     import numpy as np
@@ -156,25 +174,25 @@ if __name__ == "__main__":
         }
     )
 
-    # Fuse and cleanup polygons of same layer in case user overlapped them
-    layer_dict = filtered_layerstack.to_dict()
-    layer_polygons_dict = {}
-    for layername in layer_dict.keys():  # filtered_layerdict.items():
-        layer_polygons_dict[layername] = fuse_component_layer(
-            c, layername, layer_dict[layername]
-        )
-
     # Get unique cross-sections
 
     # Reorder polygons according to meshorder
-    layer_order = order_layerstack(filtered_layerstack)
-    ordered_layers = [value for value in layer_order if value in set(layer_order)]
-    shapes = OrderedDict()
-    for layer in ordered_layers:
-        shapes[layer] = layer_polygons_dict[layer]
+    # layer_order = order_layerstack(filtered_layerstack)
+    # ordered_layers = [value for value in layer_order if value in set(layer_order)]
+    # shapes = OrderedDict()
+    # for layer in ordered_layers:
+    #     shapes[layer] = layer_polygons_dict[layer]
 
     # Compute the x-coordinates where the cross-section changes
-    print(get_mode_regions(c, filtered_layerstack))
+    lines = slice_component(c, filtered_layerstack)
+    for x in lines:
+        P = gf.Path([[x, -20], [x, 20]])
+        X = gf.CrossSection(width=0.001, layer=(99,0))
+        line = gf.path.extrude(P, X)
+        c << line
+
+    c.show()
+
 
     # polygons_dict = gf.simulation.gmsh.get_xsection_bound_polygons(component=c, 
     #                                                 xsection_bounds=[[5, -200], [5, 200]], 
