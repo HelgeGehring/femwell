@@ -57,17 +57,26 @@ def get_component_x_bounds(layer_polygons_dict):
             xs.extend(get_polygon_x_bounds((polygon)))
     return np.sort(np.unique(np.array(xs)))
 
-def get_mode_regions(component, layerstack, ymin = -200, ymax = 200, line_width = 1E-4, line_layer = (99, 0)):
+def get_mode_regions(component, layerstack, tol=1E-6):
     """Return interesting x_bounds of polygon vertices.
     
         Propagation direction is "x" in component ("z" in mode solver)
+
+        Args:
+            component: gdsfactory Component to process
+            layerstack: gdsfactory LayerStack to process
+        Returns:
+            x_parsed_bounds: x-indices where the 
     """
+    bbox = gf.components.bbox(bbox=component.bbox).get_polygons()[0][:,1]
+    ymin = np.min(bbox)
+    ymax = np.max(bbox)
     layer_polygons_dict =  process_component(component, layerstack)
     x_bounds = get_component_x_bounds(layer_polygons_dict)
 
     x_parsed_bounds = []
     for x1, x2 in [
-            (x_bounds[i], x_bounds[i + 1]) for i in range(0, len(x_bounds) - 1)
+            (x_bounds[i] + tol, x_bounds[i + 1] - tol) for i in range(0, len(x_bounds) - 1)
         ]:
         found_different = False
         for layername, polygons in layer_polygons_dict.items():
@@ -80,16 +89,16 @@ def get_mode_regions(component, layerstack, ymin = -200, ymax = 200, line_width 
                 xsection_x1 = polygons.intersection(line_x1)
                 xsection_x2 = polygons.intersection(line_x2)
 
-                print(layername, xsection_x1, translate(xsection_x2, xoff=x1-x2))
+                # print(x1, x2, xsection_x1 - tol, xsection_x2 + tol)
 
                 if not xsection_x1.equals(translate(xsection_x2, xoff=x1-x2)):
                     found_different = True
-                    x_parsed_bounds.append(x1)
+                    x_parsed_bounds.append([x1-tol, x2+tol])
 
-    print(x_parsed_bounds, x_bounds)
+    return x_parsed_bounds
 
-def slice_component():
-    """Returns list of x-coordinates where cross-section is to be taken."""
+def slice_component(component, layerstack):
+    """Returns minimal list of x-coordinates where cross-section is to be taken."""
     # for layer in 
     return True
 
@@ -124,6 +133,13 @@ if __name__ == "__main__":
                 )
     )
     taper.connect("o2", straight.ports["o2"])
+    taper = c.add_ref(
+        gf.components.taper(length = 10.0,
+                                width1 = 0.5,
+                                width2 = 2,
+                                cross_section = "strip",
+                ).move([10, -10])
+    )
 
     c.show()
 
@@ -158,7 +174,7 @@ if __name__ == "__main__":
         shapes[layer] = layer_polygons_dict[layer]
 
     # Compute the x-coordinates where the cross-section changes
-    get_mode_regions(c, filtered_layerstack, ymin = -200, ymax = 200, line_width = 1E-3, line_layer = (99, 0))
+    print(get_mode_regions(c, filtered_layerstack))
 
     # polygons_dict = gf.simulation.gmsh.get_xsection_bound_polygons(component=c, 
     #                                                 xsection_bounds=[[5, -200], [5, 200]], 
