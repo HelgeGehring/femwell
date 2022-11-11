@@ -1,3 +1,5 @@
+import functools
+import operator
 from typing import Dict
 
 import numpy as np
@@ -48,7 +50,7 @@ def solve_thermal(
         basis,
         thermal_conductivity=basis0.interpolate(thermal_conductivity),
     )
-    print(fixed_boundaries.keys())
+
     x = basis.zeros()
     for key, value in fixed_boundaries.items():
         x[basis.get_dofs(key)] = value
@@ -57,7 +59,7 @@ def solve_thermal(
         *condense(
             thermal_conductivity_lhs,
             joule_heating_rhs,
-            D={fixed_boundary: basis.get_dofs(fixed_boundary) for fixed_boundary in fixed_boundaries},
+            D=functools.reduce(operator.add, (basis.get_dofs(fixed_boundary) for fixed_boundary in fixed_boundaries)),
             x=x
         )
     )
@@ -68,6 +70,7 @@ def solve_thermal(
 if __name__ == '__main__':
     from shapely.geometry import Polygon
     from collections import OrderedDict
+
     # Simulating the TiN TOPS heater in https://doi.org/10.1364/OE.27.010456
 
     w_sim = 8 * 2
