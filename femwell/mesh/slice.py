@@ -5,6 +5,7 @@ from collections import OrderedDict
 import numpy as np
 
 from shapely.geometry import MultiPoint, Polygon, LineString
+from shapely.affinity import translate
 
 
 def process_component(component, layerstack):
@@ -78,12 +79,14 @@ def get_mode_regions(component, layerstack, ymin = -200, ymax = 200, line_width 
 
                 xsection_x1 = polygons.intersection(line_x1)
                 xsection_x2 = polygons.intersection(line_x2)
-                
-                if not xsection_x1.equals(xsection_x2):
+
+                print(layername, xsection_x1, translate(xsection_x2, xoff=x1-x2))
+
+                if not xsection_x1.equals(translate(xsection_x2, xoff=x1-x2)):
                     found_different = True
                     x_parsed_bounds.append(x1)
 
-    print(x_parsed_bounds)
+    print(x_parsed_bounds, x_bounds)
 
 def slice_component():
     """Returns list of x-coordinates where cross-section is to be taken."""
