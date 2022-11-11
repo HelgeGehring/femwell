@@ -142,22 +142,22 @@ if __name__ == "__main__":
 
     polygons = OrderedDict(
         core=Polygon([
-            (-w_core / 2, -h_core / 2),
-            (-w_core / 2, h_core / 2),
-            (w_core / 2, h_core / 2),
-            (w_core / 2, -h_core / 2),
+            (-w_core / 2, 0),
+            (-w_core / 2, h_core),
+            (w_core / 2, h_core),
+            (w_core / 2, 0),
         ]),
         clad=Polygon([
-            (-w_sim / 2, -h_core / 2),
-            (-w_sim / 2, -h_core / 2 + h_clad),
-            (w_sim / 2, -h_core / 2 + h_clad),
-            (w_sim / 2, -h_core / 2),
+            (-w_sim / 2, 0),
+            (-w_sim / 2, h_clad),
+            (w_sim / 2, h_clad),
+            (w_sim / 2, 0),
         ]),
         box=Polygon([
-            (-w_sim / 2, -h_core / 2),
-            (-w_sim / 2, -h_core / 2 - h_box),
-            (w_sim / 2, -h_core / 2 - h_box),
-            (w_sim / 2, -h_core / 2),
+            (-w_sim / 2, 0),
+            (-w_sim / 2, - h_box),
+            (w_sim / 2, - h_box),
+            (w_sim / 2, 0),
         ])
     )
 
