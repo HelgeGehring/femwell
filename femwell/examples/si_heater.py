@@ -11,7 +11,7 @@ from femwell.thermal import solve_thermal
 
 # Simulating the TiN TOPS heater in https://doi.org/10.1364/OE.27.010456
 
-w_sim = 8 * 2
+w_sim = 8 * 4
 h_clad = 2.8
 h_box = 2
 w_core = 0.5
@@ -67,14 +67,14 @@ polygons = OrderedDict(
 )
 
 resolutions = dict(
-    core={"resolution": 0.001, "distance": 1},
+    core={"resolution": 0.01, "distance": 1},
     clad={"resolution": 0.4, "distance": 1},
     box={"resolution": 0.4, "distance": 1},
-    heater_l={"resolution": 0.001, "distance": 1},
-    heater_r={"resolution": 0.001, "distance": 1}
+    heater_l={"resolution": 0.01, "distance": 1},
+    heater_r={"resolution": 0.01, "distance": 1}
 )
 
-mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=.1)
+mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=.4)
 
 mesh = Mesh.load('mesh.msh')
 
@@ -88,7 +88,6 @@ thermal_conductivity_p0 *= 1e-12  # 1e-12 -> conversion from 1/m^2 -> 1/um^2
 power = 25.2e-3
 current = np.sqrt(power * 1e5 * (polygons['heater_l'].area + polygons['heater_r'].area) * 1e-12 / 320e-6)
 print(current)
-print(current / (polygons['heater_l'].area + polygons['heater_r'].area))
 
 basis, temperature = solve_thermal(basis0, thermal_conductivity_p0,
                                    specific_conductivity={"heater_l": 1e5, "heater_r": 1e5},
@@ -96,7 +95,7 @@ basis, temperature = solve_thermal(basis0, thermal_conductivity_p0,
                                        "heater_l": current / (polygons['heater_l'].area + polygons['heater_r'].area),
                                        "heater_r": current / (polygons['heater_l'].area + polygons['heater_r'].area)
                                    },
-                                   fixed_boundaries={'box_None_24': 100}
+                                   fixed_boundaries={'box_None_24': 303}
                                    )
 
 fig, ax = plt.subplots(subplot_kw=dict(aspect=1))
