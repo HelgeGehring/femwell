@@ -87,6 +87,15 @@ def calculate_overlap(basis, E_i, H_i, E_j, H_j):
                             E_j=basis.interpolate(E_j), H_j=basis.interpolate(H_j))
 
 
+def calculate_coupling_coefficient(basis_epsilon, delta_epsilon, basis, E_i, E_j):
+    @Functional
+    def overlap(w):
+        return w['delta_epsilon'] * (dot(np.conj(w['E_i'][0]), w['E_j'][0]) + np.conj(w['E_i'][1]) * w['E_j'][1])
+
+    return overlap.assemble(basis, E_i=basis.interpolate(E_i), E_j=basis.interpolate(E_j),
+                            delta_epsilon=basis_epsilon.interpolate(delta_epsilon))
+
+
 def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E'):
     from mpl_toolkits.axes_grid1 import make_axes_locatable
 
