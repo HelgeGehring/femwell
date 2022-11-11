@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 import numpy as np
 import matplotlib.pyplot as plt
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, LineString
 
 from skfem import ElementTriP0, Basis, Mesh
 
@@ -22,6 +22,10 @@ w_heater = 1
 offset_heater = 2.2
 
 polygons = OrderedDict(
+    bottom=LineString([
+        (-w_sim / 2, - h_box),
+        (w_sim / 2, - h_box)
+    ]),
     core=Polygon([
         (-w_core / 2, 0),
         (-w_core / 2, h_core),
@@ -95,7 +99,7 @@ basis, temperature = solve_thermal(basis0, thermal_conductivity_p0,
                                        "heater_l": current / (polygons['heater_l'].area + polygons['heater_r'].area),
                                        "heater_r": current / (polygons['heater_l'].area + polygons['heater_r'].area)
                                    },
-                                   fixed_boundaries={'box_None_24': 303}
+                                   fixed_boundaries={'bottom': 303}
                                    )
 
 fig, ax = plt.subplots(subplot_kw=dict(aspect=1))
@@ -104,6 +108,7 @@ for subdomain in mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
 basis.plot(temperature, ax=ax)
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 divider = make_axes_locatable(ax)
 cax = divider.append_axes("right", size="5%", pad=0.05)
 plt.colorbar(ax.collections[0], cax=cax)

@@ -1,17 +1,11 @@
 from typing import Dict
-from collections import OrderedDict
-import functools
-import operator
 
 import numpy as np
 from scipy.sparse.linalg import splu
-import matplotlib.pyplot as plt
-from shapely.geometry import Polygon
 
 from skfem import asm, ElementTriP0, BilinearForm, LinearForm, Basis, Mesh, enforce
 from skfem.helpers import dot
 
-from femwell.mesh import mesh_from_polygons
 from femwell.thermal import solve_thermal
 
 """
@@ -56,8 +50,7 @@ def solve_thermal_transient(
     for key, value in fixed_boundaries.items():
         x[basis.get_dofs(key)] = value
     L0, M0 = enforce(L, M,
-                     D=functools.reduce(operator.add,
-                                        (basis.get_dofs(fixed_boundary) for fixed_boundary in fixed_boundaries)),
+                     D=basis.get_dofs(set(fixed_boundaries.keys())),
                      x=x)
     A = M0 + theta * L0 * dt
     B = M0 - (1 - theta) * L0 * dt
@@ -87,6 +80,10 @@ def solve_thermal_transient(
 
 
 if __name__ == '__main__':
+    from shapely.geometry import Polygon, LineString
+    from collections import OrderedDict
+    from femwell.mesh import mesh_from_polygons
+    import matplotlib.pyplot as plt
     # Simulating the TiN TOPS heater in https://doi.org/10.1364/OE.27.010456
 
     w_sim = 8 * 2
@@ -100,6 +97,10 @@ if __name__ == '__main__':
     h_silicon = 3
 
     polygons = OrderedDict(
+        bottom=LineString([
+            (-w_sim / 2, -h_core / 2 - h_box),
+            (w_sim / 2, -h_core / 2 - h_box)
+        ]),
         core=Polygon([
             (-w_core / 2, 0),
             (-w_core / 2, h_core),
@@ -167,7 +168,7 @@ if __name__ == '__main__':
     basis, temperatures = solve_thermal_transient(basis0, thermal_conductivity_p0, thermal_diffusivity_p0,
                                                   specific_conductivity={"heater": 2.3e6},
                                                   current_densities={"heater": current},
-                                                  fixed_boundaries={'box_None_14': 0},
+                                                  fixed_boundaries={'bottom': 0},
                                                   dt=dt,
                                                   steps=steps
                                                   )

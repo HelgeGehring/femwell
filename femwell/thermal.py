@@ -1,9 +1,6 @@
-import functools
-import operator
 from typing import Dict
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 from skfem import asm, ElementTriP0, ElementTriP1, BilinearForm, LinearForm, Basis, solve, condense, Mesh
 from skfem.helpers import dot
@@ -53,13 +50,13 @@ def solve_thermal(
 
     x = basis.zeros()
     for key, value in fixed_boundaries.items():
-        x[basis.get_dofs(key)] = value
+        x[basis.get_dofs(facets=key)] = value
 
     temperature = solve(
         *condense(
             thermal_conductivity_lhs,
             joule_heating_rhs,
-            D=functools.reduce(operator.add, (basis.get_dofs(fixed_boundary) for fixed_boundary in fixed_boundaries)),
+            D=basis.get_dofs(set(fixed_boundaries.keys())),
             x=x
         )
     )
@@ -68,8 +65,9 @@ def solve_thermal(
 
 
 if __name__ == '__main__':
-    from shapely.geometry import Polygon
+    from shapely.geometry import Polygon, LineString
     from collections import OrderedDict
+    import matplotlib.pyplot as plt
 
     # Simulating the TiN TOPS heater in https://doi.org/10.1364/OE.27.010456
 
@@ -83,6 +81,10 @@ if __name__ == '__main__':
     w_heater = 2
 
     polygons = OrderedDict(
+        bottom=LineString([
+            (-w_sim / 2, -h_core / 2 - h_box),
+            (w_sim / 2, -h_core / 2 - h_box)
+        ]),
         core=Polygon([
             (-w_core / 2, -h_core / 2),
             (-w_core / 2, h_core / 2),
@@ -119,6 +121,7 @@ if __name__ == '__main__':
     mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=.4)
 
     mesh = Mesh.load('mesh.msh')
+    print(mesh.boundaries)
 
     currents = np.linspace(0.007, 10e-3, 10) / polygons['heater'].area
     neffs = []
@@ -135,7 +138,7 @@ if __name__ == '__main__':
         basis, temperature = solve_thermal(basis0, thermal_conductivity_p0,
                                            specific_conductivity={"heater": 2.3e6},
                                            current_densities={"heater": current},
-                                           fixed_boundaries={'box_None_14': 0})
+                                           fixed_boundaries={'bottom': 0})
         # basis.plot(temperature, colorbar=True)
         # plt.show()
 
