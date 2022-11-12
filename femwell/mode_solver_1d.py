@@ -3,8 +3,8 @@ import scipy.linalg
 from skfem import *
 from skfem.helpers import *
 
-mesh = MeshLine(np.linspace(-5, 5, 201))
-mesh = mesh.with_subdomains({'core': lambda p: abs(p[0]) < .22})
+mesh = MeshLine(np.linspace(-1, 1, 201))
+mesh = mesh.with_subdomains({'core': lambda p: abs(p[0]) < .11})
 
 basis_epsilon = Basis(mesh, ElementLineP0())
 
@@ -18,7 +18,7 @@ k0 = 2 * np.pi / wavelength
 
 @BilinearForm
 def lhs(u, v, w):
-    return 1 / k0 ** 2 * dot(grad(u), grad(v)) + w['epsilon'] * inner(u, v)
+    return -1 / k0 ** 2 * dot(grad(u), grad(v)) + w['epsilon'] * inner(u, v)
 
 
 @BilinearForm
@@ -31,9 +31,8 @@ basis = basis_epsilon.with_element(ElementLineP1())
 A = lhs.assemble(basis, epsilon=basis_epsilon.interpolate(epsilon))
 B = rhs.assemble(basis)
 
-lams, xs = scipy.linalg.eigh(A.todense(), B.todense())
-# lams, xs = solve(*condense(A, B, D=basis.get_dofs()), solver=solver_eigen_scipy(sigma=3.55 ** 2, which='LR'))
+# lams, xs = scipy.linalg.eigh(A.todense(), B.todense())
+lams, xs = solve(*condense(A, B, D=basis.get_dofs()), solver=solver_eigen_scipy_sym(sigma=3.55 ** 2, which='LM'))
 
-print(lams)
+print(np.sqrt(lams))
 basis.plot(xs[:, -1]).show()
-basis.plot(np.abs(xs[:, -1])).show()
