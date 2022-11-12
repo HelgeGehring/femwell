@@ -75,56 +75,65 @@ def mesh_from_Dict(
             meshtracker.add_xy_surface(polygon, i, physical=False)
             i += 1
 
-        # Retag physicals
+        # Tag physicals
+        # TODO integrate in meshtracker
+        surface_name_mapping = {}
+        surface_resolution_mapping = {}
         for polygon_name, polygons in shapes_dict.items():
             surfaces = []
+            surface_indices = []
             for polygon in polygons.geoms if hasattr(polygons, "geoms") else [polygons]:
-                # Figure out enclosed surfaces
+                # Identify enclosed surfaces
                 for index in range(len(meshtracker.shapely_xy_surfaces)):
-                    for shapely_surface in meshtracker.shapely_xy_surfaces:
-                        if polygon.contains(shapely_surface):
-                            surfaces.append(meshtracker.gmsh_xy_surfaces[index])
+                    if polygon.contains(meshtracker.shapely_xy_surfaces[index]):
+                        surfaces.append(meshtracker.gmsh_xy_surfaces[index])
+                        surface_indices.append(index)
+                        if index in surface_resolution_mapping.keys():
+                            surface_resolution_mapping[index] = min(resolutions[polygon_name]["resolution"], surface_resolution_mapping[index])
+                        else:
+                            surface_resolution_mapping[index] = min(resolutions[polygon_name]["resolution"], default_resolution_max)
             meshtracker.model.add_physical(surfaces, polygon_name)
+            surface_name_mapping[polygon_name] = surface_indices
 
-        # # Refinement in surfaces
-        # n = 0
-        # refinement_fields = []
-        # for label, mesh_setting in resolutions.items():
-        #     # Inside surface
-        #     mesh_resolution = mesh_setting["resolution"]
-        #     gmsh.model.mesh.field.add("MathEval", n)
-        #     gmsh.model.mesh.field.setString(n, "F", f"{mesh_resolution}")
-        #     gmsh.model.mesh.field.add("Restrict", n+1)
-        #     gmsh.model.mesh.field.setNumber(n+1, "InField", n)
-        #     gmsh.model.mesh.field.setNumbers(n+1, "SurfacesList", meshtracker.get_gmsh_xy_surfaces_from_label(label))
-        #     # Around surface
-        #     mesh_distance = mesh_setting["distance"]
-        #     gmsh.model.mesh.field.add("Distance", n+2)
-        #     gmsh.model.mesh.field.setNumbers(n+2, "CurvesList", meshtracker.get_gmsh_xy_lines_from_label(label))
-        #     gmsh.model.mesh.field.setNumber(n+2, "Sampling", 100)
-        #     gmsh.model.mesh.field.add("Threshold", n+3)
-        #     gmsh.model.mesh.field.setNumber(n+3, "InField", n+2)
-        #     gmsh.model.mesh.field.setNumber(n+3, "SizeMin", mesh_resolution)
-        #     gmsh.model.mesh.field.setNumber(n+3, "SizeMax", default_resolution_max)
-        #     gmsh.model.mesh.field.setNumber(n+3, "DistMin", 0)
-        #     gmsh.model.mesh.field.setNumber(n+3, "DistMax", mesh_distance)
-        #     # Save and increment
-        #     refinement_fields.append(n+1)
-        #     refinement_fields.append(n+3)
-        #     n += 4
+        # Refinement in surfaces
+        n = 0
+        refinement_fields = []
+        current_resolutions = []
+        for surface_name, surface_indices in surface_name_mapping.items():
+            for surface_index in surface_indices:
+                gmsh.model.mesh.field.add("MathEval", n)
+                gmsh.model.mesh.field.setString(n, "F", f"{surface_resolution_mapping[surface_index]}")
+                gmsh.model.mesh.field.add("Restrict", n+1)
+                gmsh.model.mesh.field.setNumber(n+1, "InField", n)
+                gmsh.model.mesh.field.setNumbers(n+1, "SurfacesList", [meshtracker.gmsh_xy_surfaces[surface_index]._id])
+                # # Around surface
+                # mesh_distance = mesh_setting["distance"]
+                # gmsh.model.mesh.field.add("Distance", n+2)
+                # gmsh.model.mesh.field.setNumbers(n+2, "CurvesList", meshtracker.get_gmsh_xy_lines_from_label(label))
+                # gmsh.model.mesh.field.setNumber(n+2, "Sampling", 100)
+                # gmsh.model.mesh.field.add("Threshold", n+3)
+                # gmsh.model.mesh.field.setNumber(n+3, "InField", n+2)
+                # gmsh.model.mesh.field.setNumber(n+3, "SizeMin", mesh_resolution)
+                # gmsh.model.mesh.field.setNumber(n+3, "SizeMax", default_resolution_max)
+                # gmsh.model.mesh.field.setNumber(n+3, "DistMin", 0)
+                # gmsh.model.mesh.field.setNumber(n+3, "DistMax", mesh_distance)
+                # Save and increment
+                refinement_fields.append(n+1)
+                # refinement_fields.append(n+3)
+                n += 2
                 
         if global_quad:        
             gmsh.option.setNumber("Mesh.Algorithm", 8)
             gmsh.option.setNumber("Mesh.RecombineAll", 1)
 
         # Use the smallest element size overall
-        # gmsh.model.mesh.field.add("Min", n)
-        # gmsh.model.mesh.field.setNumbers(n, "FieldsList", refinement_fields)
-        # gmsh.model.mesh.field.setAsBackgroundMesh(n)
+        gmsh.model.mesh.field.add("Min", n)
+        gmsh.model.mesh.field.setNumbers(n, "FieldsList", refinement_fields)
+        gmsh.model.mesh.field.setAsBackgroundMesh(n)
 
-        # gmsh.model.mesh.MeshSizeFromPoints = 0
-        # gmsh.model.mesh.MeshSizeFromCurvature = 0
-        # gmsh.model.mesh.MeshSizeExtendFromBoundary = 0
+        gmsh.model.mesh.MeshSizeFromPoints = 0
+        gmsh.model.mesh.MeshSizeFromCurvature = 0
+        gmsh.model.mesh.MeshSizeExtendFromBoundary = 0
 
         # Fuse edges (bandaid)
         # gmsh.model.occ.synchronize()
@@ -239,7 +248,7 @@ def mesh_from_OrderedDict(
         for line_name, line in lines_broken_dict.items():
             meshtracker.add_get_xy_line(line, line_name)
 
-        # Add surfaces, reusing lines to simplify at early stage
+        # Add surfaces, reusing lines
         for polygon_name, polygon in polygons_broken_dict.items():
             meshtracker.add_xy_surface(polygon, polygon_name)
 
@@ -369,10 +378,10 @@ if __name__ == "__main__":
     # The resolution dict is not ordered, and can be used to set mesh resolution at various element
     # The edge of a polygon and another polygon (or entire simulation domain) will form a line object that can be refined independently
     resolutions = {}
-    resolutions["core"] = {"resolution": 0.01, "distance": 2}
-    resolutions["core2"] = {"resolution": 0.01, "distance": 2}
-    resolutions["clad"] = {"resolution": 0.05, "distance": 2}
-    resolutions["box"] = {"resolution": 0.05, "distance": 2}
+    resolutions["core"] = {"resolution": 0.02, "distance": 2}
+    resolutions["core2"] = {"resolution": 0.02, "distance": 2}
+    resolutions["clad"] = {"resolution": 0.5, "distance": 2}
+    resolutions["box"] = {"resolution": 0.5, "distance": 2}
     # resolutions["core_clad"] = {"resolution": 0.05, "distance": 0.5}
     # resolutions["clad_box"] = {"resolution": 0.05, "distance": 0.5}
     # resolutions["bottom_edge"] = {"resolution": 0.05, "distance": 0.5}
@@ -381,7 +390,7 @@ if __name__ == "__main__":
 
     quad = False
     # mesh = mesh_from_OrderedDict(shapes, resolutions, filename="mesh.msh", default_resolution_max=.3, global_quad=quad)
-    mesh = mesh_from_Dict(shapes, resolutions, filename="mesh.msh", default_resolution_max=.3, global_quad=quad)
+    mesh = mesh_from_Dict(shapes, resolutions, filename="mesh.msh", default_resolution_max=0.5, global_quad=quad)
 
     # gmsh.write("mesh.msh")
     # gmsh.clear()

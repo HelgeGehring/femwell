@@ -120,20 +120,20 @@ def slice_component(component, layerstack, mesh_step=100*nm):
 
 
 def overlap_mesh(component, layerstack, mesh_step=100*nm):
-    """Returns a mesh conditioned on the shapes from N different cross-sections."""
-    # Get cross-sectional profiles from each x-coordinate mesh point
-    x_coords = slice_component(component, layerstack, mesh_step=100*nm)
-    shapes = {}
-    for x_coord in x_coords:
-        shapes[x] = 
     return True
+#     """Returns a mesh conditioned on the shapes from N different cross-sections."""
+#     # Get cross-sectional profiles from each x-coordinate mesh point
+#     x_coords = slice_component(component, layerstack, mesh_step=100*nm)
+#     shapes = {}
+#     for x_coord in x_coords:
+#         shapes[x] = 
+#     return True
 
 
 if __name__ == "__main__":
 
     import gdsfactory as gf
     import gdsfactory.simulation.gmsh as gfmesh
-
 
     c = gf.Component()
 
