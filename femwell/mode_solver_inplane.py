@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse.linalg
 
-from skfem import BilinearForm, Basis, ElementTriN0, ElementTriP0, ElementTriP1, ElementVector, Mesh, Functional, solve, \
+from skfem import BilinearForm, Basis, ElementTriN1, ElementTriP0, ElementTriP1, ElementVector, Mesh, Functional, solve, \
     condense, solver_eigen_scipy_sym, solver_eigen_scipy
 from skfem.helpers import curl, grad, dot, inner, cross
 
@@ -11,7 +11,7 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
     k0 = 2 * np.pi / wavelength
     one_over_u_r = 1
 
-    basis = basis_epsilon_r.with_element(ElementTriN0() * ElementTriP1())
+    basis = basis_epsilon_r.with_element(ElementTriN1() * ElementTriP1())
 
     @BilinearForm(dtype=complex)
     def aform(E, lam, v, mu, w):
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     )
 
     resolutions = dict(
-        core={"resolution": .05, "distance": 1},
+        core={"resolution": .02, "distance": 1},
     )
 
     mesh = mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=.3)

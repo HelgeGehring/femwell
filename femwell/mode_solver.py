@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse.linalg
 
-from skfem import BilinearForm, Basis, ElementTriN0, ElementTriP0, ElementTriP1, ElementVector, Mesh, Functional, \
+from skfem import BilinearForm, Basis, ElementTriN1, ElementTriP0, ElementTriP1, ElementVector, Mesh, Functional, \
     LinearForm
 from skfem.helpers import curl, grad, dot, inner, cross
 
@@ -11,7 +11,7 @@ from skfem.helpers import curl, grad, dot, inner, cross
 def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
     k0 = 2 * np.pi / wavelength
 
-    basis = basis_epsilon_r.with_element(ElementTriN0() * ElementTriP1())
+    basis = basis_epsilon_r.with_element(ElementTriN1() * ElementTriP1())
 
     @BilinearForm(dtype=epsilon_r.dtype)
     def aform(e_t, e_z, v_t, v_z, w):
