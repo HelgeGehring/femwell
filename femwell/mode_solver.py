@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse.linalg
 
-from skfem import BilinearForm, Basis, ElementTriN0, ElementTriP0, ElementTriP1, ElementVector, Mesh, Functional
+from skfem import BilinearForm, Basis, ElementTriN0, ElementTriP0, ElementTriP1, ElementVector, Mesh, Functional, \
+    LinearForm
 from skfem.helpers import curl, grad, dot, inner, cross
 
 
@@ -78,6 +79,25 @@ def calculate_hfield(basis, xs, beta):
     return scipy.sparse.linalg.spsolve(b_operator, a_operator @ xs) * 1j  # Don't understand the 1j yet
 
 
+def calculate_energy_current_density(basis, xs):
+    basis_energy = basis.with_element(ElementTriP0())
+
+    @LinearForm(dtype=complex)
+    def aform(v, w):
+        e_t, e_z = w['e']
+        return abs(e_t[0]) ** 2 * v + abs(e_t[1]) ** 2 * v + abs(e_z) * v
+
+    a_operator = aform.assemble(basis_energy, e=basis.interpolate(xs))
+
+    @BilinearForm(dtype=complex)
+    def bform(e, v, w):
+        return e * v
+
+    b_operator = bform.assemble(basis_energy)
+
+    return basis_energy, scipy.sparse.linalg.spsolve(b_operator, a_operator)
+
+
 def calculate_overlap(basis, E_i, H_i, E_j, H_j):
     @Functional
     def overlap(w):
@@ -96,13 +116,14 @@ def calculate_coupling_coefficient(basis_epsilon, delta_epsilon, basis, E_i, E_j
                             delta_epsilon=basis_epsilon.interpolate(delta_epsilon))
 
 
-def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E'):
+def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', direction='x'):
     from mpl_toolkits.axes_grid1 import make_axes_locatable
 
     (et, et_basis), (ez, ez_basis) = basis.split(mode)
 
     if plot_vectors:
-        fig, axs = plt.subplots(2, 1, subplot_kw=dict(aspect=1))
+        rc = (2, 1) if direction == 'x' else (1, 2)
+        fig, axs = plt.subplots(*rc, subplot_kw=dict(aspect=1))
         for ax in axs:
             for subdomain in basis.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
                 basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
@@ -118,7 +139,8 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E'):
     et_xy = plot_basis.project(et_basis.interpolate(et))
     (et_x, et_x_basis), (et_y, et_y_basis) = plot_basis.split(et_xy)
 
-    fig, axs = plt.subplots(3, 1, subplot_kw=dict(aspect=1))
+    rc = (3, 1) if direction == 'x' else (1, 3)
+    fig, axs = plt.subplots(*rc, subplot_kw=dict(aspect=1))
     for ax in axs:
         for subdomain in basis.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
             basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
