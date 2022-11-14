@@ -294,16 +294,20 @@ def mesh_from_OrderedDict(
         gmsh.model.mesh.MeshSizeFromCurvature = 0
         gmsh.model.mesh.MeshSizeExtendFromBoundary = 0
 
-        # Fuse edges (bandaid)
-        # gmsh.model.occ.synchronize()
-        # gmsh.model.occ.removeAllDuplicates()
-        # gmsh.model.occ.synchronize()
-
-        # Extract all unique lines (TODO: identify interfaces in label)
-        i = 0
-        for index, line in enumerate(meshtracker.gmsh_xy_segments):
-            model.add_physical(line, f"{meshtracker.xy_segments_main_labels[index]}_{meshtracker.xy_segments_secondary_labels[index]}_{i}")
-            i += 1
+        # Tag all interfacial lines
+        for surface1, surface2 in combinations(polygons_broken_dict.keys(), 2):
+            interfaces = []
+            for index, line in enumerate(meshtracker.gmsh_xy_segments):
+                if (
+                    meshtracker.xy_segments_main_labels[index] == surface1
+                    and meshtracker.xy_segments_secondary_labels[index] == surface2
+                ) or (
+                    meshtracker.xy_segments_main_labels[index] == surface2
+                    and meshtracker.xy_segments_secondary_labels[index] == surface1
+                ):
+                    interfaces.append(line)
+            if interfaces:
+                model.add_physical(interfaces, f"{surface1}___{surface2}")
 
         mesh = geometry.generate_mesh(dim=2, verbose=True)
 
