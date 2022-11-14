@@ -54,22 +54,22 @@ def mesh_waveguide(filename, wsim, hclad, hsi, wcore, hcore, gap):
     )
 
     resolutions = dict(
-        core={"resolution": .4, "distance": 20},
-        core_l={"resolution": .4, "distance": 2},
-        core_r={"resolution": .4, "distance": 20},
-        interface={"resolution": .2, "distance": 20},
+        #core={"resolution": .6, "distance": 20},
+        #core_l={"resolution": .6, "distance": 2},
+        #core_r={"resolution": .6, "distance": 20},
+        interface={"resolution": 1, "distance": 10},
         # clad={"resolution": 3, "distance": 10},
         # silicon={"resolution": 3, "distance": 10}
     )
 
-    return mesh_from_polygons(polygons, resolutions, filename=filename, default_resolution_max=3)
+    return mesh_from_polygons(polygons, resolutions, filename=filename, default_resolution_max=10)
 
 
 if __name__ == '__main__':
     omega = 1e-5
 
     with tempfile.TemporaryDirectory() as tmpdirname:
-        mesh = mesh_waveguide(wsim=200, hclad=26, hsi=26, wcore=10, hcore=1, gap=20,
+        mesh = mesh_waveguide(wsim=200, hclad=50, hsi=50, wcore=10, hcore=1, gap=20,
                               filename=tmpdirname + '/mesh.msh')
         mesh = Mesh.load(tmpdirname + '/mesh.msh')
 
