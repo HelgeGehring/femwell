@@ -1,29 +1,24 @@
 import gdsfactory as gf
-from gdsfactory.simulation.gmsh import fuse_component_layer, order_layerstack
-from gdsfactory.geometry.boolean import boolean
+from gdsfactory.simulation.gmsh import cleanup_component, order_layerstack, get_uz_bounds_layers
+from gdsfactory.component import Component
+from gdsfactory.tech import LayerStack
 from collections import OrderedDict
 import numpy as np
+from typing import Optional, Dict
 
-from shapely.geometry import MultiPoint, Polygon, LineString
+from shapely.geometry import MultiPoint, Polygon, LineString, MultiPolygon
 from shapely.affinity import translate
+
+from femwell.mesh import mesh_from_Dict
 
 nm = 1E-3
 
-def process_component(component, layerstack):
-    """Process component polygons to:
-        * eliminate precision issues on vertices
-        * fuse polygons into the smallest set of polygons
-
-    Returns
-        layer_polygons_dict: dict containing layername as key, and simplest MultiPolygon object as entry
-    """
-    layer_dict = layerstack.to_dict()
-    layer_polygons_dict = {}
-    for layername in layer_dict.keys():
-        layer_polygons_dict[layername] = fuse_component_layer(
-            c, layername, layer_dict[layername]
-        )
-    return layer_polygons_dict
+def to_polygons(geometries):
+    for geometry in geometries:
+        if isinstance(geometry, Polygon):
+            yield geometry
+        else:
+            yield from geometry
 
 def get_vertices(polygon):
     """Return all polygon vertices (interior and exterior)"""
@@ -59,7 +54,7 @@ def get_unique_x_bounds(layer_polygons_dict):
     return np.sort(np.unique(np.array(xs)))
 
 def get_mode_regions(component, layerstack, tol=1E-6):
-    """Return interesting x_bounds of polygon vertices.
+    """Return x_bounds of polygon vertices where there is a change of cross-section.
     
         Propagation direction is "x" in component ("z" in mode solver)
 
@@ -73,7 +68,7 @@ def get_mode_regions(component, layerstack, tol=1E-6):
     bbox = gf.components.bbox(bbox=component.bbox).get_polygons()[0][:,1]
     ymin = np.min(bbox)
     ymax = np.max(bbox)
-    layer_polygons_dict =  process_component(component, layerstack)
+    layer_polygons_dict = cleanup_component(component, layerstack)
     x_bounds = get_unique_x_bounds(layer_polygons_dict)
 
     x_changing_bounds = []
@@ -102,7 +97,7 @@ def get_mode_regions(component, layerstack, tol=1E-6):
     return x_changing_bounds, x_not_changing_bounds
 
 
-def slice_component(component, layerstack, mesh_step=100*nm):
+def slice_component_xbounds(component, layerstack, mesh_step=100*nm):
     """Returns minimal list of x-coordinates where cross-section is to be taken."""
     # Process polygon to extract regions of change and free propagation
     x_changing_bounds, x_not_changing_bounds = get_mode_regions(component, layerstack, tol=1E-6)
@@ -119,15 +114,43 @@ def slice_component(component, layerstack, mesh_step=100*nm):
     return np.sort(np.concatenate(x_coordinates).ravel())
 
 
-def overlap_mesh(component, layerstack, mesh_step=100*nm):
-    return True
-#     """Returns a mesh conditioned on the shapes from N different cross-sections."""
-#     # Get cross-sectional profiles from each x-coordinate mesh point
-#     x_coords = slice_component(component, layerstack, mesh_step=100*nm)
-#     shapes = {}
-#     for x_coord in x_coords:
-#         shapes[x] = 
-#     return True
+
+def slice_component_polygons(component, layerstack, ymin=-10, ymax=10, mesh_step=100*nm):
+    """Returns a dict of dicts "layer__x" of polygons.
+    
+        "layer__x" to be used as the gmsh physical label.
+    """
+    layer_polygons_dict = cleanup_component(component, layerstack)
+    x_coords = slice_component_xbounds(component, layerstack, mesh_step=100*nm)
+    layer_order = order_layerstack(layerstack)
+    shapes = {}
+    for x_coord in x_coords:
+        xsection_bounds = [[x_coord, ymin],[x_coord, ymax]]
+        bounds_dict = get_uz_bounds_layers(layer_polygons_dict, xsection_bounds, layerstack)
+        for layer in layer_order:
+            layer_shapes = []
+            for polygon in bounds_dict[layer]:
+                layer_shapes.append(polygon)
+            shapes[f"{layer}_{x_coord}"] = MultiPolygon(to_polygons(layer_shapes))
+    return shapes
+
+def mesh_from_slices(component: Component, 
+                        layerstack: LayerStack, 
+                        mesh_step: float = 500 * nm,
+                        resolutions: Optional[Dict[str, Dict[str, float]]] = {},
+                        default_resolution_min: float = 0.01,
+                        default_resolution_max: float = 0.5,
+                        filename: Optional[str] = None,
+                        gmsh_algorithm: int = 5,
+                        global_quad: Optional[bool] = False,
+                    ):
+    """Returns a single cross-sectional uz mesh conditioned on multiple slices."""
+    shapes = slice_component_polygons(component, layerstack, mesh_step)
+    return mesh_from_Dict(
+            shapes_dict=shapes,
+            resolutions=resolutions,
+            filename='test.msh'
+        )
 
 
 if __name__ == "__main__":
@@ -158,13 +181,13 @@ if __name__ == "__main__":
                 )
     )
     taper.connect("o2", straight.ports["o2"])
-    bend = c.add_ref(
-        gf.components.bend_euler(angle = 20.0,
-                                p=0.5,
-                                width=0.5,
-                                cross_section = "strip",
-                ).move([12, -5])
-    )
+    # bend = c.add_ref(
+    #     gf.components.bend_euler(angle = 20.0,
+    #                             p=0.5,
+    #                             width=0.5,
+    #                             cross_section = "strip",
+    #             ).move([12, -5])
+    # )
 
     from gdsfactory.tech import get_layer_stack_generic, LayerStack
     import numpy as np
@@ -189,7 +212,7 @@ if __name__ == "__main__":
     #     shapes[layer] = layer_polygons_dict[layer]
 
     # Compute the x-coordinates where the cross-section changes
-    lines = slice_component(c, filtered_layerstack)
+    lines = slice_component_xbounds(c, filtered_layerstack, mesh_step=500*nm)
     for x in lines:
         P = gf.Path([[x, -20], [x, 20]])
         X = gf.CrossSection(width=0.001, layer=(99,0))
@@ -197,6 +220,13 @@ if __name__ == "__main__":
         c << line
 
     c.show()
+
+    # shapes = slice_component_polygons(c, filtered_layerstack)
+    # for key, value in shapes.items():
+    #     print(key, value)
+
+    mesh_from_slices(c, layerstack=filtered_layerstack, mesh_step=500*nm)
+
 
 
     # polygons_dict = gf.simulation.gmsh.get_xsection_bound_polygons(component=c, 
