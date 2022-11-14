@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse.linalg
 
-from skfem import BilinearForm, Basis, ElementTriN1, ElementTriP0, ElementTriP1, ElementVector, Mesh, Functional, \
+from skfem import BilinearForm, Basis, ElementTriN2, ElementDG, ElementTriP0, ElementTriP1, ElementTriP2, ElementVector, \
+    Mesh, Functional, \
     LinearForm
 from skfem.helpers import curl, grad, dot, inner, cross
 
@@ -11,7 +12,7 @@ from skfem.helpers import curl, grad, dot, inner, cross
 def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
     k0 = 2 * np.pi / wavelength
 
-    basis = basis_epsilon_r.with_element(ElementTriN1() * ElementTriP1())
+    basis = basis_epsilon_r.with_element(ElementTriN2() * ElementTriP2())
 
     @BilinearForm(dtype=epsilon_r.dtype)
     def aform(e_t, e_z, v_t, v_z, w):
@@ -50,11 +51,12 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
 
     xs = np.array(xs, dtype=complex)
     lams = np.array(lams)
+
     xs[:, basis.split_indices()[1]] /= 1j * np.sqrt(lams[:, np.newaxis])  # undo the scaling E_3,new = beta * E_3
 
     for i, lam in enumerate(lams):
         H = calculate_hfield(basis, xs[i], -np.sqrt(lam))
-        xs[i] /= np.sqrt(calculate_overlap(basis, xs[i], H, xs[i], H))
+        xs[i] /= np.sqrt(calculate_overlap(basis, xs[i], H, basis, xs[i], H))
 
     return np.sqrt(lams) / k0, basis, xs
 
@@ -98,13 +100,34 @@ def calculate_energy_current_density(basis, xs):
     return basis_energy, scipy.sparse.linalg.spsolve(b_operator, a_operator)
 
 
-def calculate_overlap(basis, E_i, H_i, E_j, H_j):
+def calculate_overlap(basis_i, E_i, H_i, basis_j, E_j, H_j):
     @Functional
     def overlap(w):
         return cross(np.conj(w['E_i'][0]), w['H_j'][0]) + cross(w['E_j'][0], np.conj(w['H_i'][0]))
 
-    return overlap.assemble(basis, E_i=basis.interpolate(E_i), H_i=basis.interpolate(H_i),
-                            E_j=basis.interpolate(E_j), H_j=basis.interpolate(H_j))
+    if basis_i == basis_j:
+        return overlap.assemble(basis_i, E_i=basis_i.interpolate(E_i), H_i=basis_i.interpolate(H_i),
+                                E_j=basis_j.interpolate(E_j), H_j=basis_j.interpolate(H_j))
+    else:
+
+        basis_j_fix = basis_j.with_element(ElementVector(ElementTriP1()))
+
+        (et, et_basis), (ez, ez_basis) = basis_j.split(E_j)
+        E_j = basis_j_fix.project(et_basis.interpolate(et), dtype=np.cfloat)
+        (et_x, et_x_basis), (et_y, et_y_basis) = basis_j_fix.split(E_j)
+
+        (et, et_basis), (ez, ez_basis) = basis_j.split(H_j)
+        H_j = basis_j_fix.project(et_basis.interpolate(et), dtype=np.cfloat)
+        (ht_x, ht_x_basis), (ht_y, ht_y_basis) = basis_j_fix.split(H_j)
+
+        @Functional(dtype=np.complex64)
+        def overlap(w):
+            return cross(np.conj(w['E_i'][0]),
+                         np.array((ht_x_basis.interpolator(ht_x)(w.x), ht_y_basis.interpolator(ht_y)(w.x)))) \
+                   + cross(np.array((et_x_basis.interpolator(et_x)(w.x), et_y_basis.interpolator(et_y)(w.x))),
+                           np.conj(w['H_i'][0]))
+
+        return overlap.assemble(basis_i, E_i=basis_i.interpolate(E_i), H_i=basis_i.interpolate(H_i))
 
 
 def calculate_coupling_coefficient(basis_epsilon, delta_epsilon, basis, E_i, E_j):
@@ -135,7 +158,7 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', directi
         plt.colorbar(axs[1].collections[0], cax=cax)
         return fig, axs
 
-    plot_basis = et_basis.with_element(ElementVector(ElementTriP0()))
+    plot_basis = et_basis.with_element(ElementVector(ElementDG(ElementTriP1())))
     et_xy = plot_basis.project(et_basis.interpolate(et))
     (et_x, et_x_basis), (et_y, et_y_basis) = plot_basis.split(et_xy)
 
@@ -166,10 +189,10 @@ if __name__ == "__main__":
     from collections import OrderedDict
     from femwell.mesh import mesh_from_polygons
 
-    w_sim = 4 * 2
-    h_clad = 1
-    h_box = 1
-    w_core = 0.5 * 3
+    w_sim = 3
+    h_clad = .7
+    h_box = .5
+    w_core = 0.5
     h_core = 0.22
     offset_heater = 2.2
     h_heater = .14
@@ -197,14 +220,14 @@ if __name__ == "__main__":
     )
 
     resolutions = dict(
-        core={"resolution": 0.01, "distance": 1},
-        heater={"resolution": 0.05, "distance": 1}
+        core={"resolution": 0.05, "distance": 1}
     )
 
     mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=.2)
 
     mesh = Mesh.load('mesh.msh')
-    basis0 = Basis(mesh, ElementTriP0(), intorder=4)
+    basis = Basis(mesh, ElementTriN2() * ElementTriP2())
+    basis0 = basis.with_element(ElementTriP0())
     epsilon = basis0.zeros(dtype=complex)
     epsilon[basis0.get_dofs(elements='core')] = 3.4777 ** 2
     epsilon[basis0.get_dofs(elements='clad')] = 1.444 ** 2
@@ -234,7 +257,7 @@ if __name__ == "__main__":
             E_j = xs[j]
             H_i = calculate_hfield(basis, E_i, -lams[i] * (2 * np.pi / 1.55))
             H_j = calculate_hfield(basis, E_j, -lams[j] * (2 * np.pi / 1.55))
-            integrals[i, j] = calculate_overlap(basis, E_i, H_i, E_j, H_j)
+            integrals[i, j] = calculate_overlap(basis, E_i, H_i, basis, E_j, H_j)
 
     plt.imshow(np.real(integrals))
     plt.colorbar()

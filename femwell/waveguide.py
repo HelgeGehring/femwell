@@ -38,12 +38,10 @@ def mesh_waveguide(filename, wsim, hclad, hbox, wcore, hcore):
     )
 
     resolutions = dict(
-        core={"resolution": 0.03, "distance": 10},
-        clad={"resolution": 0.06, "distance": 10},
-        box={"resolution": 0.06, "distance": 10}
+        core={"resolution": 0.03, "distance": 1}
     )
 
-    return mesh_from_polygons(polygons, resolutions, filename=filename, default_resolution_max=.1)
+    return mesh_from_polygons(polygons, resolutions, filename=filename, default_resolution_max=.6)
 
 
 if __name__ == '__main__':
