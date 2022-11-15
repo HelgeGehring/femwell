@@ -1,5 +1,7 @@
-Maxwell
--------
+Maxwell-equations
+=================
+
+Starting with the maxwell equations:
 
 .. math::
     :name: maxwell
@@ -12,7 +14,11 @@ Maxwell
 
     &\nabla\times\vec{\mathcal{H}} = \varepsilon\frac{\partial \vec{\mathcal{E}}}{\partial t} + \vec{J}
 
-Without sources:
+
+Eigenvectors propagating in :math:`x_3`-direction
+--------------------------------------------------------------
+
+Assuming no sources and currents present, :eq:`maxwell` simplifies to
 
 .. math::
     :name: maxwell_no_sources
@@ -25,7 +31,7 @@ Without sources:
 
     &\nabla\times\vec{\mathcal{H}} = \varepsilon\frac{\partial \vec{\mathcal{E}}}{\partial t}
 
-Leads to
+By combining the latter two equations of :eq:`maxwell_no_sources` we get for the :math:`\mathcal{E}`
 
 .. math::
     :name: maxwell_telegraph
@@ -38,8 +44,8 @@ Leads to
 
 If we restrict the problem to 2D like done in `paper <http://dx.doi.org/10.1080/02726340290084012>`_,
 i.e. a plane with :math:`\vec{x}=(x_1,x_2)` and
-assuming propagation only in z-direction,
-the equations simplify for the harmonic case to:
+assuming propagation only in :math:`x_3`-direction with a propagation constant :math:`\beta`,
+the equations simplify for the harmonic case with a frequency of :math:`\omega` to:
 
 .. math::
     \mathcal{E}(\vec{x},x_3,t)=(\vec{E}(\vec{x}),E_3(\vec{x}))\mathrm{e}^{i(\omega t - \beta x_3)}
