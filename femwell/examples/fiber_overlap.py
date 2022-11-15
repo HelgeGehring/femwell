@@ -42,15 +42,15 @@ def e_field_gaussian(r, z, mfr, refractive_index, wavelength):
 
 if __name__ == '__main__':
     with tempfile.TemporaryDirectory() as tmpdirname:
-        core = shapely.geometry.box(-.2, -.17, .2, .17)
+        core = shapely.geometry.box(-.05, -.25, .05, .25)
 
         polygons = OrderedDict(
             core=core,
-            clad=core.buffer(10)
+            clad=core.buffer(10, resolution=4)
         )
 
         resolutions = dict(
-            core={"resolution": .1, "distance": 2}
+            core={"resolution": .1, "distance": .1}
         )
 
         mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=10)
@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
     basis0 = Basis(mesh, ElementTriP0(), intorder=4)
     epsilon = basis0.zeros().astype(complex)
-    epsilon[basis0.get_dofs(elements='core')] = 2 ** 2
+    epsilon[basis0.get_dofs(elements='core')] = 1.9963 ** 2
     epsilon[basis0.get_dofs(elements='clad')] = 1.444 ** 2
     basis0.plot(np.real(epsilon), colorbar=True).show()
 
@@ -68,20 +68,37 @@ if __name__ == '__main__':
     fig, axs = plot_mode(basis, np.real(xs[0]), direction='x')
     plt.show()
 
-    basis_fiber = basis0.with_element(ElementTriP1())
-    x_fiber = basis_fiber.project(lambda x: e_field_gaussian(np.sqrt(x[0] ** 2 + x[1] ** 2), 0, 9 / 2, 1, 1.55),
-                                  dtype=np.cfloat)
+    mfds = np.linspace(0, 20, 100)
+    efficiencies = []
 
-    basis_fiber.plot(np.real(x_fiber)).show()
-
-
-    @Functional(dtype=np.complex64)
-    def overlap_integral(w):
-        return w['E_i'] * np.conj(w['E_j'])
+    for mfd in mfds:
+        basis_fiber = basis0.with_element(ElementTriP1())
+        x_fiber = basis_fiber.project(lambda x: e_field_gaussian(np.sqrt(x[0] ** 2 + x[1] ** 2), 0, mfd / 2, 1, 1.55),
+                                      dtype=np.cfloat)
 
 
-    print(overlap_integral.assemble(basis_fiber, E_i=basis_fiber.interpolate(x_fiber),
-                                    E_j=basis_fiber.interpolate(x_fiber)))
+        # basis_fiber.plot(np.real(x_fiber)).show()
 
-    print(overlap_integral.assemble(basis_fiber, E_i=basis.interpolate(xs[0])[0][0],
-                                    E_j=basis_fiber.interpolate(x_fiber)))
+        @Functional(dtype=np.complex64)
+        def overlap_integral(w):
+            return w['E_i'] * np.conj(w['E_j'])
+
+
+        print('ff', overlap_integral.assemble(basis_fiber,
+                                              E_i=basis_fiber.interpolate(x_fiber),
+                                              E_j=basis_fiber.interpolate(x_fiber)))
+
+        print('ww', np.abs(overlap_integral.assemble(basis_fiber,
+                                                     E_i=basis.interpolate(xs[0])[0][1],
+                                                     E_j=basis.interpolate(xs[0])[0][1]))
+              * lams[0] * (2 * np.pi / 1.55) * 2)
+
+        efficiency = np.abs(overlap_integral.assemble(basis_fiber,
+                                                      E_i=basis.interpolate(xs[0])[0][1],
+                                                      E_j=basis_fiber.interpolate(x_fiber))
+                            * np.sqrt(lams[0] * (2 * np.pi / 1.55) * 2))
+
+        efficiencies.append(efficiency)
+
+    plt.plot(mfds, efficiencies)
+    plt.show()
