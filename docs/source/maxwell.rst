@@ -2,15 +2,44 @@ Maxwell
 -------
 
 .. math::
-    &\nabla\cdot\vec{E} = \frac{\rho}{\varepsilon}
+    :name: maxwell
 
-    &\nabla\cdot\vec{H} = 0
+    &\nabla\cdot\vec{\mathcal{E}} = \frac{\rho}{\varepsilon} \label{test}
 
-    &\nabla\times\vec{E} = - \mu \frac{\partial \vec{H}}{\partial t}
+    &\nabla\cdot\vec{\mathcal{H}} = 0
 
-    &\nabla\times\vec{H} = \varepsilon\frac{\partial \vec{E}}{\partial t} + \vec{J}
+    &\nabla\times\vec{\mathcal{E}} = - \mu \frac{\partial \vec{\mathcal{H}}}{\partial t}
 
-Math like in this `paper <http://dx.doi.org/10.1080/02726340290084012>`_
+    &\nabla\times\vec{\mathcal{H}} = \varepsilon\frac{\partial \vec{\mathcal{E}}}{\partial t} + \vec{J}
+
+Without sources:
+
+.. math::
+    :name: maxwell_no_sources
+
+    &\nabla\cdot\vec{\mathcal{E}} = 0
+
+    &\nabla\cdot\vec{\mathcal{H}} = 0
+
+    &\nabla\times\vec{\mathcal{E}} = - \mu \frac{\partial \vec{\mathcal{H}}}{\partial t}
+
+    &\nabla\times\vec{\mathcal{H}} = \varepsilon\frac{\partial \vec{\mathcal{E}}}{\partial t}
+
+Leads to
+
+.. math::
+    :name: maxwell_telegraph
+
+    &\nabla\cdot\vec{\mathcal{E}} = 0
+
+    &\frac{1}{\mu} \nabla\times\nabla\times\vec{\mathcal{E}}
+    =
+    - \varepsilon \frac{\partial^2 \vec{\mathcal{E}}}{\partial t^2}
+
+If we restrict the problem to 2D like done in `paper <http://dx.doi.org/10.1080/02726340290084012>`_,
+i.e. a plane with :math:`\vec{x}=(x_1,x_2)` and
+assuming propagation only in z-direction,
+the equations simplify for the harmonic case to:
 
 .. math::
     \mathcal{E}(\vec{x},x_3,t)=(\vec{E}(\vec{x}),E_3(\vec{x}))\mathrm{e}^{i(\omega t \pm \beta x_3)}
