@@ -63,16 +63,16 @@ if __name__ == '__main__':
     epsilon[basis0.get_dofs(elements='clad')] = 1.444 ** 2
     basis0.plot(np.real(epsilon), colorbar=True).show()
 
-    # lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1)
+    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1)
 
-    # fig, axs = plot_mode(basis, np.real(xs[0]), direction='x')
-    # plt.show()
+    fig, axs = plot_mode(basis, np.real(xs[0]), direction='x')
+    plt.show()
 
-    basis = basis0.with_element(ElementTriP1())
-    x_fiber = basis.project(lambda x: e_field_gaussian(np.sqrt(x[0] ** 2 + x[1] ** 2), 0, 9 / 2, 1, 1.55),
-                            dtype=np.cfloat)
+    basis_fiber = basis0.with_element(ElementTriP1())
+    x_fiber = basis_fiber.project(lambda x: e_field_gaussian(np.sqrt(x[0] ** 2 + x[1] ** 2), 0, 9 / 2, 1, 1.55),
+                                  dtype=np.cfloat)
 
-    basis.plot(np.real(x_fiber)).show()
+    basis_fiber.plot(np.real(x_fiber)).show()
 
 
     @Functional(dtype=np.complex64)
@@ -80,4 +80,8 @@ if __name__ == '__main__':
         return w['E_i'] * np.conj(w['E_j'])
 
 
-    print(overlap_integral.assemble(basis, E_i=basis.interpolate(x_fiber), E_j=basis.interpolate(x_fiber)))
+    print(overlap_integral.assemble(basis_fiber, E_i=basis_fiber.interpolate(x_fiber),
+                                    E_j=basis_fiber.interpolate(x_fiber)))
+
+    print(overlap_integral.assemble(basis_fiber, E_i=basis.interpolate(xs[0])[0][0],
+                                    E_j=basis_fiber.interpolate(x_fiber)))
