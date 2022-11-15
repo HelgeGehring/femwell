@@ -50,7 +50,7 @@ if __name__ == '__main__':
         )
 
         resolutions = dict(
-            core={"resolution": .1, "distance": .1}
+            core={"resolution": .01, "distance": .1}
         )
 
         mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=10)
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     fig, axs = plot_mode(basis, np.real(xs[0]), direction='x')
     plt.show()
 
-    mfds = np.linspace(0, 20, 100)
+    mfds = np.linspace(2, 20, 100)
     efficiencies = []
 
     for mfd in mfds:
@@ -82,16 +82,6 @@ if __name__ == '__main__':
         @Functional(dtype=np.complex64)
         def overlap_integral(w):
             return w['E_i'] * np.conj(w['E_j'])
-
-
-        print('ff', overlap_integral.assemble(basis_fiber,
-                                              E_i=basis_fiber.interpolate(x_fiber),
-                                              E_j=basis_fiber.interpolate(x_fiber)))
-
-        print('ww', np.abs(overlap_integral.assemble(basis_fiber,
-                                                     E_i=basis.interpolate(xs[0])[0][1],
-                                                     E_j=basis.interpolate(xs[0])[0][1]))
-              * lams[0] * (2 * np.pi / 1.55) * 2)
 
         efficiency = np.abs(overlap_integral.assemble(basis_fiber,
                                                       E_i=basis.interpolate(xs[0])[0][1],
