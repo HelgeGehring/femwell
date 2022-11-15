@@ -32,7 +32,12 @@ def compute_interface_s_matrix(
     return T_ab, R_ab, T_ba, R_ba
 
 
- 
+def compute_propagation_s_matrix(modes, length, wavelength):
+    lams, basis, xs = modes # lams is neff
+    betas = lams * 2 * np.pi / wavelength
+    return np.diag(np.exp(2j * np.pi * np.abs(betas) * length))
+
+
 if __name__ == "__main__":
 
     import tempfile
@@ -74,43 +79,9 @@ if __name__ == "__main__":
 
     T_ab, R_ab, T_ba, R_ba = compute_interface_s_matrix(modes[0], modes[1])
 
-    from pprint import pprint
-    for matrix in [T_ab, R_ab, T_ba, R_ba]:
-        print(matrix)        
+    # from pprint import pprint
+    # for matrix in [T_ab, R_ab, T_ba, R_ba]:
+    #     print(matrix)        
 
-    # for mode_a, mode_b in zip(modes[:-1], modes[1:]):
-    #     lams_a, basis_a, xs_a = mode_a
-    #     lams_b, basis_b, xs_b = mode_b
-
-    #     integrals = np.zeros((len(lams_a), len(lams_b)), dtype=complex)
-    #     for i in range(len(lams_a)):
-    #         for j in range(len(lams_b)):
-    #             E_i = xs_a[i]
-    #             E_j = xs_b[j]
-    #             H_i = calculate_hfield(basis_a, E_i, -lams_a[i] * (2 * np.pi / 1.55))
-    #             H_j = calculate_hfield(basis_b, E_j, -lams_b[j] * (2 * np.pi / 1.55))
-    #             integrals[i, j] = calculate_overlap(basis_a, E_i, H_i, basis_b, E_j, H_j)
-
-    #     plt.imshow(np.abs(integrals))
-    #     plt.colorbar()
-    #     plt.show()
-
-    #     z = np.abs(integrals)**2
-
-    #     fig, axCenter = plt.subplots(figsize=(8, 8))
-    #     fig.subplots_adjust(.05,.1,.95,.95)
-
-    #     from mpl_toolkits.axes_grid1 import make_axes_locatable
-
-    #     divider = make_axes_locatable(axCenter)
-    #     axvert = divider.append_axes('right', size='30%', pad=0.5)
-    #     axhoriz = divider.append_axes('top', size='20%', pad=0.25)
-
-    #     axCenter.imshow(z, origin='lower', cmap='jet')
-    #     axhoriz.plot(range(np.shape(z)[1]), np.sum(z, 0))
-    #     axvert.plot(np.sum(z, 1), range(np.shape(z)[0]))
-
-    #     axhoriz.margins(x=0)
-    #     axvert.margins(y=0)
-
-    #     plt.show()
+    print(np.shape(compute_propagation_s_matrix(modes[0], 1, 1.55)))
+    print(compute_propagation_s_matrix(modes[0], 1, 1.55))
