@@ -58,7 +58,7 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
         H = calculate_hfield(basis, xs[i], -np.sqrt(lam))
         xs[i] /= np.sqrt(calculate_overlap(basis, xs[i], H, basis, xs[i], H))
 
-    return np.sqrt(lams) / k0, basis, xs
+    return np.sqrt(lams)[:num_modes] / k0, basis, xs[:num_modes]
 
 
 def calculate_hfield(basis, xs, beta):
