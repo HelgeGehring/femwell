@@ -9,7 +9,7 @@ jobs:
   build:
     permissions:
       contents: read
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
@@ -17,9 +17,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-      - name: Install Petsc and Slepc
-        run: |
-          sudo apt-get -y install libpetsc-complex-dev libslepc-complex-dev
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
