@@ -30,10 +30,13 @@ def e_field_gaussian(r, z, mfr, refractive_index, wavelength):
     mfr_at_z = mfr_at(mfr, z, refractive_index, wavelength)
     k = 2 * np.pi * refractive_index / wavelength
 
+    if z != 0:
+        raise Warning('Complex integration seems not to be working right')
+
     return (
             1 / mfr_at_z / np.sqrt(np.pi / 2)
             * np.exp(-r ** 2 / mfr_at_z ** 2)
-        # * np.exp(-1j * k * z + k * r ** 2 / (2 * r_at(z, mfr, refractive_index, wavelength)))
+            * np.exp(-1j * (k * z + k * r ** 2 / (2 * r_at(z, mfr, refractive_index, wavelength))))
     )
 
 
@@ -66,14 +69,15 @@ if __name__ == '__main__':
     # plt.show()
 
     basis = basis0.with_element(ElementTriP1())
-    x_fiber = basis.project(lambda x: e_field_gaussian(np.sqrt(x[0] ** 2 + x[1] ** 2), 0, 9 / 2, 1, 1.55))
+    x_fiber = basis.project(lambda x: e_field_gaussian(np.sqrt(x[0] ** 2 + x[1] ** 2), 0, 9 / 2, 1, 1.55),
+                            dtype=np.cfloat)
 
     basis.plot(np.real(x_fiber)).show()
 
 
     @Functional(dtype=np.complex64)
     def overlap_integral(w):
-        return w['E_i'] * w['E_j']
+        return w['E_i'] * np.conj(w['E_j'])
 
 
     print(overlap_integral.assemble(basis, E_i=basis.interpolate(x_fiber), E_j=basis.interpolate(x_fiber)))
