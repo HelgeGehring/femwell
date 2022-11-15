@@ -1,6 +1,15 @@
 Maxwell
 -------
 
+.. math::
+    &\nabla\cdot\vec{E} = \frac{\rho}{\varepsilon}
+
+    &\nabla\cdot\vec{H} = 0
+
+    &\nabla\times\vec{E} = - \mu \frac{\partial \vec{H}}{\partial t}
+
+    &\nabla\times\vec{H} = \varepsilon\frac{\partial \vec{E}}{\partial t} + \vec{J}
+
 Math like in this `paper <http://dx.doi.org/10.1080/02726340290084012>`_
 
 .. math::
