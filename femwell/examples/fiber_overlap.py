@@ -9,7 +9,7 @@ import shapely.geometry
 from skfem import Mesh, Basis, ElementTriP0, ElementTriP1, Functional
 
 from femwell.mode_solver import compute_modes, plot_mode
-from femwell.mesh import mesh_from_polygons
+from femwell.mesh import mesh_from_OrderedDict
 
 
 def zr(mfr, refractive_index, wavelength):
@@ -42,19 +42,19 @@ def e_field_gaussian(r, z, mfr, refractive_index, wavelength):
 
 if __name__ == '__main__':
     with tempfile.TemporaryDirectory() as tmpdirname:
-        core = shapely.geometry.box(-.05, -.25, .05, .25)
+        core = shapely.geometry.box(-.1, -.15, .1, .15)
 
         polygons = OrderedDict(
             core=core,
-            clad=core.buffer(10, resolution=4)
+            clad=core.buffer(15, resolution=4)
         )
 
         resolutions = dict(
             core={"resolution": .01, "distance": .1}
         )
 
-        mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=10)
-        mesh_from_polygons(polygons, resolutions, filename=tmpdirname + '/mesh.msh', default_resolution_max=10)
+        mesh_from_OrderedDict(polygons, resolutions, filename='mesh.msh', default_resolution_max=10)
+        mesh_from_OrderedDict(polygons, resolutions, filename=tmpdirname + '/mesh.msh', default_resolution_max=10)
         mesh = Mesh.load(tmpdirname + '/mesh.msh')
 
     basis0 = Basis(mesh, ElementTriP0(), intorder=4)
@@ -71,7 +71,8 @@ if __name__ == '__main__':
     mfds = np.linspace(2, 20, 100)
     efficiencies = []
 
-    for mfd in mfds:
+    from tqdm.auto import tqdm
+    for mfd in tqdm(mfds):
         basis_fiber = basis0.with_element(ElementTriP1())
         x_fiber = basis_fiber.project(lambda x: e_field_gaussian(np.sqrt(x[0] ** 2 + x[1] ** 2), 0, mfd / 2, 1, 1.55),
                                       dtype=np.cfloat)
