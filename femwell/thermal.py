@@ -5,8 +5,6 @@ import numpy as np
 from skfem import asm, ElementTriP0, ElementTriP1, BilinearForm, LinearForm, Basis, solve, condense, Mesh
 from skfem.helpers import dot
 
-from femwell.mesh import mesh_from_polygons
-
 
 def solve_thermal(
         basis0,
@@ -68,6 +66,7 @@ if __name__ == '__main__':
     from shapely.geometry import Polygon, LineString
     from collections import OrderedDict
     import matplotlib.pyplot as plt
+    from femwell.mesh import mesh_from_OrderedDict
 
     # Simulating the TiN TOPS heater in https://doi.org/10.1364/OE.27.010456
 
@@ -118,7 +117,7 @@ if __name__ == '__main__':
         heater={"resolution": 0.05, "distance": 1}
     )
 
-    mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=.4)
+    mesh_from_OrderedDict(polygons, resolutions, filename='mesh.msh', default_resolution_max=.4)
 
     mesh = Mesh.load('mesh.msh')
     print(mesh.boundaries)

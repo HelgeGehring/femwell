@@ -20,4 +20,15 @@ license = "GPLv3"
 
 [tool.poetry.dependencies]
 python = ">=3.8"
-scikit-fem = ">= 7.0.0"
+# scikit-fem = ">= 7.0.0"
+gmsh = "*"
+pygmsh = "*"
+matplotlib = "*"
+shapely = "*"
+
+[tool.poetry.group.test.dependencies]
+pytest = "*"
+flake8 = "*"
+
+[tool.poetry.group.docs.dependencies]
+sphinx = "*"

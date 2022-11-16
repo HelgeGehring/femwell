@@ -82,7 +82,7 @@ def solve_thermal_transient(
 if __name__ == '__main__':
     from shapely.geometry import Polygon, LineString
     from collections import OrderedDict
-    from femwell.mesh import mesh_from_polygons
+    from femwell.mesh import mesh_from_OrderedDict
     import matplotlib.pyplot as plt
     # Simulating the TiN TOPS heater in https://doi.org/10.1364/OE.27.010456
 
@@ -141,7 +141,7 @@ if __name__ == '__main__':
         heater={"resolution": 0.05, "distance": 1}
     )
 
-    mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=.3)
+    mesh_from_OrderedDict(polygons, resolutions, filename='mesh.msh', default_resolution_max=.3)
 
     mesh = Mesh.load('mesh.msh')
 

@@ -6,4 +6,6 @@ docs/build/
 *.png
 *.h5
 *.xdmf
-I.iml
+
+.vscode/
+*.iml

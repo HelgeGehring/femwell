@@ -12,7 +12,7 @@ from skfem.io.meshio import from_meshio
 from skfem import Mesh, Basis, ElementTriP0, ElementVector
 
 from femwell.mode_solver import compute_modes, plot_mode
-from femwell.mesh import mesh_from_polygons
+from femwell.mesh import mesh_from_OrderedDict
 
 
 def mesh_waveguide(filename, wsim, hclad, hbox, wcore, hcore):
@@ -41,7 +41,7 @@ def mesh_waveguide(filename, wsim, hclad, hbox, wcore, hcore):
         core={"resolution": 0.03, "distance": 1}
     )
 
-    return mesh_from_polygons(polygons, resolutions, filename=filename, default_resolution_max=.6)
+    return mesh_from_OrderedDict(polygons, resolutions, filename=filename, default_resolution_max=.6)
 
 
 if __name__ == '__main__':

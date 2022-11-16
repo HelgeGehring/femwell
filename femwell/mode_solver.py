@@ -4,8 +4,7 @@ import numpy as np
 import scipy.sparse.linalg
 
 from skfem import BilinearForm, Basis, ElementTriN2, ElementDG, ElementTriP0, ElementTriP1, ElementTriP2, ElementVector, \
-    Mesh, Functional, \
-    LinearForm
+    Mesh, Functional, LinearForm
 from skfem.helpers import curl, grad, dot, inner, cross
 
 
@@ -162,13 +161,13 @@ def calculate_coupling_coefficient(basis_epsilon, delta_epsilon, basis, E_i, E_j
                             delta_epsilon=basis_epsilon.interpolate(delta_epsilon))
 
 
-def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', direction='x'):
+def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', direction='y'):
     from mpl_toolkits.axes_grid1 import make_axes_locatable
 
     (et, et_basis), (ez, ez_basis) = basis.split(mode)
 
     if plot_vectors:
-        rc = (2, 1) if direction == 'x' else (1, 2)
+        rc = (2, 1) if direction != 'x' else (1, 2)
         fig, axs = plt.subplots(*rc, subplot_kw=dict(aspect=1))
         for ax in axs:
             for subdomain in basis.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
@@ -185,7 +184,7 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', directi
     et_xy = plot_basis.project(et_basis.interpolate(et))
     (et_x, et_x_basis), (et_y, et_y_basis) = plot_basis.split(et_xy)
 
-    rc = (3, 1) if direction == 'x' else (1, 3)
+    rc = (3, 1) if direction != 'x' else (1, 3)
     fig, axs = plt.subplots(*rc, subplot_kw=dict(aspect=1))
     for ax in axs:
         for subdomain in basis.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
@@ -210,7 +209,7 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', directi
 if __name__ == "__main__":
     from shapely.geometry import Polygon
     from collections import OrderedDict
-    from femwell.mesh import mesh_from_polygons
+    from femwell.mesh import mesh_from_OrderedDict
 
     w_sim = 3
     h_clad = .7
@@ -246,7 +245,7 @@ if __name__ == "__main__":
         core={"resolution": 0.05, "distance": 1}
     )
 
-    mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=.2)
+    mesh_from_OrderedDict(polygons, resolutions, filename='mesh.msh', default_resolution_max=.2)
 
     mesh = Mesh.load('mesh.msh')
     basis = Basis(mesh, ElementTriN2() * ElementTriP2())
