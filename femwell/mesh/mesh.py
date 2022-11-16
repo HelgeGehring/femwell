@@ -195,7 +195,6 @@ def mesh_from_OrderedDict(
                 diff_shape = diff_shape.difference(higher_shape)
             shapes_tiled_dict[lower_name] = diff_shape
 
-
         # Break up lines and polygon edges so that plane is tiled with no partially overlapping line segments
         polygons_broken_dict = OrderedDict()
         lines_broken_dict = OrderedDict()
@@ -214,11 +213,11 @@ def mesh_from_OrderedDict(
                         for second_shape in second_shapes.geoms if hasattr(second_shapes, 'geoms') else [second_shapes]:
                             # Second line exterior
                             second_exterior_line = LineString(second_shape.exterior) if second_shape.type == "Polygon" else second_shape
-                            first_exterior_line = break_line(first_exterior_line, second_exterior_line)
+                            first_exterior_line = break_line_(first_exterior_line, second_exterior_line)
                             # Second line interiors
                             for second_interior_line in second_shape.interiors if second_shape.type == "Polygon" else []:
                                 second_interior_line = LineString(second_interior_line)
-                                first_exterior_line = break_line(first_exterior_line, second_interior_line)
+                                first_exterior_line = break_line_(first_exterior_line, second_interior_line)
                 # First line interiors
                 if first_shape.type == "Polygon" or first_shape.type == "MultiPolygon":
                     first_shape_interiors = []
@@ -232,12 +231,12 @@ def mesh_from_OrderedDict(
                                 for second_shape in second_shapes.geoms if hasattr(second_shapes, 'geoms') else [second_shapes]:
                                     # Exterior
                                     second_exterior_line = LineString(second_shape.exterior) if second_shape.type == "Polygon" else second_shape
-                                    first_interior_line = break_line(first_interior_line, second_exterior_line)
+                                    first_interior_line = break_line_(first_interior_line, second_exterior_line)
                                     # Interiors
                                     for second_interior_line in second_shape.interiors if second_shape.type == "Polygon" else []:
                                         second_interior_line = LineString(second_interior_line)
                                         intersections = first_interior_line.intersection(second_interior_line)
-                                        first_interior_line = break_line(first_interior_line, second_interior_line)
+                                        first_interior_line = break_line_(first_interior_line, second_interior_line)
                         first_shape_interiors.append(first_interior_line)
                 if first_shape.type == "Polygon" or first_shape.type == "MultiPolygon": 
                     broken_shapes.append(Polygon(first_exterior_line, holes=first_shape_interiors))
@@ -251,11 +250,20 @@ def mesh_from_OrderedDict(
         # Add lines, reusing line segments
         meshtracker = MeshTracker(model=model)
         for line_name, line in lines_broken_dict.items():
+            print(line_name, line)
             meshtracker.add_get_xy_line(line, line_name)
 
         # Add surfaces, reusing lines
         for polygon_name, polygon in polygons_broken_dict.items():
             meshtracker.add_xy_surface(polygon, polygon_name)
+
+        # Embed lines in surfaces if required
+        for index_surface in range(len(meshtracker.shapely_xy_surfaces)):
+            polygon = meshtracker.shapely_xy_surfaces[index_surface]
+            for index_segment in range(len(meshtracker.shapely_xy_segments)):
+                line = meshtracker.shapely_xy_segments[index_segment]
+                if polygon.contains(line - polygon.exterior):
+                    model.in_surface(meshtracker.gmsh_xy_segments[index_segment], meshtracker.gmsh_xy_surfaces[index_surface])
 
         # Refinement in surfaces
         n = 0
@@ -324,103 +332,148 @@ if __name__ == "__main__":
 
     import gmsh
 
-    wmode = 1
-    wsim = 2
-    hclad = 2
-    hbox = 2
-    wcore = 0.5
-    hcore = 0.22
-    offset_core = -0.1
-    offset_core2 = 1
+    from collections import OrderedDict
+    from shapely.geometry import Polygon, LineString
+    from mesh import mesh_from_OrderedDict
 
-    # Lines can be added, which is useful to define boundary conditions at various simulation edges
-    left_edge = LineString([Point(-wsim/2, -hcore/2  - hbox), 
-                            Point(-wsim/2, -hcore/2 + hclad)])
-    right_edge = LineString([Point(wsim/2, -hcore/2  - hbox), 
-                            Point(wsim/2, -hcore/2 + hclad)])
-    top_edge = LineString([Point(-wsim/2, -hcore/2 + hclad), 
-                            Point(wsim/2, -hcore/2 + hclad)])
-    bottom_edge = LineString([Point(-wsim/2, -hcore/2  - hbox), 
-                            Point(wsim/2, -hcore/2  - hbox)])
+    width = 4
+    length = 10.5
+    pml = .5
 
-    # Polygons not only have an edge, but an interior
+    width_wg_1 = .5
+    length_wg_1 = 5
+
+    width_wg_2 = 2
+    length_wg_2 = 5
+
     core = Polygon([
-            Point(-wcore/2, -hcore/2 + offset_core),
-            Point(-wcore/2, hcore/2 + offset_core),
-            Point(wcore/2, hcore/2 + offset_core),
-            Point(wcore/2, -hcore/2 + offset_core),
-        ])
-    core2 = Polygon([
-            Point(-wcore/2, -hcore/2 + offset_core2),
-            Point(-wcore/2, hcore/2 + offset_core2),
-            Point(wcore/2, hcore/2 + offset_core2),
-            Point(wcore/2, -hcore/2 + offset_core2),
-        ])
-    clad = Polygon([
-            Point(-wsim/2, -hcore/2),
-            Point(-wsim/2, -hcore/2 + hclad),
-            Point(wsim/2, -hcore/2 + hclad),
-            Point(wsim/2, -hcore/2),
-        ])
-    box = Polygon([
-            Point(-wsim/2, -hcore/2),
-            Point(-wsim/2, -hcore/2 - hbox),
-            Point(wsim/2, -hcore/2 - hbox),
-            Point(wsim/2, -hcore/2),
-        ])
+        (-width_wg_1 / 2, -length_wg_1),
+        (-width_wg_1 / 2, 0),
+        (-width_wg_2 / 2, 0),
+        (-width_wg_2 / 2, length_wg_2),
+        (width_wg_2 / 2, length_wg_2),
+        (width_wg_2 / 2, 0),
+        (width_wg_1 / 2, 0),
+        (width_wg_1 / 2, -length_wg_1),
+    ])
 
-    # The order in which objects are inserted into the OrderedDict determines overrrides
-    # shapes = OrderedDict()
-    shapes = {}
-    # shapes["left_edge"] = left_edge
-    # shapes["right_edge"] = right_edge
-    # shapes["top_edge"] = top_edge
-    # shapes["bottom_edge"] = bottom_edge
-    shapes["core"] = core 
-    shapes["core2"] = core2
-    shapes["clad"] = clad
-    shapes["box"] = box
+    source = LineString([
+        (width_wg_2 / 2, -length_wg_1 / 2),
+        (-width_wg_2 / 2, -length_wg_1 / 2)
+    ])
+    print(source)
 
-    # The resolution dict is not ordered, and can be used to set mesh resolution at various element
-    # The edge of a polygon and another polygon (or entire simulation domain) will form a line object that can be refined independently
-    resolutions = {}
-    resolutions["core"] = {"resolution": 0.02, "distance": 2}
-    resolutions["core2"] = {"resolution": 0.02, "distance": 2}
-    resolutions["clad"] = {"resolution": 0.5, "distance": 2}
-    resolutions["box"] = {"resolution": 0.5, "distance": 2}
-    # resolutions["core_clad"] = {"resolution": 0.05, "distance": 0.5}
-    # resolutions["clad_box"] = {"resolution": 0.05, "distance": 0.5}
-    # resolutions["bottom_edge"] = {"resolution": 0.05, "distance": 0.5}
-    # resolutions["left_edge"] = {"resolution": 0.05, "distance": 0.5}
-    # resolutions["clad"] = {"resolution": 0.1, "dist_min": 0.01, "dist_max": 0.3}
+    polygons = OrderedDict(
+        source=source,
+        core=core,
+        box=core.buffer(1, resolution=4) - core,
+        pml=core.buffer(2, resolution=4) - core.buffer(1, resolution=4),
+    )
 
-    quad = False
-    # mesh = mesh_from_OrderedDict(shapes, resolutions, filename="mesh.msh", default_resolution_max=.3, global_quad=quad)
-    mesh = mesh_from_Dict(shapes, resolutions, filename="mesh.msh", default_resolution_max=0.5, global_quad=quad)
+    resolutions = dict(
+        source={"resolution": 0.02, "distance": 1},
+        core={"resolution": .02, "distance": 1},
+    )
 
-    # gmsh.write("mesh.msh")
-    # gmsh.clear()
-    # mesh.__exit__()
+    mesh = mesh_from_OrderedDict(polygons, resolutions, filename='mesh.msh', default_resolution_max=.3)
 
-    import meshio
+    # wmode = 1
+    # wsim = 2
+    # hclad = 2
+    # hbox = 2
+    # wcore = 0.5
+    # hcore = 0.22
+    # offset_core = -0.1
+    # offset_core2 = 1
 
-    mesh_from_file = meshio.read("mesh.msh")
+    # # Lines can be added, which is useful to define boundary conditions at various simulation edges
+    # left_edge = LineString([Point(-wsim/2, -hcore/2  - hbox), 
+    #                         Point(-wsim/2, -hcore/2 + hclad)])
+    # right_edge = LineString([Point(wsim/2, -hcore/2  - hbox), 
+    #                         Point(wsim/2, -hcore/2 + hclad)])
+    # top_edge = LineString([Point(-wsim/2, -hcore/2 + hclad), 
+    #                         Point(wsim/2, -hcore/2 + hclad)])
+    # bottom_edge = LineString([Point(-wsim/2, -hcore/2  - hbox), 
+    #                         Point(wsim/2, -hcore/2  - hbox)])
 
-    def create_mesh(mesh, cell_type, prune_z=True):
-        cells = mesh.get_cells_type(cell_type)
-        cell_data = mesh.get_cell_data("gmsh:physical", cell_type)
-        points = mesh.points
-        return meshio.Mesh(
-            points=points,
-            cells={cell_type: cells},
-            cell_data={"name_to_read": [cell_data]},
-        )
+    # # Polygons not only have an edge, but an interior
+    # core = Polygon([
+    #         Point(-wcore/2, -hcore/2 + offset_core),
+    #         Point(-wcore/2, hcore/2 + offset_core),
+    #         Point(wcore/2, hcore/2 + offset_core),
+    #         Point(wcore/2, -hcore/2 + offset_core),
+    #     ])
+    # core2 = Polygon([
+    #         Point(-wcore/2, -hcore/2 + offset_core2),
+    #         Point(-wcore/2, hcore/2 + offset_core2),
+    #         Point(wcore/2, hcore/2 + offset_core2),
+    #         Point(wcore/2, -hcore/2 + offset_core2),
+    #     ])
+    # clad = Polygon([
+    #         Point(-wsim/2, -hcore/2),
+    #         Point(-wsim/2, -hcore/2 + hclad),
+    #         Point(wsim/2, -hcore/2 + hclad),
+    #         Point(wsim/2, -hcore/2),
+    #     ])
+    # box = Polygon([
+    #         Point(-wsim/2, -hcore/2),
+    #         Point(-wsim/2, -hcore/2 - hbox),
+    #         Point(wsim/2, -hcore/2 - hbox),
+    #         Point(wsim/2, -hcore/2),
+    #     ])
 
-    # line_mesh = create_mesh(mesh_from_file, "line", prune_z=True)
-    # meshio.write("facet_mesh.xdmf", line_mesh)
+    # # The order in which objects are inserted into the OrderedDict determines overrrides
+    # # shapes = OrderedDict()
+    # shapes = {}
+    # # shapes["left_edge"] = left_edge
+    # # shapes["right_edge"] = right_edge
+    # # shapes["top_edge"] = top_edge
+    # # shapes["bottom_edge"] = bottom_edge
+    # shapes["core"] = core 
+    # shapes["core2"] = core2
+    # shapes["clad"] = clad
+    # shapes["box"] = box
 
-    if quad == True:
-        triangle_mesh = create_mesh(mesh_from_file, "quad", prune_z=True)
-    else:
-        triangle_mesh = create_mesh(mesh_from_file, "triangle", prune_z=True)
-    meshio.write("mesh.xdmf", triangle_mesh)
+    # # The resolution dict is not ordered, and can be used to set mesh resolution at various element
+    # # The edge of a polygon and another polygon (or entire simulation domain) will form a line object that can be refined independently
+    # resolutions = {}
+    # resolutions["core"] = {"resolution": 0.02, "distance": 2}
+    # resolutions["core2"] = {"resolution": 0.02, "distance": 2}
+    # resolutions["clad"] = {"resolution": 0.5, "distance": 2}
+    # resolutions["box"] = {"resolution": 0.5, "distance": 2}
+    # # resolutions["core_clad"] = {"resolution": 0.05, "distance": 0.5}
+    # # resolutions["clad_box"] = {"resolution": 0.05, "distance": 0.5}
+    # # resolutions["bottom_edge"] = {"resolution": 0.05, "distance": 0.5}
+    # # resolutions["left_edge"] = {"resolution": 0.05, "distance": 0.5}
+    # # resolutions["clad"] = {"resolution": 0.1, "dist_min": 0.01, "dist_max": 0.3}
+
+    # quad = False
+    # # mesh = mesh_from_OrderedDict(shapes, resolutions, filename="mesh.msh", default_resolution_max=.3, global_quad=quad)
+    # mesh = mesh_from_Dict(shapes, resolutions, filename="mesh.msh", default_resolution_max=0.5, global_quad=quad)
+
+    # # gmsh.write("mesh.msh")
+    # # gmsh.clear()
+    # # mesh.__exit__()
+
+    # import meshio
+
+    # mesh_from_file = meshio.read("mesh.msh")
+
+    # def create_mesh(mesh, cell_type, prune_z=True):
+    #     cells = mesh.get_cells_type(cell_type)
+    #     cell_data = mesh.get_cell_data("gmsh:physical", cell_type)
+    #     points = mesh.points
+    #     return meshio.Mesh(
+    #         points=points,
+    #         cells={cell_type: cells},
+    #         cell_data={"name_to_read": [cell_data]},
+    #     )
+
+    # # line_mesh = create_mesh(mesh_from_file, "line", prune_z=True)
+    # # meshio.write("facet_mesh.xdmf", line_mesh)
+
+    # if quad == True:
+    #     triangle_mesh = create_mesh(mesh_from_file, "quad", prune_z=True)
+    # else:
+    #     triangle_mesh = create_mesh(mesh_from_file, "triangle", prune_z=True)
+    # meshio.write("mesh.xdmf", triangle_mesh)
