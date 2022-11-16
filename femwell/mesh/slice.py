@@ -9,7 +9,7 @@ from typing import Optional, Dict
 from shapely.geometry import MultiPoint, Polygon, LineString, MultiPolygon
 from shapely.affinity import translate
 
-from femwell.mesh import mesh_from_Dict
+# from femwell.mesh import mesh_from_Dict
 
 nm = 1E-3
 
@@ -47,7 +47,7 @@ def get_unique_x_bounds(layer_polygons_dict):
     
         Propagation direction is "x" in component ("z" in mode solver)
     """
-    xs = []
+    xs = [0.]
     for polygons in layer_polygons_dict.values():
         for polygon in polygons.geoms if hasattr(polygons, "geoms") else [polygons]:
             xs.extend(get_polygon_x_bounds((polygon)))
