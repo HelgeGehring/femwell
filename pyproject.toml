@@ -24,6 +24,7 @@ scikit-fem = ">= 7.0.0"
 gmsh = "*"
 pygmsh = "*"
 matplotlib = "*"
+shapely = "*"
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
