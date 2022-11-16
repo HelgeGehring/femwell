@@ -4,8 +4,7 @@ import numpy as np
 import scipy.sparse.linalg
 
 from skfem import BilinearForm, Basis, ElementTriN2, ElementDG, ElementTriP0, ElementTriP1, ElementTriP2, ElementVector, \
-    Mesh, Functional, \
-    LinearForm
+    Mesh, Functional, LinearForm
 from skfem.helpers import curl, grad, dot, inner, cross
 
 
@@ -187,7 +186,7 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', directi
 if __name__ == "__main__":
     from shapely.geometry import Polygon
     from collections import OrderedDict
-    from femwell.mesh import mesh_from_polygons
+    from femwell.mesh import mesh_from_OrderedDict
 
     w_sim = 3
     h_clad = .7
@@ -223,7 +222,7 @@ if __name__ == "__main__":
         core={"resolution": 0.05, "distance": 1}
     )
 
-    mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=.2)
+    mesh_from_OrderedDict(polygons, resolutions, filename='mesh.msh', default_resolution_max=.2)
 
     mesh = Mesh.load('mesh.msh')
     basis = Basis(mesh, ElementTriN2() * ElementTriP2())

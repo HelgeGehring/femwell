@@ -23,6 +23,7 @@ python = ">=3.8"
 scikit-fem = ">= 7.0.0"
 gmsh = "*"
 pygmsh = "*"
+slepc4py = "*"
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
