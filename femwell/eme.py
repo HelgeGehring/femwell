@@ -3,7 +3,8 @@ Adapted from F. Laporte at https://github.com/flaport/meow/blob/main/meow/eme/co
 and references.
 """
 import numpy as np
-from femwell.mode_solver import calculate_overlap, calculate_scalar_product, calculate_hfield
+import matplotlib.pyplot as plt
+from femwell.mode_solver import calculate_overlap, calculate_scalar_product, calculate_hfield, plot_mode
 import sys
 sys.path.insert(0, './mesh')
 from slice import slice_component_xbounds
@@ -140,6 +141,10 @@ def compute_total_S_matrix(meshnames, mesh_info_dict, lengths, wavelength, num_m
             except ValueError:
                 pass
         lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=num_modes)
+        plot_mode(basis, np.real(xs[0]))
+        plt.show()
+        plot_mode(basis, np.imag(xs[0]))
+        plt.show()
         modes.append((lams, basis, xs))
         # Create SAX model for propagation
         propagations[f"p_{i}"] = compute_propagation_s_matrix((lams, basis, xs), lengths[i], wavelength)
@@ -195,10 +200,10 @@ if __name__ == "__main__":
     #                             cross_section = "rib",
     #             )
     # )
-    straight = c.add_ref(gf.components.straight(10, width = 2, cross_section="rib"))
+    # straight = c.add_ref(gf.components.straight(10, width = 2, cross_section="rib"))
     # straight.connect("o1", taper.ports["o2"])
     straight2 = c.add_ref(gf.components.straight(10, width = 2, cross_section="strip"))
-    straight2.connect("o1", straight.ports["o2"])
+    # straight2.connect("o1", straight.ports["o2"])
     straight = c.add_ref(gf.components.straight(10, width = 2, cross_section="rib"))
     straight.connect("o1", straight2.ports["o2"])
     # taper = c.add_ref(
@@ -278,9 +283,9 @@ if __name__ == "__main__":
     ))
     meshnames.append(f"mesh_x_{x1}.msh")
 
-    num_modes = 4
+    num_modes = 16
 
     indices_dict = {"core": 3.45, "slab90": 3.45, "clad": 1.44}
 
-    S = compute_total_S_matrix(meshnames, indices_dict, lengths, wavelength=1.55, num_modes=8)
+    S = compute_total_S_matrix(meshnames, indices_dict, lengths, wavelength=1.55, num_modes=num_modes)
     print(S)
