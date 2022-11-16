@@ -26,6 +26,10 @@ jobs:
       - name: Install dependencies
         run: |
           poetry install --no-interaction --no-root
+          poetry install petsc
+          poetry install petsc4py
+          poetry install slepc
+          poetry install slepc4py
       - name: Make docs
         run: |
           source $VENV
