@@ -29,6 +29,7 @@ jobs:
       - name: Install slepc4py
         run: |
           source $VENV
+          export PETSC_CONFIGURE_OPTIONS="--with-scalar-type=complex"
           pip install petsc
           pip install petsc4py
           pip install slepc
