@@ -138,13 +138,13 @@ def calculate_coupling_coefficient(basis_epsilon, delta_epsilon, basis, E_i, E_j
                             delta_epsilon=basis_epsilon.interpolate(delta_epsilon))
 
 
-def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', direction='x'):
+def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', direction='y'):
     from mpl_toolkits.axes_grid1 import make_axes_locatable
 
     (et, et_basis), (ez, ez_basis) = basis.split(mode)
 
     if plot_vectors:
-        rc = (2, 1) if direction == 'x' else (1, 2)
+        rc = (2, 1) if direction != 'x' else (1, 2)
         fig, axs = plt.subplots(*rc, subplot_kw=dict(aspect=1))
         for ax in axs:
             for subdomain in basis.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
@@ -161,7 +161,7 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', directi
     et_xy = plot_basis.project(et_basis.interpolate(et))
     (et_x, et_x_basis), (et_y, et_y_basis) = plot_basis.split(et_xy)
 
-    rc = (3, 1) if direction == 'x' else (1, 3)
+    rc = (3, 1) if direction != 'x' else (1, 3)
     fig, axs = plt.subplots(*rc, subplot_kw=dict(aspect=1))
     for ax in axs:
         for subdomain in basis.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
