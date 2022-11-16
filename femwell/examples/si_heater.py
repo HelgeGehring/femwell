@@ -6,7 +6,7 @@ from shapely.geometry import Polygon, LineString
 
 from skfem import ElementTriP0, Basis, Mesh
 
-from femwell.mesh import mesh_from_polygons
+from femwell.mesh import mesh_from_OrderedDict
 from femwell.thermal import solve_thermal
 
 # Simulating the TiN TOPS heater in https://doi.org/10.1364/OE.27.010456
@@ -78,7 +78,7 @@ resolutions = dict(
     heater_r={"resolution": 0.01, "distance": 1}
 )
 
-mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=.4)
+mesh_from_OrderedDict(polygons, resolutions, filename='mesh.msh', default_resolution_max=.4)
 
 mesh = Mesh.load('mesh.msh')
 

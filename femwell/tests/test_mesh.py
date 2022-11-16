@@ -9,7 +9,7 @@ from shapely.ops import split, linemerge
 
 from collections import OrderedDict
 
-from femwell.mesh import mesh_from_polygons
+from femwell.mesh import mesh_from_OrderedDict
 
 def geometry(wsim, hclad, hbox, wcore, hcore, offset_core):
     core = Polygon([
@@ -46,7 +46,7 @@ def test_shared_edge():
                             hcore = 0.22, 
                             offset_core = 0
                             )
-    mesh = mesh_from_polygons(shapes, resolutions = {})
+    mesh = mesh_from_OrderedDict(shapes, resolutions = {})
     assert True
 
 def test_breaking_edge():
@@ -57,7 +57,7 @@ def test_breaking_edge():
                             hcore = 0.22, 
                             offset_core = -0.1
                             )
-    mesh = mesh_from_polygons(shapes, resolutions = {})
+    mesh = mesh_from_OrderedDict(shapes, resolutions = {})
     assert True
 
 def test_inclusion():
@@ -68,7 +68,7 @@ def test_inclusion():
                             hcore = 0.22, 
                             offset_core = 0.1
                             )
-    mesh = mesh_from_polygons(shapes, resolutions = {})
+    mesh = mesh_from_OrderedDict(shapes, resolutions = {})
     assert True 
 
 def test_lines():
@@ -106,5 +106,5 @@ def test_lines():
                             hcore = hcore, 
                             offset_core = offset_core
                             ))
-    mesh = mesh_from_polygons(shapes, resolutions = {})
+    mesh = mesh_from_OrderedDict(shapes, resolutions = {})
     assert True

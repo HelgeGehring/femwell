@@ -39,7 +39,7 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
 if __name__ == '__main__':
     from collections import OrderedDict
     from shapely.geometry import Polygon
-    from mesh import mesh_from_polygons
+    from mesh import mesh_from_OrderedDict
 
     width = 4
     length = 10.5
@@ -72,7 +72,7 @@ if __name__ == '__main__':
         core={"resolution": .02, "distance": 1},
     )
 
-    mesh = mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=.3)
+    mesh = mesh_from_OrderedDict(polygons, resolutions, filename='mesh.msh', default_resolution_max=.3)
     mesh = Mesh.load('mesh.msh')
 
     basis0 = Basis(mesh, ElementTriP0(), intorder=4)
