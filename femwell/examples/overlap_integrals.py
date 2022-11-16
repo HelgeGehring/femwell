@@ -2,7 +2,6 @@ import tempfile
 from tqdm.auto import tqdm
 
 import matplotlib.pyplot as plt
-from matplotlib import cm
 import numpy as np
 
 from skfem import Mesh, Basis, ElementTriP0
