@@ -26,6 +26,8 @@ jobs:
       - name: Install dependencies
         run: |
           poetry install --no-interaction
+          source $VENV
+          pip install --upgrade git+https://github.com/kinnala/scikit-fem.git
       - name: Install slepc4py
         run: |
           source $VENV
