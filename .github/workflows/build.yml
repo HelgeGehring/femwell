@@ -29,6 +29,7 @@ jobs:
           installer-parallel: true
       - name: Install dependencies
         run: |
+          sudo apt-get install -y libglu1-mesa
           poetry install --no-interaction --no-root
           source $VENV
           pip install --upgrade git+https://github.com/kinnala/scikit-fem.git
