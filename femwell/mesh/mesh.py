@@ -12,14 +12,17 @@ from femwell.mesh.meshtracker import MeshTracker
 from collections import OrderedDict
 from itertools import combinations, product
 
-def break_line(line, other_line):
+def break_line_(line, other_line):
     intersections = line.intersection(other_line)
     if not intersections.is_empty:
         for intersection in intersections.geoms if hasattr(intersections, 'geoms') else [intersections]:
-            if intersection.type != 'Point':
+            # if type == "", intersection.type != 'Point':
+            if intersection.type == 'Point':
+                line = linemerge(split(line, intersection))
+            else:
                 new_coords_start, new_coords_end = intersection.boundary.geoms
                 line = linemerge(split(line, new_coords_start))
-                line = linemerge(split(line, new_coords_end))
+                line = linemerge(split(line, new_coords_end))                
     return line
 
 
