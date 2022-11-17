@@ -122,3 +122,7 @@ Variational problem:
     &
     \left( \epsilon, \nabla q \right) + \left( \epsilon E_3^{\text{new}}, q \right)
     = 0
+
+PML
+---
+`link <http://www.hade.ch/docs/report_FDFD.pdf>`_
