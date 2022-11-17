@@ -1,12 +1,11 @@
-import scipy.linalg
-
 from skfem import *
 from skfem.helpers import *
 
 mesh = MeshLine(np.linspace(-1, 1, 201))
 mesh = mesh.with_subdomains({'core': lambda p: abs(p[0]) < .11})
 
-basis_epsilon = Basis(mesh, ElementLineP0())
+basis = Basis(mesh, ElementLineP1())
+basis_epsilon = basis.with_element(ElementLineP0())
 
 epsilon = basis_epsilon.zeros() + 1.444 ** 2
 epsilon[basis_epsilon.get_dofs(elements='core')] = 3.4777 ** 2
@@ -26,12 +25,9 @@ def rhs(u, v, w):
     return inner(u, v)
 
 
-basis = basis_epsilon.with_element(ElementLineP1())
-
 A = lhs.assemble(basis, epsilon=basis_epsilon.interpolate(epsilon))
 B = rhs.assemble(basis)
 
-# lams, xs = scipy.linalg.eigh(A.todense(), B.todense())
 lams, xs = solve(*condense(A, B, D=basis.get_dofs()), solver=solver_eigen_scipy_sym(sigma=3.55 ** 2, which='LM'))
 
 print(np.sqrt(lams))
