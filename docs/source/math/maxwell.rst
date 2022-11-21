@@ -45,7 +45,7 @@ By combining the latter two equations of :eq:`maxwell_no_sources` we get for the
     =
     - \varepsilon \frac{\partial^2 \vec{\mathcal{E}}}{\partial t^2}
 
-If we restrict the problem to a 2D-plane :math:`\Omega \in \mathbb{R}^2` like done in `paper <http://dx.doi.org/10.1080/02726340290084012>`_,
+If we restrict the problem to a 2D-plane :math:`\Omega \in \mathbb{R}^2` like done in :cite:`Vardapetyan2002`,
 i.e. a plane with :math:`\vec{x}=(x_1,x_2)` and
 assuming propagation only in :math:`x_3`-direction with a propagation constant :math:`\beta`,
 the equations simplify for the harmonic case with a frequency of :math:`\omega` to:
@@ -188,6 +188,8 @@ Loss per meter [dB/m]
 Effective Area
 **************
 
+As defined in :cite:p:`Agrawal2019`
+
 .. math::
     A_{\text{eff}}
     =
@@ -207,3 +209,5 @@ Overlap coefficient
     \int \mathcal{E}_\nu^* \times \mathcal{H}_\mu + \mathcal{E}_\nu \times \mathcal{H}_\mu^* \mathrm{d}A
     =
     c_{\mu\nu}^*
+
+.. bibliography::

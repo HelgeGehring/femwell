@@ -9,12 +9,18 @@ project = 'Femwell'
 project_copyright = f'{date.today().year}, Femwell developers'
 
 extensions = [
-    'matplotlib.sphinxext.plot_directive'
+    'matplotlib.sphinxext.plot_directive',
+    'sphinxcontrib.bibtex'
 ]
 
 plot_rcparams = {
     'savefig.bbox': 'tight'
 }
+
+bibtex_bibfiles = ['references.bib']
+
+bibtex_default_style = 'unsrt'
+bibtex_reference_style = 'label'
 
 html_theme = "sphinx_book_theme"
 

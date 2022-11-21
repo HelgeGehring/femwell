@@ -34,3 +34,4 @@ flake8 = "*"
 sphinx = "*"
 tqdm = "*"
 sphinx-book-theme = "*"
+sphinxcontrib-bibtex = '*'
