@@ -33,4 +33,4 @@ epsilon[basis0.get_dofs(elements='core')] = 1.9963 ** 2
 epsilon[basis0.get_dofs(elements='box')] = 1.444 ** 2
 
 lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1)
-plot_mode(basis, xs[0].real, colorbar=True)
+plot_mode(basis, xs[0].real, colorbar=True, direction='x')
