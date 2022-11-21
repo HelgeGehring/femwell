@@ -33,3 +33,4 @@ flake8 = "*"
 [tool.poetry.group.docs.dependencies]
 sphinx = "*"
 tqdm = "*"
+sphinx-book-theme = "*"
