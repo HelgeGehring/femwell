@@ -3,15 +3,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse.linalg
 
-from skfem import BilinearForm, Basis, ElementTriN2, ElementDG, ElementTriP0, ElementTriP1, ElementTriP2, ElementVector, \
-    Mesh, Functional, LinearForm
+from skfem import BilinearForm, Basis, ElementTriN1, ElementTriN2, ElementDG, ElementTriP0, ElementTriP1, \
+    ElementTriP2, ElementVector, Mesh, Functional, LinearForm
 from skfem.helpers import curl, grad, dot, inner, cross
 
 
-def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes):
+def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order=1):
     k0 = 2 * np.pi / wavelength
 
-    basis = basis_epsilon_r.with_element(ElementTriN2() * ElementTriP2())
+    if order == 1:
+        element = ElementTriN1() * ElementTriP1()
+    elif order == 2:
+        element = ElementTriN2() * ElementTriP2()
+    else:
+        raise AssertionError('Only order 1 and 2 implemented by now.')
+
+    basis = basis_epsilon_r.with_element(element)
+    basis_epsilon_r = basis.with_element(basis_epsilon_r.elem)  # adjust quadrature
 
     @BilinearForm(dtype=epsilon_r.dtype)
     def aform(e_t, e_z, v_t, v_z, w):
@@ -105,8 +113,8 @@ def calculate_overlap(basis_i, E_i, H_i, basis_j, E_j, H_j):
         return cross(np.conj(w['E_i'][0]), w['H_j'][0]) + cross(w['E_j'][0], np.conj(w['H_i'][0]))
 
     if basis_i == basis_j:
-        return 0.5*overlap.assemble(basis_i, E_i=basis_i.interpolate(E_i), H_i=basis_i.interpolate(H_i),
-                                E_j=basis_j.interpolate(E_j), H_j=basis_j.interpolate(H_j))
+        return 0.5 * overlap.assemble(basis_i, E_i=basis_i.interpolate(E_i), H_i=basis_i.interpolate(H_i),
+                                      E_j=basis_j.interpolate(E_j), H_j=basis_j.interpolate(H_j))
     else:
 
         basis_j_fix = basis_j.with_element(ElementVector(ElementTriP1()))
@@ -126,7 +134,7 @@ def calculate_overlap(basis_i, E_i, H_i, basis_j, E_j, H_j):
                    + cross(np.array((et_x_basis.interpolator(et_x)(w.x), et_y_basis.interpolator(et_y)(w.x))),
                            np.conj(w['H_i'][0]))
 
-        return 0.5*overlap.assemble(basis_i, E_i=basis_i.interpolate(E_i), H_i=basis_i.interpolate(H_i))
+        return 0.5 * overlap.assemble(basis_i, E_i=basis_i.interpolate(E_i), H_i=basis_i.interpolate(H_i))
 
 
 def calculate_scalar_product(basis_i, E_i, basis_j, H_j):
@@ -159,6 +167,21 @@ def calculate_coupling_coefficient(basis_epsilon, delta_epsilon, basis, E_i, E_j
 
     return overlap.assemble(basis, E_i=basis.interpolate(E_i), E_j=basis.interpolate(E_j),
                             delta_epsilon=basis_epsilon.interpolate(delta_epsilon))
+
+
+def calculate_te_frac(basis, x):
+    @Functional
+    def ex(w):
+        return np.abs(w.E[0][0]) ** 2
+
+    @Functional
+    def ey(w):
+        return np.abs(w.E[0][1]) ** 2
+
+    ex_sum = ex.assemble(basis, E=basis.interpolate(x))
+    ey_sum = ey.assemble(basis, E=basis.interpolate(x))
+
+    return ex_sum / (ex_sum + ey_sum)
 
 
 def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', direction='y'):
