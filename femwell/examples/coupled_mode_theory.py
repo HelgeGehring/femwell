@@ -93,8 +93,8 @@ modes = [(lam, x, 0) for lam, x in zip(lams_1, xs_1)] + [(lam, x, 1) for lam, x 
 overlap_integrals = np.zeros((len(modes), len(modes)), dtype=complex)
 for i, (lam_i, E_i, epsilon_i) in enumerate(modes):
     for j, (lam_j, E_j, epsilon_j) in enumerate(modes):
-        H_i = calculate_hfield(basis, E_i, -lam_i * (2 * np.pi / 1.55))
-        H_j = calculate_hfield(basis, E_j, -lam_j * (2 * np.pi / 1.55))
+        H_i = calculate_hfield(basis, E_i, lam_i * (2 * np.pi / 1.55))
+        H_j = calculate_hfield(basis, E_j, lam_j * (2 * np.pi / 1.55))
         overlap_integrals[i, j] = calculate_overlap(basis, E_i, H_i, basis, E_j, H_j)
 
 print(overlap_integrals)

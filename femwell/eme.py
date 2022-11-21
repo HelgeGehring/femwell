@@ -31,8 +31,8 @@ def compute_interface_s_matrix(
         for j in range(len(lams_b)):
             E_i = xs_a[i]
             E_j = xs_b[j]
-            H_i = calculate_hfield(basis_a, E_i, -lams_a[i] * (2 * np.pi / 1.55))
-            H_j = calculate_hfield(basis_b, E_j, -lams_b[j] * (2 * np.pi / 1.55))
+            H_i = calculate_hfield(basis_a, E_i, lams_a[i] * (2 * np.pi / 1.55))
+            H_j = calculate_hfield(basis_b, E_j, lams_b[j] * (2 * np.pi / 1.55))
             products_ab[i, j] = np.abs(calculate_scalar_product(basis_a, E_i, basis_b, H_j))
             products_ba[j, i] = np.abs(calculate_scalar_product(basis_b, E_j, basis_a, H_i))
 

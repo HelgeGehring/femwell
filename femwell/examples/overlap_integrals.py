@@ -41,8 +41,8 @@ for mode_a, mode_b in zip(modes[:-1], modes[1:]):
         for j in range(len(lams_b)):
             E_i = xs_a[i]
             E_j = xs_b[j]
-            H_i = calculate_hfield(basis_a, E_i, -lams_a[i] * (2 * np.pi / 1.55))
-            H_j = calculate_hfield(basis_b, E_j, -lams_b[j] * (2 * np.pi / 1.55))
+            H_i = calculate_hfield(basis_a, E_i, lams_a[i] * (2 * np.pi / 1.55))
+            H_j = calculate_hfield(basis_b, E_j, lams_b[j] * (2 * np.pi / 1.55))
             integrals[i, j] = calculate_overlap(basis_a, E_i, H_i, basis_b, E_j, H_j)
 
     plt.imshow(np.abs(integrals))

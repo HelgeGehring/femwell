@@ -25,8 +25,8 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order
     def aform(e_t, e_z, v_t, v_z, w):
         return 1 / mu_r * curl(e_t) * curl(v_t) \
                - k0 ** 2 * w['epsilon'] * dot(e_t, v_t) \
-               - 1 / mu_r * dot(grad(e_z), v_t) \
-               + w['epsilon'] * inner(e_t, grad(v_z)) + w['epsilon'] * e_z * v_z
+               + 1 / mu_r * dot(grad(e_z), v_t) \
+               + w['epsilon'] * inner(e_t, grad(v_z)) - w['epsilon'] * e_z * v_z
 
     @BilinearForm(dtype=epsilon_r.dtype)
     def bform(e_t, e_z, v_t, v_z, w):
@@ -62,7 +62,7 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order
     xs[:, basis.split_indices()[1]] /= 1j * np.sqrt(lams[:, np.newaxis])  # undo the scaling E_3,new = beta * E_3
 
     for i, lam in enumerate(lams):
-        H = calculate_hfield(basis, xs[i], -np.sqrt(lam))
+        H = calculate_hfield(basis, xs[i], np.sqrt(lam))
         xs[i] /= np.sqrt(calculate_overlap(basis, xs[i], H, basis, xs[i], H))
 
     return np.sqrt(lams)[:num_modes] / k0, basis, xs[:num_modes]
@@ -85,7 +85,7 @@ def calculate_hfield(basis, xs, beta):
 
     b_operator = bform.assemble(basis)
 
-    return scipy.sparse.linalg.spsolve(b_operator, a_operator @ xs) * 1j  # Don't understand the 1j yet
+    return scipy.sparse.linalg.spsolve(b_operator, a_operator @ xs) * -1j
 
 
 def calculate_energy_current_density(basis, xs):
@@ -215,12 +215,21 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', directi
 
     for ax, component in zip(axs, 'xyz'):
         ax.set_title(f'${title}_{component}$')
-    et_x_basis.plot(et_x, shading='gouraud', ax=axs[0], vmin=np.min(mode), vmax=np.max(mode))
-    et_y_basis.plot(et_y, shading='gouraud', ax=axs[1], vmin=np.min(mode), vmax=np.max(mode))
-    ez_basis.plot(ez, shading='gouraud', ax=axs[2], vmin=np.min(mode), vmax=np.max(mode))
+
+    absmax = np.max(np.abs(mode)) if colorbar == 'same' else None
+    absmin = - np.max(np.abs(mode)) if colorbar == 'same' else None
+    et_x_basis.plot(et_x, shading='gouraud', ax=axs[0], vmin=absmin, vmax=absmax)
+    et_y_basis.plot(et_y, shading='gouraud', ax=axs[1], vmin=absmin, vmax=absmax)
+    ez_basis.plot(ez, shading='gouraud', ax=axs[2], vmin=absmin, vmax=absmax)
 
     if colorbar:
-        plt.colorbar(axs[-1].collections[0], ax=axs.ravel().tolist())
+        if colorbar == 'same':
+            plt.colorbar(axs[-1].collections[0], ax=axs.ravel().tolist())
+        else:
+            for ax in axs:
+                divider = make_axes_locatable(ax)
+                cax = divider.append_axes("right", size="5%", pad=0.05)
+                plt.colorbar(ax.collections[0], cax=cax)
 
     return fig, axs
 
@@ -275,7 +284,7 @@ if __name__ == "__main__":
     epsilon[basis0.get_dofs(elements='box')] = 1.444 ** 2
     # basis0.plot(epsilon, colorbar=True).show()
 
-    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=6)
+    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=6, order=2)
 
     print(lams)
 
@@ -284,7 +293,7 @@ if __name__ == "__main__":
     plot_mode(basis, np.imag(xs[0]))
     plt.show()
 
-    xbs = calculate_hfield(basis, xs[0], -lams[0] * (2 * np.pi / 1.55))
+    xbs = calculate_hfield(basis, xs[0], lams[0] * (2 * np.pi / 1.55))
 
     plot_mode(basis, np.real(xbs))
     plt.show()
@@ -296,8 +305,8 @@ if __name__ == "__main__":
         for j in range(len(lams)):
             E_i = xs[i]
             E_j = xs[j]
-            H_i = calculate_hfield(basis, E_i, -lams[i] * (2 * np.pi / 1.55))
-            H_j = calculate_hfield(basis, E_j, -lams[j] * (2 * np.pi / 1.55))
+            H_i = calculate_hfield(basis, E_i, lams[i] * (2 * np.pi / 1.55))
+            H_j = calculate_hfield(basis, E_j, lams[j] * (2 * np.pi / 1.55))
             integrals[i, j] = calculate_overlap(basis, E_i, H_i, basis, E_j, H_j)
 
     plt.imshow(np.real(integrals))
