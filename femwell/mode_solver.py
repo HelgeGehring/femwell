@@ -215,16 +215,12 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', directi
 
     for ax, component in zip(axs, 'xyz'):
         ax.set_title(f'${title}_{component}$')
-    et_x_basis.plot(et_x, shading='gouraud', ax=axs[0])  # , vmin=np.min(mode), vmax=np.max(mode))
-    et_y_basis.plot(et_y, shading='gouraud', ax=axs[1])  # , vmin=np.min(mode), vmax=np.max(mode))
-    ez_basis.plot(ez, shading='gouraud', ax=axs[2])  # , vmin=np.min(mode), vmax=np.max(mode))
+    et_x_basis.plot(et_x, shading='gouraud', ax=axs[0], vmin=np.min(mode), vmax=np.max(mode))
+    et_y_basis.plot(et_y, shading='gouraud', ax=axs[1], vmin=np.min(mode), vmax=np.max(mode))
+    ez_basis.plot(ez, shading='gouraud', ax=axs[2], vmin=np.min(mode), vmax=np.max(mode))
 
     if colorbar:
-        for ax in axs:
-            divider = make_axes_locatable(ax)
-            cax = divider.append_axes("right", size="5%", pad=0.05)
-            plt.colorbar(ax.collections[0], cax=cax)
-    plt.tight_layout()
+        plt.colorbar(axs[-1].collections[0], ax=axs.ravel().tolist())
 
     return fig, axs
 

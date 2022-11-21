@@ -11,3 +11,7 @@ project_copyright = f'{date.today().year}, Femwell developers'
 extensions = [
     'matplotlib.sphinxext.plot_directive'
 ]
+
+plot_rcparams = {
+    'savefig.bbox': 'tight'
+}
