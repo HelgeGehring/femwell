@@ -22,7 +22,7 @@ def break_line_(line, other_line):
             else:
                 new_coords_start, new_coords_end = intersection.boundary.geoms
                 line = linemerge(split(line, new_coords_start))
-                line = linemerge(split(line, new_coords_end))                
+                line = linemerge(split(line, new_coords_end))
     return line
 
 
@@ -34,14 +34,12 @@ def mesh_from_Dict(
     filename: Optional[str] = None,
     gmsh_algorithm: int = 5,
     global_quad: Optional[bool] = False,
+    verbose: bool = False
 ):
     """
     Given a dict of shapely Polygons, creates a mesh conformal to all the BooleanFragment surfaces and interfaces from the intersection of all polygons.
     Returns a mesh with physicals corresponding to the original shapes_dict boundaries (which may comprise multiple surface entities)
     """
-
-    import gmsh
-
 
     with pygmsh.occ.geometry.Geometry() as geometry:
 
@@ -126,8 +124,8 @@ def mesh_from_Dict(
                     refinement_fields.append(n+1)
                     # refinement_fields.append(n+3)
                     n += 2
-                    
-            if global_quad:        
+
+            if global_quad:
                 gmsh.option.setNumber("Mesh.Algorithm", 8)
                 gmsh.option.setNumber("Mesh.RecombineAll", 1)
 
@@ -151,7 +149,7 @@ def mesh_from_Dict(
         #     model.add_physical(line, f"{meshtracker.xy_segments_main_labels[index]}_{meshtracker.xy_segments_secondary_labels[index]}_{i}")
         #     i += 1
 
-        mesh = geometry.generate_mesh(dim=2, verbose=True)
+        mesh = geometry.generate_mesh(dim=2, verbose=verbose)
 
         if filename:
             gmsh.write(f"{filename}")
@@ -167,14 +165,12 @@ def mesh_from_OrderedDict(
     filename: Optional[str] = None,
     gmsh_algorithm: int = 5,
     global_quad: Optional[bool] = False,
+    verbose: bool = False
 ):
     """
     Given an ordered dict of shapely Polygons, creates a mesh containing polygon surfaces according to the dict order.
     Returns a gmsh msh with physicals corresponding to the shapes_dict boundaries (which is the minimal number of surfaces for each key)
     """
-
-    import gmsh
-
 
     with pygmsh.occ.geometry.Geometry() as geometry:
 
@@ -238,15 +234,15 @@ def mesh_from_OrderedDict(
                                         intersections = first_interior_line.intersection(second_interior_line)
                                         first_interior_line = break_line_(first_interior_line, second_interior_line)
                         first_shape_interiors.append(first_interior_line)
-                if first_shape.type == "Polygon" or first_shape.type == "MultiPolygon": 
+                if first_shape.type == "Polygon" or first_shape.type == "MultiPolygon":
                     broken_shapes.append(Polygon(first_exterior_line, holes=first_shape_interiors))
                 else:
                     broken_shapes.append(LineString(first_exterior_line))
-            if first_shape.type == "Polygon" or first_shape.type == "MultiPolygon": 
+            if first_shape.type == "Polygon" or first_shape.type == "MultiPolygon":
                 polygons_broken_dict[first_name] = MultiPolygon(broken_shapes) if len(broken_shapes) > 1 else broken_shapes[0]
             else:
                 lines_broken_dict[first_name] = MultiLineString(broken_shapes) if len(broken_shapes) > 1 else broken_shapes[0]
-        
+
         # Add lines, reusing line segments
         meshtracker = MeshTracker(model=model)
         for line_name, line in lines_broken_dict.items():
@@ -291,8 +287,8 @@ def mesh_from_OrderedDict(
             refinement_fields.append(n+1)
             refinement_fields.append(n+3)
             n += 4
-                
-        if global_quad:        
+
+        if global_quad:
             gmsh.option.setNumber("Mesh.Algorithm", 8)
             gmsh.option.setNumber("Mesh.RecombineAll", 1)
 
@@ -320,7 +316,7 @@ def mesh_from_OrderedDict(
             if interfaces:
                 model.add_physical(interfaces, f"{surface1}___{surface2}")
 
-        mesh = geometry.generate_mesh(dim=2, verbose=True)
+        mesh = geometry.generate_mesh(dim=2, verbose=verbose)
 
         if filename:
             gmsh.write(f"{filename}")
