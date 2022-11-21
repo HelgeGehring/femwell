@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from skfem import Mesh, Basis, ElementTriP0
 
-from femwell.mesh import mesh_from_polygons
+from femwell.mesh import mesh_from_OrderedDict
 from femwell.mode_solver import compute_modes, plot_mode, calculate_overlap, calculate_hfield, \
     calculate_coupling_coefficient
 
@@ -57,7 +57,7 @@ resolutions = dict(
     core_2={"resolution": 0.03, "distance": 1}
 )
 
-mesh_from_polygons(polygons, resolutions, filename='mesh.msh', default_resolution_max=.2)
+mesh_from_OrderedDict(polygons, resolutions, filename='mesh.msh', default_resolution_max=.2)
 
 mesh = Mesh.load('mesh.msh')
 basis0 = Basis(mesh, ElementTriP0(), intorder=4)
@@ -95,7 +95,7 @@ for i, (lam_i, E_i, epsilon_i) in enumerate(modes):
     for j, (lam_j, E_j, epsilon_j) in enumerate(modes):
         H_i = calculate_hfield(basis, E_i, -lam_i * (2 * np.pi / 1.55))
         H_j = calculate_hfield(basis, E_j, -lam_j * (2 * np.pi / 1.55))
-        overlap_integrals[i, j] = calculate_overlap(basis, E_i, H_i, E_j, H_j)
+        overlap_integrals[i, j] = calculate_overlap(basis, E_i, H_i, basis, E_j, H_j)
 
 print(overlap_integrals)
 plt.imshow(np.abs(overlap_integrals))
