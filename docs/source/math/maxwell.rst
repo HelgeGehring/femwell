@@ -183,3 +183,16 @@ Loss per meter [dB/m]
     \text{Loss [dB/m]}
     &=
     \frac{-20}{\ln 10} \Im\beta \, 1\mathrm{m}
+
+**************
+Effective Area
+**************
+
+.. math::
+    A_{\text{eff}}
+    =
+    \frac{
+        \left( \int \left| E \right|^2 \mathrm{d}A \right)^2
+    }{
+        \int \left| E \right|^4 \mathrm{d}A
+    }
