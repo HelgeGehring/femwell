@@ -7,3 +7,6 @@
 
 .. plot:: examples/waveguide_modes.py
     :include-source:
+
+.. plot:: examples/vary_width.py
+    :include-source:

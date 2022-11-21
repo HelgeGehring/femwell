@@ -1,15 +1,15 @@
 import tempfile
-from tqdm.auto import tqdm
+from collections import OrderedDict
 
+from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
-from collections import OrderedDict
 from shapely.geometry import box
 from shapely.ops import clip_by_rect
-from femwell.mesh import mesh_from_OrderedDict
 
 from skfem import Mesh, Basis, ElementTriP0
 
+from femwell.mesh import mesh_from_OrderedDict
 from femwell.mode_solver import compute_modes, calculate_te_frac
 
 if __name__ == '__main__':
@@ -49,4 +49,3 @@ if __name__ == '__main__':
     for lams, te_fracs in zip(all_lams.T, all_te_fracs.T):
         plt.plot(widths, lams)
         plt.scatter(widths, lams, c=te_fracs, cmap='cool')
-    plt.show()
