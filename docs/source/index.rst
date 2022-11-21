@@ -5,5 +5,5 @@
     maxwell.rst
 
 
-.. plot:: examples/symmetric_waveguide_modes.py
+.. plot:: examples/waveguide_modes.py
     :include-source:
