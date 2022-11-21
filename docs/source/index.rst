@@ -1,12 +1,6 @@
 .. include:: ../../README.rst
 
 .. toctree::
-    thermal.rst
-    maxwell.rst
+    math/index
+    photonics/mode_solver
 
-
-.. plot:: examples/waveguide_modes.py
-    :include-source:
-
-.. plot:: examples/vary_width.py
-    :include-source:
