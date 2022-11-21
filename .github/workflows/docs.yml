@@ -49,6 +49,7 @@ jobs:
           path: './docs/build/html/'
 
   deploy:
+    if: ${{ github.repository == 'HelgeGehring/femwell' }} # skip for forks
     needs: build
 
     permissions:
