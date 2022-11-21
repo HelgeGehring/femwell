@@ -34,14 +34,6 @@ Assuming no sources and currents present, :eq:`maxwell` simplifies to
 
     &\nabla\times\vec{\mathcal{H}} = \varepsilon\frac{\partial \vec{\mathcal{E}}}{\partial t}
 
-additionally we are imposing the boundary conditions at :math:`\partial\Omega`,
-where :math:`\vec{n}` is the unit vector orthogonal to the boundary:
-
-.. math::
-    &\vec{E} \times \vec{n} = 0
-
-    &E_3 = 0
-
 By combining the latter two equations of :eq:`maxwell_no_sources` we get for the :math:`\mathcal{E}`
 
 .. math::
@@ -63,7 +55,18 @@ the equations simplify for the harmonic case with a frequency of :math:`\omega` 
 
     \mathcal{H}(\vec{x},x_3,t)=(\vec{H}(\vec{x}),H_3(\vec{x}))\mathrm{e}^{i(\beta x_3 - \omega t)}
 
-Leads to the equations
+Using these, the curl can be written as
+
+.. math::
+    \nabla \times
+    =
+    \begin{pmatrix}
+    0 & -i \beta & \partial_y \\
+    i \beta & 0 & -\partial_x \\
+    -\partial_y & \partial_x & 0
+    \end{pmatrix}
+
+This leads to the equations
 
 .. math::
     &
@@ -84,7 +87,15 @@ Leads to the equations
     + i \beta \epsilon E_3
     = 0
 
-defining
+and the boundary conditions at :math:`\partial\Omega`,
+where :math:`\vec{n}` is the unit vector orthogonal to the boundary:
+
+.. math::
+    &\vec{E} \times \vec{n} = 0
+
+    &E_3 = 0
+
+Defining
 
 .. math::
     E_3^{\text{new}} = i \beta E_3
