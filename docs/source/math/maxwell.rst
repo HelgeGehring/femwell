@@ -66,6 +66,13 @@ Using these, the curl can be written as
     -\partial_y & \partial_x & 0
     \end{pmatrix}
 
+and the derivative with respect to time becomes
+
+.. math::
+    \frac{\partial}{\partial t}
+    =
+    - i \omega
+
 This leads to the equations
 
 .. math::
