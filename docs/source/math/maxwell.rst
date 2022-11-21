@@ -196,3 +196,14 @@ Effective Area
     }{
         \int \left| E \right|^4 \mathrm{d}A
     }
+
+*******************
+Overlap coefficient
+*******************
+
+.. math::
+    c_{\nu\mu}
+    =
+    \int \mathcal{E}_\nu^* \times \mathcal{H}_\mu + \mathcal{E}_\nu \times \mathcal{H}_\mu^* \mathrm{d}A
+    =
+    c_{\mu\nu}^*
