@@ -1,5 +1,6 @@
+#################
 Maxwell-equations
-=================
+#################
 
 Starting with the maxwell equations:
 
@@ -16,9 +17,9 @@ Starting with the maxwell equations:
 
 where :math:`\mu` and :math:`\epsilon` are assumed to be element wise constant.
 
-
+*************************************************
 Eigenvectors propagating in :math:`x_3`-direction
---------------------------------------------------------------
+*************************************************
 
 Assuming no sources and currents present, :eq:`maxwell` simplifies to
 
@@ -123,6 +124,7 @@ Variational problem:
     \left( \epsilon, \nabla q \right) + \left( \epsilon E_3^{\text{new}}, q \right)
     = 0
 
+***
 PML
----
+***
 `link <http://www.hade.ch/docs/report_FDFD.pdf>`_

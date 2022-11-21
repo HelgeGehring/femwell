@@ -1,5 +1,6 @@
+##############
 Thermal solver
-==============
+##############
 
 Heat transfer equation
 
@@ -24,8 +25,9 @@ The equation simplifies to
 .. math::
     \frac{k}{\alpha} \frac{\mathrm{d}T}{\mathrm{d}t}-\nabla(k\nabla T) = Q
 
+************
 Steady state
-------------
+************
 
 At the steady state the temperature is constant, i.e. :math:`\frac{\mathrm{d}T}{\mathrm{d}t} = 0` which leads to
 
@@ -47,8 +49,9 @@ using partial integration and choosing the boundaries condition so, that the int
 
 which is used for the calculation of the steady state.
 
+***************
 Transient state
----------------
+***************
 
 For the description transient state, the change of the time needs to be kept in the equation, yielding with a similar derivation:
 
