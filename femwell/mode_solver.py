@@ -43,6 +43,7 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order
 
     eps = SLEPc.EPS().create()
     eps.setOperators(A_, B_)
+    eps.setType(SLEPc.EPS.Type.KRYLOVSCHUR)
     eps.getST().setType(SLEPc.ST.Type.SINVERT)
     eps.setWhichEigenpairs(SLEPc.EPS.Which.TARGET_MAGNITUDE)
     eps.setTarget(k0 ** 2 * np.max(epsilon_r) ** 2)
