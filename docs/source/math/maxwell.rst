@@ -139,7 +139,7 @@ Variational problem:
     - \beta^2 \left( \frac{1}{\mu} \vec{E}, \vec{F} \right)
 
     &
-    \left( \epsilon, \nabla q \right) - \left( \epsilon E_3^{\text{new}}, q \right)
+    \left( \epsilon \vec{E}, \nabla q \right) - \left( \epsilon E_3^{\text{new}}, q \right)
     = 0
 
 ***
