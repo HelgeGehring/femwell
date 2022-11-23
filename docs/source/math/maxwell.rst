@@ -223,3 +223,10 @@ Overlap coefficient
 Characteristic impedance
 ************************
 `<https://ieeexplore.ieee.org/document/108320>`_
+
+Power:
+
+.. math::
+    P_k = \delta_{jk} \int \left( \mathcal{E}_j^* \times \mathcal{H}_k \right) \cdot \hat{x}_3
+
+    I_zik = \oint_{C_i} \mathcal{H} \ cdot
