@@ -4,7 +4,7 @@ import numpy as np
 import scipy.sparse.linalg
 
 from skfem import BilinearForm, Basis, ElementTriN1, ElementTriN2, ElementDG, ElementTriP0, ElementTriP1, \
-    ElementTriP2, ElementVector, Mesh, Functional, LinearForm
+    ElementTriP2, ElementVector, Mesh, Functional, LinearForm, condense, solve
 from skfem.helpers import curl, grad, dot, inner, cross
 
 
@@ -35,31 +35,35 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order
     A = aform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
     B = bform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
 
-    from petsc4py import PETSc
-    from slepc4py import SLEPc
+    def solver_slepc(A,B):
+        from petsc4py import PETSc
+        from slepc4py import SLEPc
 
-    A_ = PETSc.Mat().createAIJ(size=A.shape, csr=(A.indptr, A.indices, A.data))
-    B_ = PETSc.Mat().createAIJ(size=B.shape, csr=(B.indptr, B.indices, B.data))
+        A_ = PETSc.Mat().createAIJ(size=A.shape, csr=(A.indptr, A.indices, A.data))
+        B_ = PETSc.Mat().createAIJ(size=B.shape, csr=(B.indptr, B.indices, B.data))
 
-    eps = SLEPc.EPS().create()
-    eps.setOperators(A_, B_)
-    eps.setType(SLEPc.EPS.Type.KRYLOVSCHUR)
-    eps.getST().setType(SLEPc.ST.Type.SINVERT)
-    eps.setWhichEigenpairs(SLEPc.EPS.Which.TARGET_MAGNITUDE)
-    eps.setTarget(k0 ** 2 * np.max(epsilon_r) ** 2)
-    eps.setDimensions(num_modes)
-    eps.solve()
+        eps = SLEPc.EPS().create()
+        eps.setOperators(A_, B_)
+        eps.setType(SLEPc.EPS.Type.KRYLOVSCHUR)
+        eps.getST().setType(SLEPc.ST.Type.SINVERT)
+        eps.setWhichEigenpairs(SLEPc.EPS.Which.TARGET_MAGNITUDE)
+        eps.setTarget(k0 ** 2 * np.max(epsilon_r) ** 2)
+        eps.setDimensions(num_modes)
+        eps.solve()
 
-    xr, wr = A_.getVecs()
-    xi, wi = A_.getVecs()
-    lams, xs = [], []
-    for i in range(eps.getConverged()):
-        lams.append(eps.getEigenpair(i, xr, xi))
-        xs.append(np.array(xr) + 1j * np.array(xi))
+        xr, wr = A_.getVecs()
+        xi, wi = A_.getVecs()
+        lams, xs = [], []
+        for i in range(eps.getConverged()):
+            lams.append(eps.getEigenpair(i, xr, xi))
+            xs.append(np.array(xr) + 1j * np.array(xi))
 
-    xs = np.array(xs, dtype=complex)
-    lams = np.array(lams)
+        xs = np.array(xs, dtype=complex)
+        lams = np.array(lams)
+        return lams, xs.T
 
+    lams, xs = solve(*condense(A,B,D=basis.get_dofs()), solver=solver_slepc)
+    xs = xs.T
     xs[:, basis.split_indices()[1]] /= 1j * np.sqrt(lams[:, np.newaxis])  # undo the scaling E_3,new = beta * E_3
 
     for i, lam in enumerate(lams):
