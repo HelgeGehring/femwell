@@ -218,3 +218,8 @@ Overlap coefficient
     c_{\mu\nu}^*
 
 .. bibliography::
+
+************************
+Characteristic impedance
+************************
+`<https://ieeexplore.ieee.org/document/108320>`_
