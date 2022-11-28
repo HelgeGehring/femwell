@@ -8,7 +8,7 @@ from skfem import BilinearForm, Basis, ElementTriN1, ElementTriN2, ElementDG, El
 from skfem.helpers import curl, grad, dot, inner, cross
 
 
-def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order=1):
+def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order=1, metallic_boundaries=False):
     k0 = 2 * np.pi / wavelength
 
     if order == 1:
@@ -35,7 +35,7 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order
     A = aform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
     B = bform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
 
-    def solver_slepc(A,B):
+    def solver_slepc(A, B):
         from petsc4py import PETSc
         from slepc4py import SLEPc
 
@@ -62,7 +62,10 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order
         lams = np.array(lams)
         return lams, xs.T
 
-    lams, xs = solve(*condense(A,B,D=basis.get_dofs()), solver=solver_slepc)
+    if metallic_boundaries:
+        lams, xs = solve(*condense(A, B, D=basis.get_dofs()), solver=solver_slepc)
+    else:
+        lams, xs = solve(A, B, solver=solver_slepc)
     xs = xs.T
     xs[:, basis.split_indices()[1]] /= 1j * np.sqrt(lams[:, np.newaxis])  # undo the scaling E_3,new = beta * E_3
 

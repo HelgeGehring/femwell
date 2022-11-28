@@ -92,7 +92,7 @@ if __name__ == '__main__':
     print(2 * np.pi / omega)
     conductors = ['core_l_interface', 'core_r_interface']
     lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1/.1, mu_r=1,
-                                    num_modes=len(conductors))
+                                    num_modes=len(conductors), metallic_boundaries=True)
     print('lams', lams)
 
     fig, axs = plot_mode(basis, np.real(xs[1]), plot_vectors=True)
