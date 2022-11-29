@@ -8,7 +8,7 @@ from mesh import mesh_from_OrderedDict
 
 
 def solve_coulomb(basis_epsilon_r, epsilon_r, fixed_boundaries):
-    basis = Basis(basis_epsilon_r.mesh, ElementTriP1())
+    basis = basis_epsilon_r.with_element(ElementTriP1())
 
     @BilinearForm
     def coulomb(u, v, w):
@@ -51,8 +51,8 @@ if __name__ == '__main__':
     )
 
     resolutions = dict(
-        slab={"resolution": .02, "distance": .1},
-        core={"resolution": .02, "distance": .1}
+        slab={"resolution": .1, "distance": .1},
+        core={"resolution": .1, "distance": .1}
     )
 
     with tempfile.TemporaryDirectory() as tmpdirname:
@@ -60,30 +60,43 @@ if __name__ == '__main__':
         mesh_from_OrderedDict(polygons, resolutions, filename='mesh.msh', default_resolution_max=5)
         mesh = Mesh.load(tmpdirname + '/mesh.msh')
 
-    basis = Basis(mesh, ElementTriP1())
+    basis = Basis(mesh, ElementTriP1(), intorder=4)
     basis_epsilon_r = basis.with_element(ElementTriP0())
 
     epsilon = basis_epsilon_r.zeros() + 3.9
-    epsilon[basis_epsilon_r.get_dofs(elements='slab')] = 128.4
+    epsilon[basis_epsilon_r.get_dofs(elements='slab')] = 28.4
     epsilon[basis_epsilon_r.get_dofs(elements='core')] = 7.5
     # basis.plot(epsilon).show()
 
     basis_u, u = solve_coulomb(basis_epsilon_r, epsilon, {'electrode_left___slab': 1, 'electrode_right___slab': 0})
 
     fig, ax = plt.subplots()
-
     for subdomain in basis_epsilon_r.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
         basis_epsilon_r.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
-
     basis_u.plot(u, ax=ax, shading='gouraud', colorbar=True)
     # basis_vec.plot(-u_grad, ax=ax)
     plt.show()
 
     fig, ax = plt.subplots()
-
     for subdomain in basis_epsilon_r.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
         basis_epsilon_r.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
     basis_grad = basis_u.with_element(ElementDG(basis_u.elem))
-    basis_u.plot(basis_u.project(basis_epsilon_r.interpolate(epsilon) * basis_u.interpolate(u).grad[0]),
-                 ax=ax, shading='gouraud', colorbar=True)
+    e_x = basis_u.project(basis_epsilon_r.interpolate(epsilon) * basis_u.interpolate(u).grad[0])
+    basis_u.plot(e_x, ax=ax, shading='gouraud', colorbar=True)
+    plt.show()
+
+    epsilon = basis_epsilon_r.zeros() + 1.445
+    epsilon[basis_epsilon_r.get_dofs(elements='core')] = 1.989
+    epsilon[basis_epsilon_r.get_dofs(elements='slab')] = 2.211 + .5 * 2.211 ** 3 * .31e-6 * \
+                                                         basis_epsilon_r.project(basis_u.interpolate(e_x))[
+                                                             basis_epsilon_r.get_dofs(elements='slab')]
+    epsilon **= 2
+    basis_epsilon_r.plot(epsilon, colorbar=True).show()
+
+    from mode_solver import compute_modes, plot_mode
+
+    neffs, basis_modes, modes = compute_modes(basis_epsilon_r, epsilon, 1.55, 1, 1, order=1)
+    print(neffs)
+
+    plot_mode(basis_modes, np.real(modes[0]))
     plt.show()
