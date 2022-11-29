@@ -81,22 +81,29 @@ if __name__ == '__main__':
     for subdomain in basis_epsilon_r.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
         basis_epsilon_r.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
     basis_grad = basis_u.with_element(ElementDG(basis_u.elem))
-    e_x = basis_u.project(basis_epsilon_r.interpolate(epsilon) * basis_u.interpolate(u).grad[0])
+    e_x = basis_u.project(-basis_epsilon_r.interpolate(epsilon) * basis_u.interpolate(u).grad[0])
     basis_u.plot(e_x, ax=ax, shading='gouraud', colorbar=True)
     plt.show()
 
-    epsilon = basis_epsilon_r.zeros() + 1.445
-    epsilon[basis_epsilon_r.get_dofs(elements='core')] = 1.989
-    epsilon[basis_epsilon_r.get_dofs(elements='slab')] = 2.211 + .5 * 2.211 ** 3 * .31e-6 * \
-                                                         basis_epsilon_r.project(basis_u.interpolate(e_x))[
-                                                             basis_epsilon_r.get_dofs(elements='slab')]
-    epsilon **= 2
-    basis_epsilon_r.plot(epsilon, colorbar=True).show()
+    voltages = np.linspace(0, 1, 10)
+    voltages_neffs = []
 
-    from mode_solver import compute_modes, plot_mode
+    for voltage in voltages:
+        from mode_solver import compute_modes, plot_mode
 
-    neffs, basis_modes, modes = compute_modes(basis_epsilon_r, epsilon, 1.55, 1, 1, order=1)
-    print(neffs)
+        epsilon = basis_epsilon_r.zeros() + 1.445
+        epsilon[basis_epsilon_r.get_dofs(elements='core')] = 1.989
+        epsilon[basis_epsilon_r.get_dofs(elements='slab')] = 2.211 + .5 * 2.211 ** 3 * 31e-6 * \
+                                                             basis_epsilon_r.project(-basis_u.interpolate(u).grad[0])[
+                                                                 basis_epsilon_r.get_dofs(elements='slab')] * voltage
+        epsilon **= 2
+        # basis_epsilon_r.plot(epsilon, colorbar=True).show()
 
-    plot_mode(basis_modes, np.real(modes[0]))
+        neffs, basis_modes, modes = compute_modes(basis_epsilon_r, epsilon, 1.55, 1, 1, order=1)
+        voltages_neffs.append(neffs[0])
+
+        # plot_mode(basis_modes, modes[0])
+        # plt.show()
+
+    plt.plot(voltages, np.real(voltages_neffs))
     plt.show()
