@@ -251,6 +251,7 @@ As in the static case
 
 .. math::
     :name: EdivPhi
+
     \vec{\mathcal{E}} = -\nabla \Phi
 
 using :eq:`maxwell`, for :math:`\Phi` can be found that
