@@ -27,22 +27,19 @@ def solve_coulomb(basis_epsilon_r, epsilon_r, fixed_boundaries):
 if __name__ == '__main__':
     import tempfile
 
-    import shapely.geometry
-    import shapely.affinity
-    from shapely.ops import clip_by_rect
+    from shapely.geometry import box, Point
 
     from collections import OrderedDict
 
-    electrode_left = shapely.geometry.box(9, 1, 10, 1.2)
-    electrode_right = shapely.geometry.box(-9, 1, -10, 1.2)
-    core = shapely.geometry.box(-10, 0, 10, 1)
-    env = shapely.affinity.scale(core.buffer(15, resolution=8))
+    electrode_left = box(9, 1, 10, 1.2)
+    electrode_right = box(-9, 1, -10, 1.2)
+    core = box(-10, 0, 10, 1)
+    env = core.buffer(15, resolution=8)
 
     polygons = OrderedDict(
         electrode_left=electrode_left,
         electrode_right=electrode_right,
         core=core,
-        env_outside=shapely.geometry.LineString(env.exterior),
         env=env
     )
 
@@ -57,12 +54,11 @@ if __name__ == '__main__':
 
     basis = Basis(mesh, ElementTriP0())
 
-    epsilon = basis.zeros() + 1
+    epsilon = basis.ones()
     epsilon[basis.get_dofs(elements='core')] = 1000
     # basis.plot(epsilon).show()
 
-    basis_u, u = solve_coulomb(basis, epsilon,
-                               {'electrode_left___core': 1, 'electrode_right___core': -1, 'env_outside': 0})
+    basis_u, u = solve_coulomb(basis, epsilon, {'electrode_left___core': 1, 'electrode_right___core': 0})
 
     basis_vec = basis_u.with_element(ElementVector(ElementTriP1()))
     u_grad = basis_vec.project(basis.interpolate(epsilon) * basis_u.interpolate(u).grad)
@@ -74,15 +70,13 @@ if __name__ == '__main__':
     reshaped = stacked.reshape(-1, 2)
 
     from shapely.prepared import prep
+
     env_preped = prep(env)
-    inside = np.array([env_preped.contains(shapely.geometry.Point(point)) for point in reshaped])
-
+    inside = np.array([env_preped.contains(Point(point)) for point in reshaped])
     (u_grad_x, _), (u_grad_y, _) = basis_vec.split(u_grad)
-
-    u_grad_xy = np.array(
-        (basis_u.interpolator(u_grad_x)(reshaped[inside].T), basis_u.interpolator(u_grad_y)(reshaped[inside].T)))
     result = np.full_like(reshaped, np.nan)
-    result[inside] = u_grad_xy.T
+    result[inside] = np.array(
+        (basis_u.interpolator(u_grad_x)(reshaped[inside].T), basis_u.interpolator(u_grad_y)(reshaped[inside].T))).T
     result = result.reshape(stacked.shape)
 
     fig, ax = plt.subplots()
