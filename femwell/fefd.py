@@ -2,8 +2,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from skfem import BilinearForm, Basis, ElementTriN1, ElementTriP0, ElementTriP1, Mesh, solve, FacetBasis, condense, \
-    InteriorFacetBasis
+    InteriorFacetBasis, ElementTriP2, ElementTriN2
 from skfem.helpers import curl, grad, dot, inner
+
+from mode_solver import plot_mode
 
 
 def compute_modes(basis, basis_epsilon_r, epsilon_r, wavelength, mu_r, source, D=None, x0=None):
@@ -110,12 +112,14 @@ if __name__ == '__main__':
 
     @BilinearForm
     def lhs(u, v, w):
-        return -1 / k0 ** 2 * inner(grad(u)[0], grad(v)[0]) + w['epsilon'] * inner(u, v)
+        t = np.array([w.n[1], -w.n[0]])
+        return -1 / k0 ** 2 * inner(dot(grad(u), t), dot(grad(v), t)) + w['epsilon'] * inner(u, v)
 
 
     @BilinearForm
     def rhs(u, v, w):
         return inner(u, v)
+
 
     A = lhs.assemble(basis_source_1d, epsilon=basis0_source.interpolate(epsilon))
     B = rhs.assemble(basis_source_1d)
@@ -127,10 +131,16 @@ if __name__ == '__main__':
     print(np.sqrt(lams))
 
     # xs[:,0] = xs[:,0]*0+1
-    x0 = basis_source.project((np.array((basis_source_1d.interpolate(0*xs[:,-1]), basis_source_1d.interpolate(xs[:,-1]))), basis_source_1d.interpolate(0*xs[:,-1])))
+    x0 = basis_source.project((np.array(
+        (basis_source_1d.interpolate(0 * xs[:, -1]), basis_source_1d.interpolate(0 * xs[:, -1]))),
+                               basis_source_1d.interpolate(xs[:, -2])), facets='source', dtype=complex)
+    plot_mode(basis, np.real(x0))
+    plt.show()
 
-    basis, x = compute_modes(basis, basis0, epsilon, 1.55, 1, basis.zeros(), D=basis_source.get_dofs(facets='source'),
-                             x0=x0)
+    print(basis_source.get_dofs().flatten())
+    print(np.where(x0))
+    basis, x = compute_modes(basis, basis0, epsilon, 1.55, 1, basis.zeros(dtype=complex),
+                             D=basis.get_dofs(facets='source'), x0=x0)
 
     from mode_solver import plot_mode
 
