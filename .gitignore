@@ -1,6 +1,7 @@
 .idea/
 dist/
 docs/build/
+*.egg-info/
 
 *.msh
 *.png
