@@ -206,9 +206,9 @@ As defined in :cite:p:`Agrawal2019`
     A_{\text{eff}}
     =
     \frac{
-        \left( \int \left| E \right|^2 \mathrm{d}A \right)^2
+        \left( \int \left| \vec{\mathcal{E}} \right|^2 \mathrm{d}A \right)^2
     }{
-        \int \left| E \right|^4 \mathrm{d}A
+        \int \left| \vec{\mathcal{E}} \right|^4 \mathrm{d}A
     }
 
 *******************
@@ -218,7 +218,7 @@ Overlap coefficient
 .. math::
     c_{\nu\mu}
     =
-    \int \mathcal{E}_\nu^* \times \mathcal{H}_\mu + \mathcal{E}_\nu \times \mathcal{H}_\mu^* \mathrm{d}A
+    \int \vec{\mathcal{E}}_\nu^* \times \vec{\mathcal{H}}_\mu + \vec{\mathcal{E}}_\nu \times \vec{\mathcal{H}}_\mu^* \mathrm{d}A
     =
     c_{\mu\nu}^*
 
@@ -232,6 +232,41 @@ Characteristic impedance
 Power:
 
 .. math::
-    P_k = \delta_{jk} \int \left( \mathcal{E}_j^* \times \mathcal{H}_k \right) \cdot \hat{x}_3
+    P_k = \delta_{jk} \int \left( \vec{\mathcal{E}}_j^* \times \vec{\mathcal{H}}_k \right) \cdot \hat{x}_3
 
     I_zik = \oint_{C_i} \mathcal{H} \ cdot
+
+*****************************
+Calculating static potentials
+*****************************
+
+As in the static case
+
+.. math::
+    \nabla\times\vec{\mathcal{E}}
+    = - \mu \frac{\partial \vec{\mathcal{H}}}{\partial t}
+    = 0
+
+:math:`\mathcal{E}` can be written as
+
+.. math::
+    :name: EdivPhi
+    \vec{\mathcal{E}} = -\nabla \Phi
+
+using :eq:`maxwell`, for :math:`\Phi` can be found that
+
+.. math::
+    -\nabla\cdot \left(\varepsilon \nabla \Phi\right) = \rho
+
+from which we can derive the weakform
+
+.. math::
+    \left(
+        \varepsilon \nabla \Phi
+        ,
+        \nabla v
+    \right)
+    = \rho v
+
+which is used to calculate the potential for a given structure.
+Using :eq:`EdivPhi` the electric field can be calculated from the potential.
