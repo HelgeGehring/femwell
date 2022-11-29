@@ -33,13 +33,14 @@ if __name__ == '__main__':
 
     from collections import OrderedDict
 
-    electrode_start_x = 1.532 / 2 + 2.629
+    core_width = 1.532
+    electrode_start_x = core_width / 2 + 2.629
     electrode_width = 4.4
 
     electrode_left = box(-electrode_start_x - electrode_width, .5, - electrode_start_x, .5 + 1.8)
     electrode_right = box(electrode_start_x, .5, electrode_start_x + electrode_width, .5 + 1.8)
     slab = box(-10, 0, 10, .5)
-    core = box(-1.532 / 2, .5, 1.532 / 2, .8)
+    core = box(-core_width / 2, .5, core_width / 2, .8)
     env = slab.buffer(20, resolution=8)
 
     polygons = OrderedDict(
