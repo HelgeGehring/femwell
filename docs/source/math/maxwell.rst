@@ -147,6 +147,11 @@ PML
 ***
 `link <http://www.hade.ch/docs/report_FDFD.pdf>`_
 
+***************
+Bent Waveguides
+***************
+:cite:`AzizurRahman2013`
+
 
 ***************************
 TE/TM Polarization Fraction
