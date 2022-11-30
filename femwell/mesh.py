@@ -32,10 +32,14 @@ class MeshTracker():
     Retrieve existing geometry
     """
     def get_point_index(self, xy_point):
-        for index, shapely_point in enumerate(self.shapely_points):
-            if xy_point.equals_exact(shapely_point, self.atol) :
-                return index
-        return None
+        return next(
+            (
+                index
+                for index, shapely_point in enumerate(self.shapely_points)
+                if xy_point.equals_exact(shapely_point, self.atol)
+            ),
+            None,
+        )
 
     def get_xy_segment_index_and_orientation(self, xy_point1, xy_point2):
         xy_line = shapely.geometry.LineString([xy_point1, xy_point2])
@@ -43,46 +47,33 @@ class MeshTracker():
             if xy_line.equals(shapely_line):
                 first_xy_line, last_xy_line = xy_line.boundary.geoms
                 first_xy, last_xy = shapely_line.boundary.geoms
-                if first_xy_line.equals(first_xy):
-                    return index, True
-                else:
-                    return index, False
+                return (index, True) if first_xy_line.equals(first_xy) else (index, False)
         return None, 1
 
     def get_gmsh_points_from_label(self, label):
         indices = [idx for idx, value in enumerate(self.points_labels) if value == label]
-        entities = []
-        for index in indices:
-            entities.append(self.gmsh_points[index]._id)
-        return entities
+        return [self.gmsh_points[index]._id for index in indices]
 
     def get_gmsh_xy_lines_from_label(self, label):
         indices = [idx for idx, value in enumerate(self.xy_segments_main_labels) if value == label]
-        entities = []
-        for index in indices:
-            entities.append(self.gmsh_xy_segments[index]._id)
-        return entities
+        return [self.gmsh_xy_segments[index]._id for index in indices]
 
     def get_gmsh_xy_surfaces_from_label(self, label):
         indices = [idx for idx, value in enumerate(self.xy_surfaces_labels) if value == label]
-        entities = []
-        for index in indices:
-            entities.append(self.gmsh_xy_surfaces[index]._id)
-        return entities
+        return [self.gmsh_xy_surfaces[index]._id for index in indices]
 
     """
     Channel loop utilities (no need to track)
     """
     def xy_channel_loop_from_vertices(self, vertices, label):
         edges = []
-        for vertex1, vertex2 in [(vertices[i], vertices[i + 1]) for i in range(0, len(vertices)-1)]:
+        for vertex1, vertex2 in [(vertices[i], vertices[i + 1]) for i in range(len(vertices)-1)]:
             gmsh_line, orientation = self.add_get_xy_segment(vertex1, vertex2, label)
             if orientation:
                 edges.append(gmsh_line)
             else:
                 edges.append(-gmsh_line)
-        channel_loop = self.model.add_curve_loop(edges)
-        return channel_loop
+        return self.model.add_curve_loop(edges)
 
     """
     Adding geometry
@@ -225,11 +216,9 @@ def mesh_from_polygons(
             for first_shape in first_shape.geoms if hasattr(first_shape, 'geoms') else [first_shape]:
                 # First line exterior
                 first_exterior_line = LineString(first_shape.exterior) if first_shape.type == "Polygon" else first_shape
-                for second_index, (second_name, second_shapes) in enumerate(shapes_dict.items()):
+                for second_name, second_shapes in shapes_dict.items():
                     # Do not compare to itself
-                    if second_name == first_name:
-                        continue
-                    else:
+                    if second_name != first_name:
                         second_shapes = shapes_tiled_dict[second_name]
                         for second_shape in second_shapes.geoms if hasattr(second_shapes, 'geoms') else [second_shapes]:
                             # Second line exterior
@@ -240,14 +229,12 @@ def mesh_from_polygons(
                                 second_interior_line = LineString(second_interior_line)
                                 first_exterior_line = break_line(first_exterior_line, second_interior_line)
                 # First line interiors
-                if first_shape.type == "Polygon" or first_shape.type == "MultiPolygon":
+                if first_shape.type in ["Polygon", "MultiPolygon"]:
                     first_shape_interiors = []
                     for first_interior_line in first_shape.interiors:
                         first_interior_line = LineString(first_interior_line)
-                        for second_index, (second_name, second_shapes) in enumerate(shapes_dict.items()):
-                            if second_name == first_name:
-                                continue
-                            else:
+                        for second_name, second_shapes in shapes_dict.items():
+                            if second_name != first_name:
                                 second_shapes = shapes_tiled_dict[second_name]
                                 for second_shape in second_shapes.geoms if hasattr(second_shapes, 'geoms') else [second_shapes]:
                                     # Exterior
@@ -259,15 +246,15 @@ def mesh_from_polygons(
                                         intersections = first_interior_line.intersection(second_interior_line)
                                         first_interior_line = break_line(first_interior_line, second_interior_line)
                         first_shape_interiors.append(first_interior_line)
-                if first_shape.type == "Polygon" or first_shape.type == "MultiPolygon": 
+                if first_shape.type in ["Polygon", "MultiPolygon"]: 
                     broken_shapes.append(Polygon(first_exterior_line, holes=first_shape_interiors))
                 else:
                     broken_shapes.append(LineString(first_exterior_line))
-            if first_shape.type == "Polygon" or first_shape.type == "MultiPolygon": 
+            if first_shape.type in ["Polygon", "MultiPolygon"]: 
                 polygons_broken_dict[first_name] = MultiPolygon(broken_shapes) if len(broken_shapes) > 1 else broken_shapes[0]
             else:
                 lines_broken_dict[first_name] = MultiLineString(broken_shapes) if len(broken_shapes) > 1 else broken_shapes[0]
-        
+
         # Add lines, reusing line segments
         meshtracker = MeshTracker(model=model)
         for line_name, line in lines_broken_dict.items():
@@ -299,11 +286,9 @@ def mesh_from_polygons(
             gmsh.model.mesh.field.setNumber(n+3, "SizeMax", default_resolution_max)
             gmsh.model.mesh.field.setNumber(n+3, "DistMin", 0)
             gmsh.model.mesh.field.setNumber(n+3, "DistMax", mesh_distance)
-            # Save and increment
-            refinement_fields.append(n+1)
-            refinement_fields.append(n+3)
+            refinement_fields.extend((n+1, n+3))
             n += 4
-                
+
         if global_quad:        
             gmsh.option.setNumber("Mesh.Algorithm", 8)
             gmsh.option.setNumber("Mesh.RecombineAll", 1)

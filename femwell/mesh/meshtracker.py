@@ -33,10 +33,14 @@ class MeshTracker():
     Retrieve existing geometry
     """
     def get_point_index(self, xy_point):
-        for index, shapely_point in enumerate(self.shapely_points):
-            if xy_point.equals_exact(shapely_point, self.atol) :
-                return index
-        return None
+        return next(
+            (
+                index
+                for index, shapely_point in enumerate(self.shapely_points)
+                if xy_point.equals_exact(shapely_point, self.atol)
+            ),
+            None,
+        )
 
     def get_xy_segment_index_and_orientation(self, xy_point1, xy_point2):
         xy_line = shapely.geometry.LineString([xy_point1, xy_point2])
@@ -44,46 +48,33 @@ class MeshTracker():
             if xy_line.equals(shapely_line):
                 first_xy_line, last_xy_line = xy_line.boundary.geoms
                 first_xy, last_xy = shapely_line.boundary.geoms
-                if first_xy_line.equals(first_xy):
-                    return index, True
-                else:
-                    return index, False
+                return (index, True) if first_xy_line.equals(first_xy) else (index, False)
         return None, 1
 
     def get_gmsh_points_from_label(self, label):
         indices = [idx for idx, value in enumerate(self.points_labels) if value == label]
-        entities = []
-        for index in indices:
-            entities.append(self.gmsh_points[index]._id)
-        return entities
+        return [self.gmsh_points[index]._id for index in indices]
 
     def get_gmsh_xy_lines_from_label(self, label):
         indices = [idx for idx, value in enumerate(self.xy_segments_main_labels) if value == label]
-        entities = []
-        for index in indices:
-            entities.append(self.gmsh_xy_segments[index]._id)
-        return entities
+        return [self.gmsh_xy_segments[index]._id for index in indices]
 
     def get_gmsh_xy_surfaces_from_label(self, label):
         indices = [idx for idx, value in enumerate(self.xy_surfaces_labels) if value == label]
-        entities = []
-        for index in indices:
-            entities.append(self.gmsh_xy_surfaces[index]._id)
-        return entities
+        return [self.gmsh_xy_surfaces[index]._id for index in indices]
 
     """
     Channel loop utilities (no need to track)
     """
     def xy_channel_loop_from_vertices(self, vertices, label):
         edges = []
-        for vertex1, vertex2 in [(vertices[i], vertices[i + 1]) for i in range(0, len(vertices)-1)]:
+        for vertex1, vertex2 in [(vertices[i], vertices[i + 1]) for i in range(len(vertices)-1)]:
             gmsh_line, orientation = self.add_get_xy_segment(vertex1, vertex2, label)
             if orientation:
                 edges.append(gmsh_line)
             else:
                 edges.append(-gmsh_line)
-        channel_loop = self.model.add_curve_loop(edges)
-        return channel_loop
+        return self.model.add_curve_loop(edges)
 
     """
     Adding geometry
@@ -155,7 +146,7 @@ class MeshTracker():
         hole_loops = []
         surfaces_to_label = []
 
-        for polygon in shapely_xy_polygon.geoms if hasattr(shapely_xy_polygon, 'geoms') else [shapely_xy_polygon]:
+        for _ in shapely_xy_polygon.geoms if hasattr(shapely_xy_polygon, 'geoms') else [shapely_xy_polygon]:
             # Parse holes
             for polygon_hole in list(shapely_xy_polygon.interiors):
                 hole_vertices = []

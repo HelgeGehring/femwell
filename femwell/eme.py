@@ -129,7 +129,6 @@ def compute_total_S_matrix(meshnames, mesh_info_dict, lengths, wavelength, num_m
     """
     modes = []
     propagations = {}
-    interfaces = {}
     for i, meshname in enumerate(meshnames):
         # with "." as tmpdirname: # tempfile.TemporaryDirectory()
         mesh = Mesh.load(meshname)
@@ -148,8 +147,10 @@ def compute_total_S_matrix(meshnames, mesh_info_dict, lengths, wavelength, num_m
         modes.append((lams, basis, xs))
         # Create SAX model for propagation
         propagations[f"p_{i}"] = compute_propagation_s_matrix((lams, basis, xs), lengths[i], wavelength)
-    for i in range(0,len(meshnames)-1):
-        interfaces[f"i_{i}_{i + 1}"] = compute_interface_s_matrix(modes[i], modes[i + 1])
+    interfaces = {
+        f"i_{i}_{i + 1}": compute_interface_s_matrix(modes[i], modes[i + 1])
+        for i in range(len(meshnames) - 1)
+    }
 
     net = _get_netlist(propagations, interfaces)
     mode_names = [f"{i}" for i in range(num_modes)]
@@ -256,18 +257,17 @@ if __name__ == "__main__":
     """
     (4) Get a simulatoin a x
     """
-    resolutions = {}
-    resolutions["core"] = {"resolution": 0.02, "distance": 2}
-    resolutions["slab90"] = {"resolution": 0.05, "distance": 2}
-    resolutions["Oxide"] = {"resolution": 0.3, "distance": 2}
+    resolutions = {
+        "core": {"resolution": 0.02, "distance": 2},
+        "slab90": {"resolution": 0.05, "distance": 2},
+        "Oxide": {"resolution": 0.3, "distance": 2},
+    }
 
     ymin = -6 # make sure all objects cross the line
     ymax = 6 # make sure all objects cross the line
 
     meshes = []
     lengths = []
-    meshnames = []
-
     for x1, x2 in zip(lines_x[:-1], lines_x[1:]):
         x = (x1+x2)/2
         lengths.append(x2-x1)
@@ -281,8 +281,7 @@ if __name__ == "__main__":
         background_padding=(2.0, 2.0, 2.0, 2.0), # how much of backgorund tag to add to each side of the simulatoin
         filename=f"mesh_x_{x1}.msh",
     ))
-    meshnames.append(f"mesh_x_{x1}.msh")
-
+    meshnames = [f"mesh_x_{x1}.msh"]
     num_modes = 16
 
     indices_dict = {"core": 3.45, "slab90": 3.45, "clad": 1.44}

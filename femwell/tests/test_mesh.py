@@ -47,7 +47,6 @@ def test_shared_edge():
                             offset_core = 0
                             )
     mesh = mesh_from_OrderedDict(shapes, resolutions = {})
-    assert True
 
 def test_breaking_edge():
     shapes = geometry(wsim = 2, 
@@ -58,7 +57,6 @@ def test_breaking_edge():
                             offset_core = -0.1
                             )
     mesh = mesh_from_OrderedDict(shapes, resolutions = {})
-    assert True
 
 def test_inclusion():
     shapes = geometry(wsim = 2, 
@@ -68,8 +66,7 @@ def test_inclusion():
                             hcore = 0.22, 
                             offset_core = 0.1
                             )
-    mesh = mesh_from_OrderedDict(shapes, resolutions = {})
-    assert True 
+    mesh = mesh_from_OrderedDict(shapes, resolutions = {}) 
 
 def test_lines():
     
@@ -107,4 +104,3 @@ def test_lines():
                             offset_core = offset_core
                             ))
     mesh = mesh_from_OrderedDict(shapes, resolutions = {})
-    assert True
