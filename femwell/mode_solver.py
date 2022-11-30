@@ -201,6 +201,7 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', directi
         rc = (2, 1) if direction != 'x' else (1, 2)
         fig, axs = plt.subplots(*rc, subplot_kw=dict(aspect=1))
         for ax in axs:
+            basis.mesh.draw(ax=ax, boundaries=True, boundaries_only=True)
             for subdomain in basis.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
                 basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
         et_basis.plot(et, ax=axs[0])
@@ -218,6 +219,7 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', directi
     rc = (3, 1) if direction != 'x' else (1, 3)
     fig, axs = plt.subplots(*rc, subplot_kw=dict(aspect=1))
     for ax in axs:
+        basis.mesh.draw(ax=ax, boundaries=True, boundaries_only=True)
         for subdomain in basis.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
             basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
 
