@@ -77,8 +77,6 @@ def solve_continuity_equations(basis, phi_i, p_i_1, n_i_1, pn):
     def force_recombination(v, w):
         return elementary_charge * intrinsic_charge ** 2 / recombination_function(w.p_i_1, w.n_i_1) * v
 
-    basis.plot(basis.project(basis.interpolate(phi_i).grad[0]), colorbar=True).show()
-
     A = drift_diffusion.assemble(basis, phi_i=basis.interpolate(phi_i), mu=400)
     B = reaction_recombination.assemble(basis, phi_i=basis.interpolate(phi_i), p_i_1=basis.interpolate(p_i_1),
                                         n_i_1=basis.interpolate(n_i_1))
@@ -125,7 +123,4 @@ if __name__ == '__main__':
     np_0 = basis.zeros() # basis.project(lambda x: x[0])
 
     basis_n, n = solve_continuity_equations(basis_epsilon_r, u, np_0, np_0, 'p')
-    print(np.min(n))
-    print(np.max(n))
-    print(basis_n, n.shape)
     basis_n.plot(n, shading='gouraud', colorbar=True).show()
