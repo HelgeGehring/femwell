@@ -75,7 +75,7 @@ def solve_continuity_equations(basis, phi_i, p_i_1, n_i_1, pn):
 
     @LinearForm
     def force_recombination(v, w):
-        return -elementary_charge * intrinsic_charge ** 2 / recombination_function(w.p_i_1, w.n_i_1) * v
+        return elementary_charge * intrinsic_charge ** 2 / recombination_function(w.p_i_1, w.n_i_1) * v
 
     basis.plot(basis.project(basis.interpolate(phi_i).grad[0]), colorbar=True).show()
 
