@@ -87,7 +87,7 @@ def solve_continuity_equations(basis, phi_i, p_i_1, n_i_1, pn):
 
     return basis, solve(*condense(A + B, C, D=basis.get_dofs(facets='left') + basis.get_dofs(facets='right'),
                                   x=basis.zeros() + basis.project(
-                                      intrinsic_charge * np.exp(-basis.interpolate(phi_i) / v_threshold))))
+                                      basis.interpolate(doping) * np.exp(-basis.interpolate(phi_i) / v_threshold))))
 
 
 if __name__ == '__main__':
@@ -114,19 +114,25 @@ if __name__ == '__main__':
     basis.plot(doping, ax=ax, shading='gouraud', colorbar=True).show()
 
     phi_0 = basis.zeros()
+    phi_n = basis.zeros()  # basis.project(lambda x: x[0])
+    phi_p = basis.zeros()  # basis.project(lambda x: x[0])
 
-    basis_u, u = solve_coulomb(basis_epsilon_r, epsilon, {'left': 1, 'right': 0}, phi_0, phi_0, phi_0, doping)
+    for i in range(10):
+        for i in range(10):
+            basis_u, d_phi_0 = solve_coulomb(basis_epsilon_r, epsilon, {'left': 1, 'right': 0}, phi_0, phi_n, phi_p,
+                                             doping)
+            phi_0 += d_phi_0 * 1 / 2 ** i
 
-    fig, ax = plt.subplots()
-    ax = basis_u.mesh.draw(ax=ax)
-    basis_u.plot(u, ax=ax, shading='gouraud', colorbar=True)
-    # basis_vec.plot(-u_grad, ax=ax)
-    plt.show()
+            fig, ax = plt.subplots()
+            ax = basis_u.mesh.draw(ax=ax)
+            basis_u.plot(phi_0, ax=ax, shading='gouraud', colorbar=True)
+            # basis_vec.plot(-u_grad, ax=ax)
+            plt.show()
 
-    np_0 = basis.zeros()  # basis.project(lambda x: x[0])
+        basis_n, phi_n_new = solve_continuity_equations(basis_epsilon_r, phi_0, phi_n, phi_p, 'n')
+        basis_n.plot(phi_n_new, shading='gouraud', colorbar=True).show()
 
-    basis_n, n = solve_continuity_equations(basis_epsilon_r, u, np_0, np_0, 'n')
-    basis_n.plot(n, shading='gouraud', colorbar=True).show()
+        basis_p, phi_p_new = solve_continuity_equations(basis_epsilon_r, phi_0, phi_n, phi_p, 'p')
+        basis_p.plot(phi_p_new, shading='gouraud', colorbar=True).show()
 
-    basis_p, p = solve_continuity_equations(basis_epsilon_r, u, np_0, np_0, 'p')
-    basis_p.plot(p, shading='gouraud', colorbar=True).show()
+        phi_n, phi_p = phi_n_new, phi_p_new
