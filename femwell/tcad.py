@@ -52,11 +52,14 @@ def solve_coulomb(basis, epsilon_r, fixed_boundaries, phi_k, phi_n, phi_p, dopin
 
 
 def solve_continuity_equations(basis, phi_i, p_i_1, n_i_1, pn):
+    sign = -1 if pn == 'p' else 1
+    print(sign)
+
     @BilinearForm
     def drift_diffusion(u, v, w):
         diffusion_constant = Boltzmann * temperature / elementary_charge * w.mu
 
-        return elementary_charge * diffusion_constant * np.exp(w.phi_i / v_threshold) * inner(grad(u), grad(v))
+        return elementary_charge * diffusion_constant * np.exp(sign * w.phi_i / v_threshold) * inner(grad(u), grad(v))
 
     def recombination_function(p_i_1, n_i_1):
         return 1 / (
@@ -71,7 +74,7 @@ def solve_continuity_equations(basis, phi_i, p_i_1, n_i_1, pn):
             return elementary_charge * w.p_i_1 / recombination_function(w.p_i_1, w.n_i_1) * np.exp(
                 w.phi_i / v_threshold) * inner(u, v)
         return elementary_charge * w.n_i_1 / recombination_function(w.p_i_1, w.n_i_1) * np.exp(
-            w.phi_i / v_threshold) * inner(u, v)
+            -w.phi_i / v_threshold) * inner(u, v)
 
     @LinearForm
     def force_recombination(v, w):
@@ -105,7 +108,7 @@ if __name__ == '__main__':
     epsilon *= 8.854e-14  # epsilon_0
     # basis.plot(epsilon).show()
 
-    doping = basis.project(lambda x: 2 * (x[0] > .025e-4) - 1) * 1e10
+    doping = basis.project(lambda x: 2 * (x[0] > .025e-4) - 1) * 1e11
     # doping = basis.project(lambda x: x[0]) * 1e17
     fig, ax = plt.subplots()
     basis.plot(doping, ax=ax, shading='gouraud', colorbar=True).show()
@@ -120,7 +123,10 @@ if __name__ == '__main__':
     # basis_vec.plot(-u_grad, ax=ax)
     plt.show()
 
-    np_0 = basis.zeros() # basis.project(lambda x: x[0])
+    np_0 = basis.zeros()  # basis.project(lambda x: x[0])
 
-    basis_n, n = solve_continuity_equations(basis_epsilon_r, u, np_0, np_0, 'p')
+    basis_n, n = solve_continuity_equations(basis_epsilon_r, u, np_0, np_0, 'n')
     basis_n.plot(n, shading='gouraud', colorbar=True).show()
+
+    basis_p, p = solve_continuity_equations(basis_epsilon_r, u, np_0, np_0, 'p')
+    basis_p.plot(p, shading='gouraud', colorbar=True).show()
