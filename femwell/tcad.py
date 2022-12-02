@@ -6,6 +6,8 @@ import skfem
 from skfem import *
 from skfem.helpers import *
 
+# like desicribed in https://www.politesi.polimi.it/bitstream/10589/94468/3/2014_7_Bortolossi.pdf
+
 
 def solve_coulomb(basis, epsilon_r, fixed_boundaries, phi_k, phi_n, phi_p, doping):
     @BilinearForm
