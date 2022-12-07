@@ -239,12 +239,12 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', directi
 
     if colorbar:
         if colorbar == 'same':
-            plt.colorbar(axs[-1].collections[0], ax=axs.ravel().tolist())
+            plt.colorbar(axs[0].collections[-1], ax=axs.ravel().tolist())
         else:
             for ax in axs:
                 divider = make_axes_locatable(ax)
                 cax = divider.append_axes("right", size="5%", pad=0.05)
-                plt.colorbar(ax.collections[0], cax=cax)
+                plt.colorbar(ax.collections[-1], cax=cax)
 
     return fig, axs
 
