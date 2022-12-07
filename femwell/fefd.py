@@ -44,6 +44,7 @@ if __name__ == '__main__':
     width_wg_1 = .5
     length_wg_1 = 5
     extra_length_wg_1 = 1
+    extra_length_wg_2 = 1
 
     width_wg_2 = 2
     length_wg_2 = 5
@@ -65,6 +66,13 @@ if __name__ == '__main__':
         (width_wg_1 / 2, -length_wg_1),
     ])
 
+    wide_append = Polygon([
+        (-width_wg_2 / 2, length_wg_2),
+        (-width_wg_2 / 2, length_wg_2 + extra_length_wg_2),
+        (width_wg_2 / 2, length_wg_2 + extra_length_wg_2),
+        (width_wg_2 / 2, length_wg_2),
+    ])
+
     source = LineString([
         (width_wg_2 / 2, -length_wg_1 / 2),
         (-width_wg_2 / 2, -length_wg_1 / 2)
@@ -74,14 +82,19 @@ if __name__ == '__main__':
         source=source,
         core=core,
         core_append=core_append,
-        box=core.buffer(1, resolution=4) - core,
+        wide_append=wide_append,
+        box=(core.buffer(1, resolution=4) - core - core_append - wide_append).geoms[0],
+        box1=(core.buffer(1, resolution=4) - core - core_append - wide_append).geoms[1],
         pml=core.buffer(2, resolution=4) - core.buffer(1, resolution=4),
     )
 
     resolutions = dict(
+        source={"resolution": .05, "distance": 1},
         core={"resolution": .05, "distance": 1},
         core_append={"resolution": .05, "distance": 1},
+        wide_append={"resolution": .05, "distance": 1},
         box={"resolution": .05, "distance": 1},
+        box1={"resolution": .05, "distance": 1},
     )
 
     mesh = mesh_from_OrderedDict(polygons, resolutions, filename='mesh.msh', default_resolution_max=.3)
@@ -93,7 +106,8 @@ if __name__ == '__main__':
     epsilon = basis0.zeros(dtype=complex) + 1.444 ** 2
     epsilon[basis0.get_dofs(elements='core')] = 2.8 ** 2
     epsilon[basis0.get_dofs(elements='core_append')] = 2.8 ** 2
-    epsilon[basis0.get_dofs(elements='pml')] = (1.444 + 1j) ** 2
+    epsilon[basis0.get_dofs(elements='wide_append')] = 2.8 ** 2
+    epsilon[basis0.get_dofs(elements='pml')] = (2.8 + 1j) ** 2
     basis0.plot(np.real(epsilon)).show()
 
     basis0_source = FacetBasis(mesh, basis0.elem, facets=mesh.boundaries['source'], intorder=4)
@@ -128,17 +142,14 @@ if __name__ == '__main__':
 
     lams, xs = solve(*condense(A, B, I=basis_source_1d.get_dofs(facets='source')),
                      solver=solver_eigen_scipy_sym(sigma=3.55 ** 2, which='LM'))
-    print(np.sqrt(lams))
 
     # xs[:,0] = xs[:,0]*0+1
     x0 = basis_source.project((np.array(
         (basis_source_1d.interpolate(0 * xs[:, -1]), basis_source_1d.interpolate(0 * xs[:, -1]))),
-                               basis_source_1d.interpolate(xs[:, -2])), facets='source', dtype=complex)
+                               basis_source_1d.interpolate(xs[:, -1])), dtype=complex)
     plot_mode(basis, np.real(x0))
     plt.show()
 
-    print(basis_source.get_dofs().flatten())
-    print(np.where(x0))
     basis, x = compute_modes(basis, basis0, epsilon, 1.55, 1, basis.zeros(dtype=complex),
                              D=basis.get_dofs(facets='source'), x0=x0)
 
