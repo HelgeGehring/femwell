@@ -84,6 +84,7 @@ if __name__ == '__main__':
     from collections import OrderedDict
     from femwell.mesh import mesh_from_OrderedDict
     import matplotlib.pyplot as plt
+
     # Simulating the TiN TOPS heater in https://doi.org/10.1364/OE.27.010456
 
     w_sim = 8 * 2
@@ -98,8 +99,8 @@ if __name__ == '__main__':
 
     polygons = OrderedDict(
         bottom=LineString([
-            (-w_sim / 2, -h_core / 2 - h_box),
-            (w_sim / 2, -h_core / 2 - h_box)
+            (-w_sim / 2, - h_box),
+            (w_sim / 2, - h_box)
         ]),
         core=Polygon([
             (-w_core / 2, 0),
