@@ -8,6 +8,37 @@ from skfem import BilinearForm, Basis, ElementTriN1, ElementTriN2, ElementDG, El
 from skfem.helpers import curl, grad, dot, inner, cross
 
 
+def solver_slepc(k, sigma):
+    def solver(A, B):
+        from petsc4py import PETSc
+        from slepc4py import SLEPc
+
+        A_ = PETSc.Mat().createAIJ(size=A.shape, csr=(A.indptr, A.indices, A.data))
+        B_ = PETSc.Mat().createAIJ(size=B.shape, csr=(B.indptr, B.indices, B.data))
+
+        eps = SLEPc.EPS().create()
+        eps.setOperators(A_, B_)
+        eps.setType(SLEPc.EPS.Type.KRYLOVSCHUR)
+        eps.getST().setType(SLEPc.ST.Type.SINVERT)
+        eps.setWhichEigenpairs(SLEPc.EPS.Which.TARGET_MAGNITUDE)
+        eps.setTarget(sigma)
+        eps.setDimensions(k)
+        eps.solve()
+
+        xr, wr = A_.getVecs()
+        xi, wi = A_.getVecs()
+        lams, xs = [], []
+        for i in range(eps.getConverged()):
+            lams.append(eps.getEigenpair(i, xr, xi))
+            xs.append(np.array(xr) + 1j * np.array(xi))
+
+        xs = np.array(xs, dtype=complex)
+        lams = np.array(lams)
+        return lams, xs.T
+
+    return solver
+
+
 def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order=1, metallic_boundaries=False):
     k0 = 2 * np.pi / wavelength
 
@@ -35,37 +66,11 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order
     A = aform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
     B = bform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
 
-    def solver_slepc(A, B):
-        from petsc4py import PETSc
-        from slepc4py import SLEPc
-
-        A_ = PETSc.Mat().createAIJ(size=A.shape, csr=(A.indptr, A.indices, A.data))
-        B_ = PETSc.Mat().createAIJ(size=B.shape, csr=(B.indptr, B.indices, B.data))
-
-        eps = SLEPc.EPS().create()
-        eps.setOperators(A_, B_)
-        eps.setType(SLEPc.EPS.Type.KRYLOVSCHUR)
-        eps.getST().setType(SLEPc.ST.Type.SINVERT)
-        eps.setWhichEigenpairs(SLEPc.EPS.Which.TARGET_MAGNITUDE)
-        eps.setTarget(k0 ** 2 * np.max(epsilon_r) ** 2)
-        eps.setDimensions(num_modes)
-        eps.solve()
-
-        xr, wr = A_.getVecs()
-        xi, wi = A_.getVecs()
-        lams, xs = [], []
-        for i in range(eps.getConverged()):
-            lams.append(eps.getEigenpair(i, xr, xi))
-            xs.append(np.array(xr) + 1j * np.array(xi))
-
-        xs = np.array(xs, dtype=complex)
-        lams = np.array(lams)
-        return lams, xs.T
-
     if metallic_boundaries:
-        lams, xs = solve(*condense(A, B, D=basis.get_dofs()), solver=solver_slepc)
+        lams, xs = solve(*condense(A, B, D=basis.get_dofs()),
+                         solver=solver_slepc(k=num_modes, sigma=k0 ** 2 * np.max(epsilon_r) ** 2))
     else:
-        lams, xs = solve(A, B, solver=solver_slepc)
+        lams, xs = solve(A, B, solver=solver_slepc(k=num_modes, sigma=k0 ** 2 * np.max(epsilon_r) ** 2))
     xs = xs.T
     xs[:, basis.split_indices()[1]] /= 1j * np.sqrt(lams[:, np.newaxis])  # undo the scaling E_3,new = beta * E_3
 
