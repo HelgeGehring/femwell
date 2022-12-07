@@ -222,19 +222,24 @@ Overlap coefficient
     =
     c_{\mu\nu}^*
 
-.. bibliography::
-
 ************************
 Characteristic impedance
 ************************
 `<https://ieeexplore.ieee.org/document/108320>`_
 
-Power:
+Power and current:
 
 .. math::
     P_k = \delta_{jk} \int \left( \vec{\mathcal{E}}_j^* \times \vec{\mathcal{H}}_k \right) \cdot \hat{x}_3
 
-    I_zik = \oint_{C_i} \mathcal{H} \ cdot
+    I_{zik} = \oint_{C_i} \mathcal{H} \ cdot
+
+Characteristic impedance:
+
+.. math::
+    P = I^T Z_c I
+
+    Z_c = [I^{-1}]^T P I^{-1}
 
 *****************************
 Calculating static potentials
@@ -271,3 +276,10 @@ from which we can derive the weakform
 
 which is used to calculate the potential for a given structure.
 Using :eq:`EdivPhi` the electric field can be calculated from the potential.
+
+
+************
+Bibliography
+************
+
+.. bibliography::
