@@ -1,6 +1,6 @@
 FROM python:3.11
 
-RUN apt-get install -y libblas-dev liblapack-dev mpich
+RUN apt-get update && apt-get install -y libblas-dev liblapack-dev mpich
 
 RUN pip install --no-cache --upgrade pip && \
     pip install --no-cache notebook jupyterlab
