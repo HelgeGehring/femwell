@@ -4,7 +4,7 @@ channels:
 dependencies:
   - python
   - gmsh
-  - pygmsh
+  - python-gmsh
   - matplotlib
   - shapely
   - slepc4py=*=complex*
