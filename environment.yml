@@ -1,0 +1,13 @@
+name: conda_env
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - gmsh
+  - pygmsh
+  - matplotlib
+  - shapely
+  - slepc4py=*=complex*
+  - pip:
+      - git+https://github.com/kinnala/scikit-fem.git
+      - git+https://github.com/HelgeGehring/femwell.git
