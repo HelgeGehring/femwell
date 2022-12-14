@@ -39,7 +39,7 @@ def solver_slepc(k, sigma):
     return solver
 
 
-def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order=1, metallic_boundaries=False):
+def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order=1, metallic_boundaries=False, radius=np.inf):
     k0 = 2 * np.pi / wavelength
 
     if order == 1:
@@ -54,10 +54,12 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order
 
     @BilinearForm(dtype=epsilon_r.dtype)
     def aform(e_t, e_z, v_t, v_z, w):
+        epsilon = w.epsilon * (1+w.x[0]/radius)
+
         return 1 / mu_r * curl(e_t) * curl(v_t) \
-               - k0 ** 2 * w['epsilon'] * dot(e_t, v_t) \
+               - k0 ** 2 * epsilon * dot(e_t, v_t) \
                + 1 / mu_r * dot(grad(e_z), v_t) \
-               + w['epsilon'] * inner(e_t, grad(v_z)) - w['epsilon'] * e_z * v_z
+               + epsilon * inner(e_t, grad(v_z)) - epsilon * e_z * v_z
 
     @BilinearForm(dtype=epsilon_r.dtype)
     def bform(e_t, e_z, v_t, v_z, w):
@@ -254,10 +256,11 @@ if __name__ == "__main__":
     from collections import OrderedDict
     from femwell.mesh import mesh_from_OrderedDict
 
+    x_min = 0
     w_sim = 3
     h_clad = .7
     h_box = .5
-    w_core = 0.5
+    w_core = 1
     h_core = 0.22
     offset_heater = 2.2
     h_heater = .14
@@ -265,22 +268,22 @@ if __name__ == "__main__":
 
     polygons = OrderedDict(
         core=Polygon([
-            (-w_core / 2, 0),
-            (-w_core / 2, h_core),
-            (w_core / 2, h_core),
-            (w_core / 2, 0),
+            (x_min-w_core / 2, 0),
+            (x_min-w_core / 2, h_core),
+            (x_min+w_core / 2, h_core),
+            (x_min+w_core / 2, 0),
         ]),
         clad=Polygon([
-            (-w_sim / 2, 0),
-            (-w_sim / 2, h_clad),
-            (w_sim / 2, h_clad),
-            (w_sim / 2, 0),
+            (x_min-w_sim / 2, 0),
+            (x_min-w_sim / 2, h_clad),
+            (x_min+w_sim / 2, h_clad),
+            (x_min+w_sim / 2, 0),
         ]),
         box=Polygon([
-            (-w_sim / 2, 0),
-            (-w_sim / 2, - h_box),
-            (w_sim / 2, - h_box),
-            (w_sim / 2, 0),
+            (x_min-w_sim / 2, 0),
+            (x_min-w_sim / 2, - h_box),
+            (x_min+w_sim / 2, - h_box),
+            (x_min+w_sim / 2, 0),
         ])
     )
 
@@ -299,7 +302,7 @@ if __name__ == "__main__":
     epsilon[basis0.get_dofs(elements='box')] = 1.444 ** 2
     # basis0.plot(epsilon, colorbar=True).show()
 
-    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=6, order=2)
+    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=6, order=2, radius=3)
 
     print(lams)
 
