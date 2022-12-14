@@ -150,7 +150,17 @@ PML
 ***************
 Bent Waveguides
 ***************
-:cite:`AzizurRahman2013`
+
+The mode profiles of bent waveguides can be calculated using the previously derived math with an transformed effective refractive index defined as :cite:`AzizurRahman2013`
+
+.. math:: 
+
+    n_{eq}(x,y)
+    =
+    n(x,y) \left( 1+\frac{x}{R} \right)
+
+where :math:`R` is the radius of curvature in :math:`x`-direction.
+
 
 
 ***************************
