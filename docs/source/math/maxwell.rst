@@ -161,6 +161,8 @@ The mode profiles of bent waveguides can be calculated using the previously deri
 
 where :math:`R` is the radius of curvature in :math:`x`-direction.
 
+See discussion on choice of R in :cite:`Masi:10`
+
 
 
 ***************************
