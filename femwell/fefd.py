@@ -5,7 +5,7 @@ from skfem import BilinearForm, Basis, ElementTriN1, ElementTriP0, ElementTriP1,
     InteriorFacetBasis, ElementTriP2, ElementTriN2
 from skfem.helpers import curl, grad, dot, inner
 
-from mode_solver import plot_mode
+from femwell.mode_solver import plot_mode
 
 
 def compute_modes(basis, basis_epsilon_r, epsilon_r, wavelength, mu_r, source, D=None, x0=None):
