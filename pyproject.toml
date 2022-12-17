@@ -20,7 +20,7 @@ license = "GPLv3"
 
 [tool.poetry.dependencies]
 python = ">=3.8"
-# scikit-fem = ">= 7.0.0"
+scikit-fem = ">= 8.0.0"
 gmsh = "*"
 pygmsh = "*"
 matplotlib = "*"
