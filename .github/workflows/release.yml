@@ -25,4 +25,4 @@ jobs:
         poetry version $(git describe --tags --abbrev=0 | sed s/^v//)
         poetry build
         poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
-        poetry publish --username ${{ secrets.PYPI_USERNAME }} --password ${{ secrets.PYPI_PASSWORD }}        
+        poetry publish
