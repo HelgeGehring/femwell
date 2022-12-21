@@ -25,6 +25,7 @@ gmsh = "*"
 pygmsh = "*"
 matplotlib = "*"
 shapely = "*"
+slepc4py = "*"
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
