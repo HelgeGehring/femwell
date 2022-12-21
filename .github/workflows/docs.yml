@@ -23,6 +23,12 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
           installer-parallel: true
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -y libglu1-mesa
+          poetry install --no-interaction
+          source $VENV
+          pip install --upgrade git+https://github.com/kinnala/scikit-fem.git
       - name: Install slepc4py
         run: |
           source $VENV
@@ -31,12 +37,6 @@ jobs:
           pip install petsc4py
           pip install slepc
           pip install slepc4py
-      - name: Install dependencies
-        run: |
-          sudo apt-get install -y libglu1-mesa
-          poetry install --no-interaction
-          source $VENV
-          pip install --upgrade git+https://github.com/kinnala/scikit-fem.git
       - name: Make docs
         run: |
           source $VENV
