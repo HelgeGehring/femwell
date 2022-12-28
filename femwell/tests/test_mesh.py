@@ -13,22 +13,22 @@ from femwell.mesh import mesh_from_OrderedDict
 
 def geometry(wsim, hclad, hbox, wcore, hcore, offset_core):
     core = Polygon([
-            Point(-wcore/2, -hcore/2 + offset_core),
-            Point(-wcore/2, hcore/2 + offset_core),
-            Point(wcore/2, hcore/2 + offset_core),
-            Point(wcore/2, -hcore/2 + offset_core),
+            (-wcore/2, -hcore/2 + offset_core),
+            (-wcore/2, hcore/2 + offset_core),
+            (wcore/2, hcore/2 + offset_core),
+            (wcore/2, -hcore/2 + offset_core),
         ])
     clad = Polygon([
-            Point(-wsim/2, -hcore/2),
-            Point(-wsim/2, -hcore/2 + hclad),
-            Point(wsim/2, -hcore/2 + hclad),
-            Point(wsim/2, -hcore/2),
+            (-wsim/2, -hcore/2),
+            (-wsim/2, -hcore/2 + hclad),
+            (wsim/2, -hcore/2 + hclad),
+            (wsim/2, -hcore/2),
         ])
     box = Polygon([
-            Point(-wsim/2, -hcore/2),
-            Point(-wsim/2, -hcore/2 - hbox),
-            Point(wsim/2, -hcore/2 - hbox),
-            Point(wsim/2, -hcore/2),
+            (-wsim/2, -hcore/2),
+            (-wsim/2, -hcore/2 - hbox),
+            (wsim/2, -hcore/2 - hbox),
+            (wsim/2, -hcore/2),
         ])
 
     shapes = OrderedDict()
@@ -83,14 +83,14 @@ def test_lines():
     offset_core2 = 1
 
     # Lines can be added, which is useful to define boundary conditions at various simulation edges
-    left_edge = LineString([Point(-wsim/2, -hcore/2  - hbox), 
-                            Point(-wsim/2, -hcore/2 + hclad)])
-    right_edge = LineString([Point(wsim/2, -hcore/2  - hbox), 
-                            Point(wsim/2, -hcore/2 + hclad)])
-    top_edge = LineString([Point(-wsim/2, -hcore/2 + hclad), 
-                            Point(wsim/2, -hcore/2 + hclad)])
-    bottom_edge = LineString([Point(-wsim/2, -hcore/2  - hbox), 
-                            Point(wsim/2, -hcore/2  - hbox)])
+    left_edge = LineString([(-wsim/2, -hcore/2  - hbox), 
+                            (-wsim/2, -hcore/2 + hclad)])
+    right_edge = LineString([(wsim/2, -hcore/2  - hbox), 
+                            (wsim/2, -hcore/2 + hclad)])
+    top_edge = LineString([(-wsim/2, -hcore/2 + hclad), 
+                            (wsim/2, -hcore/2 + hclad)])
+    bottom_edge = LineString([(-wsim/2, -hcore/2  - hbox), 
+                            (wsim/2, -hcore/2  - hbox)])
 
     # The order in which objects are inserted into the OrderedDict determines overrrides
     shapes = OrderedDict()
@@ -108,3 +108,4 @@ def test_lines():
                             ))
     mesh = mesh_from_OrderedDict(shapes, resolutions = {})
     assert True
+    
