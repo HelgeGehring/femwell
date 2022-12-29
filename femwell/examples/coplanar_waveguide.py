@@ -107,7 +107,7 @@ if __name__ == '__main__':
 
     @Functional
     def current_form(w):
-        return inner(np.array([w.n[1], -w.n[0]]), w.H) * 1e-6
+        return inner(np.array([w.n[1], -w.n[0]]), w.H)
 
 
     currents = np.zeros((len(conductors), len(lams)))
