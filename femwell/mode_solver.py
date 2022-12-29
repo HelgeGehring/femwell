@@ -1,6 +1,7 @@
 """Waveguide analysis based on https://doi.org/10.1080/02726340290084012."""
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy.constants
 import scipy.sparse.linalg
 
 from skfem import BilinearForm, Basis, ElementTriN1, ElementTriN2, ElementDG, ElementTriP0, ElementTriP1, \
@@ -100,7 +101,7 @@ def calculate_hfield(basis, xs, beta):
 
     b_operator = bform.assemble(basis)
 
-    return scipy.sparse.linalg.spsolve(b_operator, a_operator @ xs) * -1j
+    return scipy.sparse.linalg.spsolve(b_operator, a_operator @ xs) * -1j / scipy.constants.mu_0
 
 
 def calculate_energy_current_density(basis, xs):
