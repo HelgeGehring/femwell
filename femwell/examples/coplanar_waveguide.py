@@ -93,7 +93,6 @@ def mesh_coax(filename, radius_inner, radius_outer):
 
 if __name__ == '__main__':
     frequency = 10e9
-    print('lambda ', 2 * np.pi * scipy.constants.c * 1e3 / frequency)
 
     with tempfile.TemporaryDirectory() as tmpdirname:
         mesh_coax(radius_inner=0.512, radius_outer=2.23039, filename='mesh.msh')
@@ -107,17 +106,13 @@ if __name__ == '__main__':
     epsilon[basis0.get_dofs(elements='core')] = 1 + 1j * 5.8e7 * 1e20 / frequency
     basis0.plot(np.real(epsilon), colorbar=True).show()
 
-    print(scipy.constants.speed_of_light/frequency * 1e3, '<--')
     conductors = ['isolator2___isolator']
     lams, basis, xs = compute_modes(basis0, epsilon, wavelength=scipy.constants.speed_of_light/frequency * 1e3, mu_r=1,
                                     num_modes=len(conductors), metallic_boundaries=True)
-    print('lams', 1/lams)
+    print('propagation constants', 1/lams)
 
     fig, axs = plot_mode(basis, np.real(xs[0]), plot_vectors=True)
     plt.show()
-
-    # plot_mode(basis, np.real(xbs), plot_vectors=True)
-    # plt.show()
 
     from skfem import *
     from skfem.helpers import *
@@ -140,11 +135,7 @@ if __name__ == '__main__':
         for conductors_i, conductor in enumerate(conductors):
             facet_basis = FacetBasis(ht_basis.mesh, ht_basis.elem, facets=mesh.boundaries[conductor])
             current = abs(current_form.assemble(facet_basis, H=facet_basis.interpolate(ht)))
-            print(f'mode {mode_i} current in ' + conductor + '\t', current)
             currents[conductors_i, mode_i] = current
 
-    print('currents', currents)
-    print(np.linalg.inv(currents))
-
     characteristic_impedances = np.linalg.inv(currents).T @ np.linalg.inv(currents)
-    print(characteristic_impedances)
+    print('characteristic impedances', characteristic_impedances)
