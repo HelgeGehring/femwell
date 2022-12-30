@@ -85,23 +85,19 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order
 
 
 def calculate_hfield(basis, xs, beta, omega=1):
-    xs = xs.astype(complex)
-
     @BilinearForm(dtype=np.complex64)
     def aform(e_t, e_z, v_t, v_z, w):
         return (-1j * beta * e_t[1] + e_z.grad[1]) * v_t[0] \
                + (1j * beta * e_t[0] - e_z.grad[0]) * v_t[1] \
                + e_t.curl * v_z
-
-    a_operator = aform.assemble(basis)
-
+               
     @BilinearForm(dtype=np.complex64)
     def bform(e_t, e_z, v_t, v_z, w):
         return dot(e_t, v_t) + e_z * v_z
 
-    b_operator = bform.assemble(basis)
-
-    return scipy.sparse.linalg.spsolve(b_operator, a_operator @ xs) * -1j / scipy.constants.mu_0 / omega
+    return scipy.sparse.linalg.spsolve(
+            bform.assemble(basis), aform.assemble(basis) @ xs.astype(complex)
+        ) * -1j / scipy.constants.mu_0 / omega
 
 
 def calculate_energy_current_density(basis, xs):
