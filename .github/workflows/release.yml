@@ -1,4 +1,5 @@
-name: Publish
+# As described in https://www.nicholasnadeau.com/post/2020/08/one-version-to-rule-them-all-keeping-your-python-package-version-number-in-sync-with-git-and-poetry/
+name: publish
 
 on:
   push:
