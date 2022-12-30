@@ -25,7 +25,7 @@ Possible Simulations
 *********************
 
 - Eigenmodes of wavegudies and determining their effective refractive index
-- Eigenmodes of electric transmission lines and determining their propagation constant
+- Eigenmodes of electric transmission lines and determining their propagation constant (in work)
 - Static thermal profiles
 - Transient thermal behavior
 - Static electric fields
