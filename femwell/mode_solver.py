@@ -78,13 +78,13 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order
     xs[:, basis.split_indices()[1]] /= 1j * np.sqrt(lams[:, np.newaxis])  # undo the scaling E_3,new = beta * E_3
 
     for i, lam in enumerate(lams):
-        H = calculate_hfield(basis, xs[i], np.sqrt(lam))
+        H = calculate_hfield(basis, xs[i], np.sqrt(lam), omega=k0*scipy.constants.speed_of_light)
         xs[i] /= np.sqrt(calculate_overlap(basis, xs[i], H, basis, xs[i], H))
 
     return np.sqrt(lams)[:num_modes] / k0, basis, xs[:num_modes]
 
 
-def calculate_hfield(basis, xs, beta):
+def calculate_hfield(basis, xs, beta, omega=1):
     xs = xs.astype(complex)
 
     @BilinearForm(dtype=np.complex64)
@@ -101,7 +101,7 @@ def calculate_hfield(basis, xs, beta):
 
     b_operator = bform.assemble(basis)
 
-    return scipy.sparse.linalg.spsolve(b_operator, a_operator @ xs) * -1j / scipy.constants.mu_0
+    return scipy.sparse.linalg.spsolve(b_operator, a_operator @ xs) * -1j / scipy.constants.mu_0 / omega
 
 
 def calculate_energy_current_density(basis, xs):
