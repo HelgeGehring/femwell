@@ -40,5 +40,6 @@ Contributors
 ************
 - Helge Gehring (Google): Maintainer
 - Simon Bilodeau (Google): Meshes everything
+- Joaquin Matres (Google): Code simplifications
 
 Happy about every form of contribution - pull requests, feature requests, issues, questions, ... :)
