@@ -35,9 +35,9 @@ Further definitions / relations
 .. math::
     &\omega = 2 \pi f
 
-    &\lambda = \frac{c}{f} = \frac{2 \pi c}{\omega} = \frac{2 \pi}{k_0}
+    &\lambda = \frac{c}{f} = \frac{2 \pi c}{\omega} = \frac{2 \pi}{k}
 
-    &k_0 = \frac{2 \pi}{\lambda} = \frac{2 \pi f}{c} = \frac{\omega}{c}
+    &k = \frac{2 \pi}{\lambda} = \frac{2 \pi f}{c} = \frac{\omega}{c}
 
 
 
