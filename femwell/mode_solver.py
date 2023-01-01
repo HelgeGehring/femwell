@@ -127,26 +127,24 @@ def calculate_overlap(basis_i, E_i, H_i, basis_j, E_j, H_j):
     if basis_i == basis_j:
         return 0.5 * overlap.assemble(basis_i, E_i=basis_i.interpolate(E_i), H_i=basis_i.interpolate(H_i),
                                       E_j=basis_j.interpolate(E_j), H_j=basis_j.interpolate(H_j))
-    else:
+    basis_j_fix = basis_j.with_element(ElementVector(ElementTriP1()))
 
-        basis_j_fix = basis_j.with_element(ElementVector(ElementTriP1()))
+    (et, et_basis), (ez, ez_basis) = basis_j.split(E_j)
+    E_j = basis_j_fix.project(et_basis.interpolate(et), dtype=np.cfloat)
+    (et_x, et_x_basis), (et_y, et_y_basis) = basis_j_fix.split(E_j)
 
-        (et, et_basis), (ez, ez_basis) = basis_j.split(E_j)
-        E_j = basis_j_fix.project(et_basis.interpolate(et), dtype=np.cfloat)
-        (et_x, et_x_basis), (et_y, et_y_basis) = basis_j_fix.split(E_j)
+    (et, et_basis), (ez, ez_basis) = basis_j.split(H_j)
+    H_j = basis_j_fix.project(et_basis.interpolate(et), dtype=np.cfloat)
+    (ht_x, ht_x_basis), (ht_y, ht_y_basis) = basis_j_fix.split(H_j)
 
-        (et, et_basis), (ez, ez_basis) = basis_j.split(H_j)
-        H_j = basis_j_fix.project(et_basis.interpolate(et), dtype=np.cfloat)
-        (ht_x, ht_x_basis), (ht_y, ht_y_basis) = basis_j_fix.split(H_j)
+    @Functional(dtype=np.complex64)
+    def overlap(w):
+        return cross(np.conj(w['E_i'][0]),
+                     np.array((ht_x_basis.interpolator(ht_x)(w.x), ht_y_basis.interpolator(ht_y)(w.x)))) \
+               + cross(np.array((et_x_basis.interpolator(et_x)(w.x), et_y_basis.interpolator(et_y)(w.x))),
+                       np.conj(w['H_i'][0]))
 
-        @Functional(dtype=np.complex64)
-        def overlap(w):
-            return cross(np.conj(w['E_i'][0]),
-                         np.array((ht_x_basis.interpolator(ht_x)(w.x), ht_y_basis.interpolator(ht_y)(w.x)))) \
-                   + cross(np.array((et_x_basis.interpolator(et_x)(w.x), et_y_basis.interpolator(et_y)(w.x))),
-                           np.conj(w['H_i'][0]))
-
-        return 0.5 * overlap.assemble(basis_i, E_i=basis_i.interpolate(E_i), H_i=basis_i.interpolate(H_i))
+    return 0.5 * overlap.assemble(basis_i, E_i=basis_i.interpolate(E_i), H_i=basis_i.interpolate(H_i))
 
 
 def calculate_scalar_product(basis_i, E_i, basis_j, H_j):
@@ -156,20 +154,18 @@ def calculate_scalar_product(basis_i, E_i, basis_j, H_j):
 
     if basis_i == basis_j:
         return overlap.assemble(basis_i, E_i=basis_i.interpolate(E_i), H_j=basis_j.interpolate(H_j))
-    else:
+    basis_j_fix = basis_j.with_element(ElementVector(ElementTriP1()))
 
-        basis_j_fix = basis_j.with_element(ElementVector(ElementTriP1()))
+    (et, et_basis), (ez, ez_basis) = basis_j.split(H_j)
+    H_j = basis_j_fix.project(et_basis.interpolate(et), dtype=np.cfloat)
+    (ht_x, ht_x_basis), (ht_y, ht_y_basis) = basis_j_fix.split(H_j)
 
-        (et, et_basis), (ez, ez_basis) = basis_j.split(H_j)
-        H_j = basis_j_fix.project(et_basis.interpolate(et), dtype=np.cfloat)
-        (ht_x, ht_x_basis), (ht_y, ht_y_basis) = basis_j_fix.split(H_j)
+    @Functional(dtype=np.complex64)
+    def overlap(w):
+        return cross(np.conj(w['E_i'][0]),
+                     np.array((ht_x_basis.interpolator(ht_x)(w.x), ht_y_basis.interpolator(ht_y)(w.x))))
 
-        @Functional(dtype=np.complex64)
-        def overlap(w):
-            return cross(np.conj(w['E_i'][0]),
-                         np.array((ht_x_basis.interpolator(ht_x)(w.x), ht_y_basis.interpolator(ht_y)(w.x))))
-
-        return overlap.assemble(basis_i, E_i=basis_i.interpolate(E_i))
+    return overlap.assemble(basis_i, E_i=basis_i.interpolate(E_i))
 
 
 def calculate_coupling_coefficient(basis_epsilon, delta_epsilon, basis, E_i, E_j):

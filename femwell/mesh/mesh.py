@@ -53,29 +53,23 @@ def mesh_from_Dict(
         model = geometry.__enter__()
 
         # Add overall bounding box
-        total = unary_union([x for x in shapes_dict.values()])
-        all_polygons = [total]
-        all_polygons.extend(list(shapes_dict.values()))
-
+        total = unary_union(list(shapes_dict.values()))
+        all_polygons = [total, *list(shapes_dict.values())]
         # Break up all shapes so that plane is tiled with non-overlapping layers, get the maximal number of fragments
         # Equivalent to BooleanFragments
         listpoly = [a.intersection(b) for a, b in combinations(all_polygons, 2)]
-        rings = []
-        for object in listpoly:
-            if object.type == "Point" or object.type == "LineString" or object.is_empty:
-                continue
-            else:
-                rings.append(LineString(list(object.exterior.coords)))
+        rings = [
+            LineString(list(object.exterior.coords))
+            for object in listpoly if not (object.type in ["Point", "LineString"] or object.is_empty)
+        ]
+
         union = unary_union(rings)
-        shapes_tiled_list = [geom for geom in polygonize(union)]
+        shapes_tiled_list = list(polygonize(union))
 
         # Add surfaces, logging lines
         meshtracker = MeshTracker(model=model)
-        i = 0
-        for polygon in shapes_tiled_list:
+        for i, polygon in enumerate(shapes_tiled_list):
             meshtracker.add_xy_surface(polygon, i, physical=False)
-            i += 1
-
         # Tag physicals
         # TODO integrate in meshtracker
         surface_name_mapping = {}
@@ -90,19 +84,19 @@ def mesh_from_Dict(
                         surfaces.append(meshtracker.gmsh_xy_surfaces[index])
                         surface_indices.append(index)
                         if resolutions:
-                            if index in surface_resolution_mapping.keys():
+                            if index in surface_resolution_mapping:
                                 surface_resolution_mapping[index] = min(resolutions[polygon_name]["resolution"], surface_resolution_mapping[index])
                             else:
                                 surface_resolution_mapping[index] = min(resolutions[polygon_name]["resolution"], default_resolution_max)
             meshtracker.model.add_physical(surfaces, polygon_name)
             surface_name_mapping[polygon_name] = surface_indices
 
-        # Refinement in surfaces
-        n = 0
-        refinement_fields = []
         current_resolutions = []
         if resolutions:
-            for surface_name, surface_indices in surface_name_mapping.items():
+            # Refinement in surfaces
+            n = 0
+            refinement_fields = []
+            for surface_indices in surface_name_mapping.values():
                 for surface_index in surface_indices:
                     gmsh.model.mesh.field.add("MathEval", n)
                     gmsh.model.mesh.field.setString(n, "F", f"{surface_resolution_mapping[surface_index]}")
