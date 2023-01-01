@@ -24,13 +24,9 @@ def get_vertices(polygon):
     """Return all polygon vertices (interior and exterior)"""
     vertices = []
     for polygon_hole in list(polygon.interiors):
-        for vertex in MultiPoint(polygon_hole.coords).geoms:
-            vertices.append(vertex)
+        vertices.extend(iter(MultiPoint(polygon_hole.coords).geoms))
     # Parse boundary
-    for vertex in MultiPoint(
-        polygon.exterior.coords
-    ).geoms:
-        vertices.append(vertex)
+    vertices.extend(iter(MultiPoint(polygon.exterior.coords).geoms))
 
     return vertices
 
@@ -39,8 +35,7 @@ def get_polygon_x_bounds(polygon):
     
         Propagation direction is "x" in component ("z" in mode solver)
     """
-    xs = [p.x for p in get_vertices(polygon)]
-    return xs
+    return [p.x for p in get_vertices(polygon)]
 
 def get_unique_x_bounds(layer_polygons_dict):
     """Return unique x_bounds across all polygon vertices of a layer_polygons_dict
@@ -73,23 +68,20 @@ def get_mode_regions(component, layerstack, tol=1E-6):
 
     x_changing_bounds = []
     x_not_changing_bounds = []
-    for x1, x2 in [
-            (x_bounds[i] + tol, x_bounds[i + 1] - tol) for i in range(0, len(x_bounds) - 1)
-        ]:
+    for x1, x2 in [(x_bounds[i] + tol, x_bounds[i + 1] - tol) for i in range(len(x_bounds) - 1)]:
         found_different = False
         for layername, polygons in layer_polygons_dict.items():
             if found_different:
                 continue
-            else:
-                line_x1 = LineString([[x1, ymin], [x1, ymax]])
-                line_x2 = LineString([[x2, ymin], [x2, ymax]])
+            line_x1 = LineString([[x1, ymin], [x1, ymax]])
+            line_x2 = LineString([[x2, ymin], [x2, ymax]])
 
-                xsection_x1 = polygons.intersection(line_x1)
-                xsection_x2 = polygons.intersection(line_x2)
+            xsection_x1 = polygons.intersection(line_x1)
+            xsection_x2 = polygons.intersection(line_x2)
 
-                if not xsection_x1.equals(translate(xsection_x2, xoff=x1-x2)):
-                    found_different = True
-                    x_changing_bounds.append([x1-tol, x2+tol])
+            if not xsection_x1.equals(translate(xsection_x2, xoff=x1-x2)):
+                found_different = True
+                x_changing_bounds.append([x1-tol, x2+tol])
 
         if not found_different:
             x_not_changing_bounds.append([x1-tol, x2+tol])
@@ -103,18 +95,15 @@ def slice_component_xbounds(component, layerstack, mesh_step=100*nm):
     x_changing_bounds, x_not_changing_bounds = get_mode_regions(component, layerstack, tol=1E-6)
 
     # Where geometry is changing, mesh according to mesh_step
-    x_coordinates = []
-    for x1, x2 in x_changing_bounds:
-        x_coordinates.append(np.arange(x1, x2, mesh_step))
+    x_coordinates = [np.arange(x1, x2, mesh_step) for x1, x2 in x_changing_bounds]
     # Where not changing, just return the bounds
-    for x1, x2 in x_not_changing_bounds:
-        x_coordinates.append(np.array([x1]))
-
+    x_coordinates.extend(np.array([x1]) for x1, x2 in x_not_changing_bounds)
     # Return sorted bounds
     return np.sort(np.concatenate(x_coordinates).ravel())
 
 
 """Below fails due to complicated mesh to generate."""
+
 # def slice_component_polygons(component, layerstack, ymin=-10, ymax=10, mesh_step=100*nm):
 #     """Returns a dict of dicts "layer__x" of polygons.
     
@@ -235,10 +224,11 @@ if __name__ == "__main__":
     """
     (4) Get a simulatoin a x
     """
-    resolutions = {}
-    resolutions["core"] = {"resolution": 0.02, "distance": 2}
-    resolutions["slab90"] = {"resolution": 0.05, "distance": 2}
-    resolutions["Oxide"] = {"resolution": 0.3, "distance": 2}
+    resolutions = {
+        "core": {"resolution": 0.02, "distance": 2},
+        "slab90": {"resolution": 0.05, "distance": 2},
+        "Oxide": {"resolution": 0.3, "distance": 2},
+    }
 
     ymin = -30 # make sure all objects cross the line
     ymax = 30 # make sure all objects cross the line

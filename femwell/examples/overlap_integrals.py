@@ -15,8 +15,8 @@ modes = []
 
 for width in widths:
     with tempfile.TemporaryDirectory() as tmpdirname:
-        mesh = mesh_waveguide(wsim=2, hclad=.7, hbox=.5, wcore=width, hcore=0.22, filename=tmpdirname + '/mesh.msh')
-        mesh = Mesh.load(tmpdirname + '/mesh.msh')
+        mesh = mesh_waveguide(wsim=2, hclad=.7, hbox=.5, wcore=width, hcore=0.22, filename=f'{tmpdirname}/mesh.msh')
+        mesh = Mesh.load(f'{tmpdirname}/mesh.msh')
 
     basis0 = Basis(mesh, ElementTriP0(), intorder=4)
     epsilon = basis0.zeros()
