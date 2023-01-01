@@ -21,11 +21,11 @@ readme = "README.rst"
 
 [tool.poetry.dependencies]
 python = ">=3.8"
-scikit-fem = ">= 8.0.0"
+scikit-fem = ">=8.0.0"
 gmsh = "*"
 pygmsh = "*"
 matplotlib = "*"
-shapely = "*"
+shapely = ">=2.0.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
