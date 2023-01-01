@@ -10,6 +10,7 @@ Femwell
     :target: https://pypi.org/project/femwell/
 
 Working on a finite element based simulation tool for integrated circuits, electric and photonic!
+The documentation is lagging behind the state of code, so there's several features for which there are only examples in the code.
 
 ****************
 Working Features
