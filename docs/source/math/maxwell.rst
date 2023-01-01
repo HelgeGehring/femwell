@@ -17,6 +17,30 @@ Starting with the maxwell equations:
 
 where :math:`\mu` and :math:`\epsilon` are assumed to be element wise constant.
 
+*******************************
+Further definitions / relations
+*******************************
+
+.. math::
+    &\mu = \mu_0 \mu_r
+
+    &\epsilon = \epsilon_0 \epsilon_r
+
+    &\mu_0 \epsilon_0 = c^{-2}
+
+    &\vec{\mathcal{D}} = \epsilon_0 \epsilon_r \vec{\mathcal{E}}
+
+    &\vec{\mathcal{B}} = \mu_0 \mu_r \vec{\mathcal{H}}
+
+.. math::
+    &\omega = 2 \pi f
+
+    &\lambda = \frac{c}{f} = \frac{2 \pi c}{\omega} = \frac{2 \pi}{k_0}
+
+    &k_0 = \frac{2 \pi}{\lambda} = \frac{2 \pi f}{c} = \frac{\omega}{c}
+
+
+
 *************************************************
 Eigenvectors propagating in :math:`x_3`-direction
 *************************************************
