@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from femwell.mode_solver import calculate_overlap, calculate_scalar_product, calculate_hfield, plot_mode
 import sys
 sys.path.insert(0, './mesh')
-from slice import slice_component_xbounds
+from femwell.mesh.slice import slice_component_xbounds
 
 import sax
 

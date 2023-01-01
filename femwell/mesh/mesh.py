@@ -240,7 +240,6 @@ def mesh_from_OrderedDict(
         # Add lines, reusing line segments
         meshtracker = MeshTracker(model=model)
         for line_name, line in lines_broken_dict.items():
-            print(line_name, line)
             meshtracker.add_get_xy_line(line, line_name)
 
         # Add surfaces, reusing lines

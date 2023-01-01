@@ -1,6 +1,7 @@
 """Waveguide analysis based on https://doi.org/10.1080/02726340290084012."""
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy.constants
 import scipy.sparse.linalg
 
 from skfem import BilinearForm, Basis, ElementTriN1, ElementTriN2, ElementDG, ElementTriP0, ElementTriP1, \
@@ -8,7 +9,38 @@ from skfem import BilinearForm, Basis, ElementTriN1, ElementTriN2, ElementDG, El
 from skfem.helpers import curl, grad, dot, inner, cross
 
 
-def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order=1, metallic_boundaries=False):
+def solver_slepc(k, sigma):
+    def solver(A, B):
+        from petsc4py import PETSc
+        from slepc4py import SLEPc
+
+        A_ = PETSc.Mat().createAIJ(size=A.shape, csr=(A.indptr, A.indices, A.data))
+        B_ = PETSc.Mat().createAIJ(size=B.shape, csr=(B.indptr, B.indices, B.data))
+
+        eps = SLEPc.EPS().create()
+        eps.setOperators(A_, B_)
+        eps.setType(SLEPc.EPS.Type.KRYLOVSCHUR)
+        eps.getST().setType(SLEPc.ST.Type.SINVERT)
+        eps.setWhichEigenpairs(SLEPc.EPS.Which.TARGET_MAGNITUDE)
+        eps.setTarget(sigma)
+        eps.setDimensions(k)
+        eps.solve()
+
+        xr, wr = A_.getVecs()
+        xi, wi = A_.getVecs()
+        lams, xs = [], []
+        for i in range(eps.getConverged()):
+            lams.append(eps.getEigenpair(i, xr, xi))
+            xs.append(np.array(xr) + 1j * np.array(xi))
+
+        xs = np.array(xs, dtype=complex)
+        lams = np.array(lams)
+        return lams, xs.T
+
+    return solver
+
+
+def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order=1, metallic_boundaries=False, radius=np.inf):
     k0 = 2 * np.pi / wavelength
 
     if order == 1:
@@ -23,10 +55,12 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order
 
     @BilinearForm(dtype=epsilon_r.dtype)
     def aform(e_t, e_z, v_t, v_z, w):
+        epsilon = w.epsilon * (1+w.x[0]/radius)
+
         return 1 / mu_r * curl(e_t) * curl(v_t) \
-               - k0 ** 2 * w['epsilon'] * dot(e_t, v_t) \
+               - k0 ** 2 * epsilon * dot(e_t, v_t) \
                + 1 / mu_r * dot(grad(e_z), v_t) \
-               + w['epsilon'] * inner(e_t, grad(v_z)) - w['epsilon'] * e_z * v_z
+               + epsilon * inner(e_t, grad(v_z)) - epsilon * e_z * v_z
 
     @BilinearForm(dtype=epsilon_r.dtype)
     def bform(e_t, e_z, v_t, v_z, w):
@@ -35,65 +69,35 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order
     A = aform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
     B = bform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
 
-    def solver_slepc(A, B):
-        from petsc4py import PETSc
-        from slepc4py import SLEPc
-
-        A_ = PETSc.Mat().createAIJ(size=A.shape, csr=(A.indptr, A.indices, A.data))
-        B_ = PETSc.Mat().createAIJ(size=B.shape, csr=(B.indptr, B.indices, B.data))
-
-        eps = SLEPc.EPS().create()
-        eps.setOperators(A_, B_)
-        eps.setType(SLEPc.EPS.Type.KRYLOVSCHUR)
-        eps.getST().setType(SLEPc.ST.Type.SINVERT)
-        eps.setWhichEigenpairs(SLEPc.EPS.Which.TARGET_MAGNITUDE)
-        eps.setTarget(k0 ** 2 * np.max(epsilon_r) ** 2)
-        eps.setDimensions(num_modes)
-        eps.solve()
-
-        xr, wr = A_.getVecs()
-        xi, wi = A_.getVecs()
-        lams, xs = [], []
-        for i in range(eps.getConverged()):
-            lams.append(eps.getEigenpair(i, xr, xi))
-            xs.append(np.array(xr) + 1j * np.array(xi))
-
-        xs = np.array(xs, dtype=complex)
-        lams = np.array(lams)
-        return lams, xs.T
-
     if metallic_boundaries:
-        lams, xs = solve(*condense(A, B, D=basis.get_dofs()), solver=solver_slepc)
+        lams, xs = solve(*condense(A, B, D=basis.get_dofs()),
+                         solver=solver_slepc(k=num_modes, sigma=k0 ** 2 * np.max(epsilon_r) ** 2))
     else:
-        lams, xs = solve(A, B, solver=solver_slepc)
+        lams, xs = solve(A, B, solver=solver_slepc(k=num_modes, sigma=k0 ** 2 * np.max(epsilon_r) ** 2))
     xs = xs.T
     xs[:, basis.split_indices()[1]] /= 1j * np.sqrt(lams[:, np.newaxis])  # undo the scaling E_3,new = beta * E_3
 
     for i, lam in enumerate(lams):
-        H = calculate_hfield(basis, xs[i], np.sqrt(lam))
+        H = calculate_hfield(basis, xs[i], np.sqrt(lam), omega=k0*scipy.constants.speed_of_light)
         xs[i] /= np.sqrt(calculate_overlap(basis, xs[i], H, basis, xs[i], H))
 
     return np.sqrt(lams)[:num_modes] / k0, basis, xs[:num_modes]
 
 
-def calculate_hfield(basis, xs, beta):
-    xs = xs.astype(complex)
-
+def calculate_hfield(basis, xs, beta, omega=1):
     @BilinearForm(dtype=np.complex64)
     def aform(e_t, e_z, v_t, v_z, w):
         return (-1j * beta * e_t[1] + e_z.grad[1]) * v_t[0] \
                + (1j * beta * e_t[0] - e_z.grad[0]) * v_t[1] \
                + e_t.curl * v_z
-
-    a_operator = aform.assemble(basis)
-
+               
     @BilinearForm(dtype=np.complex64)
     def bform(e_t, e_z, v_t, v_z, w):
         return dot(e_t, v_t) + e_z * v_z
 
-    b_operator = bform.assemble(basis)
-
-    return scipy.sparse.linalg.spsolve(b_operator, a_operator @ xs) * -1j
+    return scipy.sparse.linalg.spsolve(
+            bform.assemble(basis), aform.assemble(basis) @ xs.astype(complex)
+        ) * -1j / scipy.constants.mu_0 / omega
 
 
 def calculate_energy_current_density(basis, xs):
@@ -230,12 +234,12 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', directi
 
     if colorbar:
         if colorbar == 'same':
-            plt.colorbar(axs[-1].collections[0], ax=axs.ravel().tolist())
+            plt.colorbar(axs[0].collections[-1], ax=axs.ravel().tolist())
         else:
             for ax in axs:
                 divider = make_axes_locatable(ax)
                 cax = divider.append_axes("right", size="5%", pad=0.05)
-                plt.colorbar(ax.collections[0], cax=cax)
+                plt.colorbar(ax.collections[-1], cax=cax)
 
     return fig, axs
 
@@ -245,10 +249,11 @@ if __name__ == "__main__":
     from collections import OrderedDict
     from femwell.mesh import mesh_from_OrderedDict
 
+    x_min = 0
     w_sim = 3
     h_clad = .7
     h_box = .5
-    w_core = 0.5
+    w_core = 1
     h_core = 0.22
     offset_heater = 2.2
     h_heater = .14
@@ -256,22 +261,22 @@ if __name__ == "__main__":
 
     polygons = OrderedDict(
         core=Polygon([
-            (-w_core / 2, 0),
-            (-w_core / 2, h_core),
-            (w_core / 2, h_core),
-            (w_core / 2, 0),
+            (x_min-w_core / 2, 0),
+            (x_min-w_core / 2, h_core),
+            (x_min+w_core / 2, h_core),
+            (x_min+w_core / 2, 0),
         ]),
         clad=Polygon([
-            (-w_sim / 2, 0),
-            (-w_sim / 2, h_clad),
-            (w_sim / 2, h_clad),
-            (w_sim / 2, 0),
+            (x_min-w_sim / 2, 0),
+            (x_min-w_sim / 2, h_clad),
+            (x_min+w_sim / 2, h_clad),
+            (x_min+w_sim / 2, 0),
         ]),
         box=Polygon([
-            (-w_sim / 2, 0),
-            (-w_sim / 2, - h_box),
-            (w_sim / 2, - h_box),
-            (w_sim / 2, 0),
+            (x_min-w_sim / 2, 0),
+            (x_min-w_sim / 2, - h_box),
+            (x_min+w_sim / 2, - h_box),
+            (x_min+w_sim / 2, 0),
         ])
     )
 
@@ -290,7 +295,7 @@ if __name__ == "__main__":
     epsilon[basis0.get_dofs(elements='box')] = 1.444 ** 2
     # basis0.plot(epsilon, colorbar=True).show()
 
-    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=6, order=2)
+    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=6, order=2, radius=3)
 
     print(lams)
 

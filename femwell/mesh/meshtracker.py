@@ -33,7 +33,6 @@ class MeshTracker():
     Retrieve existing geometry
     """
     def get_point_index(self, xy_point):
-    def get_point_index(self, xy_point):
         for index, shapely_point in enumerate(self.shapely_points):
             if xy_point.equals_exact(shapely_point, self.atol) :
                 return index

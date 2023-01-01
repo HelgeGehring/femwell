@@ -4,7 +4,7 @@ import numpy as np
 from skfem import *
 from skfem.helpers import *
 
-from mesh import mesh_from_OrderedDict
+from femwell.mesh import mesh_from_OrderedDict
 
 
 def solve_coulomb(basis_epsilon_r, epsilon_r, fixed_boundaries):

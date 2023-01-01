@@ -2,6 +2,8 @@
 dist/
 docs/build/
 *.egg-info/
+**/__pycache__/**
+build/
 
 *.msh
 *.png
