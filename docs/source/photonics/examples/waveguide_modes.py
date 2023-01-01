@@ -25,12 +25,7 @@ resolutions = dict(
 )
 
 with tempfile.TemporaryDirectory() as tmpdirname:
-    mesh_from_OrderedDict(
-        polygons,
-        resolutions,
-        filename=f'{tmpdirname}/mesh.msh',
-        default_resolution_max=10,
-    )
+    mesh_from_OrderedDict(polygons, resolutions, filename=f'{tmpdirname}/mesh.msh', default_resolution_max=10)
 
     mesh = Mesh.load(f'{tmpdirname}/mesh.msh')
 

@@ -32,14 +32,10 @@ class MeshTracker():
     Retrieve existing geometry
     """
     def get_point_index(self, xy_point):
-        return next(
-            (
-                index
-                for index, shapely_point in enumerate(self.shapely_points)
-                if xy_point.equals_exact(shapely_point, self.atol)
-            ),
-            None,
-        )
+        for index, shapely_point in enumerate(self.shapely_points):
+            if xy_point.equals_exact(shapely_point, self.atol):
+                return index
+        return None
 
     def get_xy_segment_index_and_orientation(self, xy_point1, xy_point2):
         xy_line = shapely.geometry.LineString([xy_point1, xy_point2])
@@ -47,7 +43,7 @@ class MeshTracker():
             if xy_line.equals(shapely_line):
                 first_xy_line, last_xy_line = xy_line.boundary.geoms
                 first_xy, last_xy = shapely_line.boundary.geoms
-                return (index, True) if first_xy_line.equals(first_xy) else (index, False)
+                return (index, first_xy_line.equals(first_xy))
         return None, 1
 
     def get_gmsh_points_from_label(self, label):
@@ -286,6 +282,7 @@ def mesh_from_polygons(
             gmsh.model.mesh.field.setNumber(n+3, "SizeMax", default_resolution_max)
             gmsh.model.mesh.field.setNumber(n+3, "DistMin", 0)
             gmsh.model.mesh.field.setNumber(n+3, "DistMax", mesh_distance)
+           # Save and increment
             refinement_fields.extend((n+1, n+3))
             n += 4
 

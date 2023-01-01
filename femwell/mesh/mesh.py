@@ -60,10 +60,7 @@ def mesh_from_Dict(
         listpoly = [a.intersection(b) for a, b in combinations(all_polygons, 2)]
         rings = [
             LineString(list(object.exterior.coords))
-            for object in listpoly
-            if object.type != "Point"
-            and object.type != "LineString"
-            and not object.is_empty
+            for object in listpoly if not (object.type in ["Point", "LineString"] or object.is_empty)
         ]
 
         union = unary_union(rings)
@@ -135,10 +132,10 @@ def mesh_from_Dict(
             gmsh.model.mesh.MeshSizeFromCurvature = 0
             gmsh.model.mesh.MeshSizeExtendFromBoundary = 0
 
-                    # Fuse edges (bandaid)
-                    # gmsh.model.occ.synchronize()
-                    # gmsh.model.occ.removeAllDuplicates()
-                    # gmsh.model.occ.synchronize()
+            # Fuse edges (bandaid)
+            # gmsh.model.occ.synchronize()
+            # gmsh.model.occ.removeAllDuplicates()
+            # gmsh.model.occ.synchronize()
 
         # Extract all unique lines (TODO: identify interfaces in label)
         # i = 0

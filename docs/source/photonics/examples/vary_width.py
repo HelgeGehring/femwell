@@ -30,13 +30,7 @@ if __name__ == '__main__':
         resolutions = dict(core={"resolution": 0.1, "distance": 1})
 
         with tempfile.TemporaryDirectory() as tmpdirname:
-            mesh_from_OrderedDict(
-                polygons,
-                resolutions,
-                filename=f'{tmpdirname}/mesh.msh',
-                default_resolution_max=0.6,
-            )
-
+            mesh_from_OrderedDict(polygons, resolutions, filename=f'{tmpdirname}/mesh.msh', default_resolution_max=.6)
             mesh = Mesh.load(f'{tmpdirname}/mesh.msh')
 
         basis0 = Basis(mesh, ElementTriP0())

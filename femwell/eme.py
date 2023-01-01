@@ -268,6 +268,7 @@ if __name__ == "__main__":
 
     meshes = []
     lengths = []
+    meshnames = []
     for x1, x2 in zip(lines_x[:-1], lines_x[1:]):
         x = (x1+x2)/2
         lengths.append(x2-x1)
@@ -281,7 +282,7 @@ if __name__ == "__main__":
         background_padding=(2.0, 2.0, 2.0, 2.0), # how much of backgorund tag to add to each side of the simulatoin
         filename=f"mesh_x_{x1}.msh",
     ))
-    meshnames = [f"mesh_x_{x1}.msh"]
+    meshnames.append(f"mesh_x_{x1}.msh")
     num_modes = 16
 
     indices_dict = {"core": 3.45, "slab90": 3.45, "clad": 1.44}
