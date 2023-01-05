@@ -8,31 +8,27 @@ from skfem.helpers import curl, grad, dot, inner, cross
 from femwell.mode_solver import solver_slepc
 
 
-def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, phase_x):
-    k0 = 2 * np.pi / wavelength
+def compute_modes(basis_epsilon_r, epsilon_r, mu_r, num_modes, phase_x):
     one_over_u_r = 1
 
     basis = basis_epsilon_r.with_element(ElementTriN2() * ElementTriP2())
 
     @BilinearForm(dtype=complex)
     def aform(E, lam, v, mu, w):
-        return one_over_u_r * curl(E) * curl(v)
-
-    @BilinearForm(dtype=complex)
-    def gauge(E, lam, v, mu, w):
-        # set div E = 0 using a Lagrange multiplier
-        return dot(grad(lam), v) + dot(E, grad(mu))
+        return (one_over_u_r * curl(E) * curl(v)
+               +one_over_u_r * dot(grad(lam), v)
+                + w['epsilon'] * dot(E, grad(mu))
+                 - w['epsilon'] * lam * mu)
 
     @BilinearForm(dtype=complex)
     def bform(E, lam, v, mu, w):
         return w['epsilon'] * dot(E, v)
 
-    A = aform.assemble(basis)
+    A = aform.assemble(basis, epsilon=basis0.interpolate(epsilon_r))
     B = bform.assemble(basis, epsilon=basis0.interpolate(epsilon_r))
-    C = gauge.assemble(basis)
 
     @BilinearForm(dtype=complex)
-    def penalty(u, u1, v, v1, w):
+    def penalty(u, u_, v, v_, w):
         u1 = (w.idx[0] == 0) * u
         u2 = (w.idx[0] == 1) * u
         v1 = (w.idx[1] == 0) * v
@@ -40,10 +36,10 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, phase
         ju = u1 - w['phase'] * u2
         jv = v1 - w['phase'] * v2
 
-        u1 = (w.idx[0] == 0) * u1
-        u2 = (w.idx[0] == 1) * u1
-        v1 = (w.idx[1] == 0) * v1
-        v2 = (w.idx[1] == 1) * v1
+        u1 = (w.idx[0] == 0) * u_
+        u2 = (w.idx[0] == 1) * u_
+        v1 = (w.idx[1] == 0) * v_
+        v2 = (w.idx[1] == 1) * v_
         ju_ = u1 - w['phase'] * u2
         jv_ = v1 - w['phase'] * v2
 
@@ -61,10 +57,10 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, phase
     ]
     D2 = asm(penalty, fbases, fbases, phase=1)
 
-    lams, xs = solve(*condense(A + C + D1 + D2, B, D=basis.get_dofs(), x=basis.zeros(dtype=complex)),
-                     solver=solver_eigen_scipy(k=num_modes, which='LM', ))
+    lams, xs = solve(*condense(A + D1, B, D=basis.get_dofs(facets='top')+basis.get_dofs(facets='bottom'), x=basis.zeros(dtype=complex)),
+                     solver=solver_slepc(k=num_modes, which='LR', sigma=10))
 
-    return np.sqrt(lams) / k0, basis, xs
+    return np.sqrt(lams), basis, xs
 
 
 if __name__ == '__main__':
@@ -72,12 +68,12 @@ if __name__ == '__main__':
     from shapely.geometry import Polygon, box, Point, LineString
     from mesh import mesh_from_OrderedDict
 
-    width = 1
-    cell_width = .65
-    cell_height = 5
+    width = .4
+    cell_width = .45
+    cell_height = 4
 
     structure = box(0, -width / 2, cell_width, width / 2)
-    hole = structure.centroid.buffer(.2)
+    hole = structure.centroid.buffer(.1)
     cell = box(0, -cell_height / 2, cell_width, cell_height / 2) - structure
 
     polygons = OrderedDict(
@@ -85,28 +81,32 @@ if __name__ == '__main__':
         right=LineString(((cell_width, -cell_height / 2), (cell_width, cell_height / 2))),
         top=LineString(((0, cell_height / 2), (cell_width, cell_height / 2))),
         bottom=LineString(((0, -cell_height / 2), (cell_width, -cell_height / 2))),
-        # hole=hole,
+        hole=hole,
         structure=structure,
         cell=cell.geoms[0],
         cell1=cell.geoms[1]
     )
 
     resolutions = dict(
-        core={"resolution": .02, "distance": 1},
+        hole={"resolution": .05, "distance": 1},
+        core={"resolution": .05, "distance": 1},
     )
 
     mesh = mesh_from_OrderedDict(polygons, resolutions, filename='mesh.msh', default_resolution_max=.05)
     mesh = Mesh.load('mesh.msh')
 
     basis0 = Basis(mesh, ElementTriP0(), intorder=4)
-    epsilon = basis0.zeros(dtype=complex) + 1.444 ** 2
-    epsilon[basis0.get_dofs(elements='structure')] = 2.8 ** 2
+    epsilon = basis0.zeros(dtype=complex) + 1 ** 2
+    epsilon[basis0.get_dofs(elements='structure')] = 3 ** 2
+    # basis0.plot(np.real(epsilon), colorbar=True).show()
 
-    phases = np.linspace(0, 1, 20)
+    phases = np.linspace(0, 1, 20) * cell_width
+    phases = [.5*cell_width]
+    print(phases)
     results = []
     for phase in phases:
-        lams, basis, xs = compute_modes(basis0, epsilon, 1.55, 1, 5, phase_x=np.exp(1j * np.pi * phase))
-        print(lams)
+        lams, basis, xs = compute_modes(basis0, epsilon, 1, 5, phase_x=np.exp(2j * np.pi * phase / cell_width))
+        print(phase/cell_width, np.exp(2j * np.pi * phase / cell_width), lams / (2*np.pi/cell_width))
         results.append((lams, basis, xs))
 
     lams = np.array([result[0] for result in results])
@@ -118,5 +118,5 @@ if __name__ == '__main__':
     plot_mode(basis, np.real(xs[:, -1]), direction='x', colorbar=True)
     plt.show()
 
-    plot_mode(basis, np.real(xs[:, -1]), direction='x', colorbar='same')
+    plot_mode(basis, np.imag(xs[:, -1]), direction='x', colorbar='same')
     plt.show()

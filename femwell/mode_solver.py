@@ -9,7 +9,7 @@ from skfem import BilinearForm, Basis, ElementTriN1, ElementTriN2, ElementDG, El
 from skfem.helpers import curl, grad, dot, inner, cross
 
 
-def solver_slepc(k, sigma):
+def solver_slepc(k, sigma, which='TM'):
     def solver(A, B):
         from petsc4py import PETSc
         from slepc4py import SLEPc
@@ -226,8 +226,10 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', directi
     for ax, component in zip(axs, 'xyz'):
         ax.set_title(f'${title}_{component}$')
 
-    absmax = np.max(np.abs(mode)) if colorbar == 'same' else None
-    absmin = - np.max(np.abs(mode)) if colorbar == 'same' else None
+    data = basis.interpolate(mode)[0].value
+    absmax = np.max(np.abs(data)) if colorbar == 'same' else None
+    absmin = - np.max(np.abs(data)) if colorbar == 'same' else None
+
     et_x_basis.plot(et_x, shading='gouraud', ax=axs[0], vmin=absmin, vmax=absmax)
     et_y_basis.plot(et_y, shading='gouraud', ax=axs[1], vmin=absmin, vmax=absmax)
     ez_basis.plot(ez, shading='gouraud', ax=axs[2], vmin=absmin, vmax=absmax)
