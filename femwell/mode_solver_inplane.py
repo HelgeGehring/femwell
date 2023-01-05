@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse.linalg
+from tqdm import tqdm
 
 from skfem import BilinearForm, Basis, ElementTriN1, ElementTriP0, ElementTriP1, ElementVector, Mesh, Functional, solve, \
     condense, solver_eigen_scipy_sym, solver_eigen_scipy, FacetBasis, asm, ElementTriN2, ElementTriP2
@@ -57,7 +58,7 @@ def compute_modes(basis_epsilon_r, epsilon_r, mu_r, num_modes, phase_x):
     ]
     D2 = asm(penalty, fbases, fbases, phase=1)
 
-    lams, xs = solve(*condense(A + D1, B, D=basis.get_dofs(facets='top')+basis.get_dofs(facets='bottom'), x=basis.zeros(dtype=complex)),
+    lams, xs = solve(*condense(A + D1, B, D=basis.get_dofs(['top','bottom']), x=basis.zeros(dtype=complex)),
                      solver=solver_slepc(k=num_modes, which='LR', sigma=10))
 
     return np.sqrt(lams), basis, xs
@@ -100,23 +101,22 @@ if __name__ == '__main__':
     epsilon[basis0.get_dofs(elements='structure')] = 3 ** 2
     # basis0.plot(np.real(epsilon), colorbar=True).show()
 
-    phases = np.linspace(0, 1, 20) * cell_width
-    phases = [.5*cell_width]
+    phases = np.linspace(0, .5, 5) * cell_width
+    #phases = [.4*cell_width]
     print(phases)
     results = []
-    for phase in phases:
+    for phase in tqdm(phases):
         lams, basis, xs = compute_modes(basis0, epsilon, 1, 5, phase_x=np.exp(2j * np.pi * phase / cell_width))
-        print(phase/cell_width, np.exp(2j * np.pi * phase / cell_width), lams / (2*np.pi/cell_width))
-        results.append((lams, basis, xs))
+        results.append((lams[:5], basis, xs))
 
-    lams = np.array([result[0] for result in results])
+    lams = np.array([np.sort(result[0])/ (2*np.pi/cell_width) for result in results])
     plt.plot(phases, lams)
     plt.show()
 
     from mode_solver import plot_mode
 
-    plot_mode(basis, np.real(xs[:, -1]), direction='x', colorbar=True)
+    plot_mode(basis, np.real(xs[:, -3]), direction='x', colorbar='same')
     plt.show()
 
-    plot_mode(basis, np.imag(xs[:, -1]), direction='x', colorbar='same')
+    plot_mode(basis, np.imag(xs[:, -3]), direction='x', colorbar='same')
     plt.show()
