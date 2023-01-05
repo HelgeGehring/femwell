@@ -27,9 +27,6 @@ pygmsh = "*"
 matplotlib = "*"
 shapely = ">=2.0.0"
 
-[tool.poetry.dev-dependencies]
-autopep8 = '*'
-
 [tool.poetry.group.test.dependencies]
 pytest = "*"
 flake8 = "*"
@@ -39,6 +36,3 @@ sphinx = "*"
 tqdm = "*"
 sphinx-book-theme = "*"
 sphinxcontrib-bibtex = '*'
-
-[tool.autopep8]
-max_line_length = 120
