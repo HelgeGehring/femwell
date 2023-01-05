@@ -226,13 +226,13 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', directi
     for ax, component in zip(axs, 'xyz'):
         ax.set_title(f'${title}_{component}$')
 
-    data = basis.interpolate(mode)[0].value
-    absmax = np.max(np.abs(data)) if colorbar == 'same' else None
-    absmin = - np.max(np.abs(data)) if colorbar == 'same' else None
+    maxabs = max(np.max(np.abs(data.value)) for data in basis.interpolate(mode))
+    vmin = -maxabs if colorbar == 'same' else None
+    vmax = maxabs if colorbar == 'same' else None
 
-    et_x_basis.plot(et_x, shading='gouraud', ax=axs[0], vmin=absmin, vmax=absmax)
-    et_y_basis.plot(et_y, shading='gouraud', ax=axs[1], vmin=absmin, vmax=absmax)
-    ez_basis.plot(ez, shading='gouraud', ax=axs[2], vmin=absmin, vmax=absmax)
+    et_x_basis.plot(et_x, shading='gouraud', ax=axs[0], vmin=vmin, vmax=vmax)
+    et_y_basis.plot(et_y, shading='gouraud', ax=axs[1], vmin=vmin, vmax=vmax)
+    ez_basis.plot(ez, shading='gouraud', ax=axs[2], vmin=vmin, vmax=vmax)
 
     if colorbar:
         if colorbar == 'same':
