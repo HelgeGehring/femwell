@@ -10,6 +10,7 @@ Femwell
     :target: https://pypi.org/project/femwell/
 
 Working on a finite element based simulation tool for integrated circuits, electric and photonic!
+The documentation is lagging behind the state of code, so there's several features for which there are only examples in the code.
 
 ****************
 Working Features
@@ -24,7 +25,7 @@ Working Features
 Possible Simulations
 *********************
 
-- Eigenmodes of wavegudies and determining their effective refractive index
+- Eigenmodes of waveguides and determining their effective refractive index
 - Eigenmodes of electric transmission lines and determining their propagation constant (in work)
 - Static thermal profiles
 - Transient thermal behavior
@@ -40,5 +41,6 @@ Contributors
 ************
 - Helge Gehring (Google): Maintainer
 - Simon Bilodeau (Google): Meshes everything
+- Joaquin Matres (Google): Code simplifications
 
 Happy about every form of contribution - pull requests, feature requests, issues, questions, ... :)

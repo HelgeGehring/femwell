@@ -87,7 +87,13 @@ if __name__ == '__main__':
         efficiency = np.abs(overlap_integral.assemble(basis_fiber,
                                                       E_i=basis.interpolate(xs[0])[0][1],
                                                       E_j=basis_fiber.interpolate(x_fiber))
-                            * np.sqrt(lams[0] * (2 * np.pi / 1.55) * 2))
+                            /
+                            np.sqrt(
+                                overlap_integral.assemble(basis_fiber,
+                                                          E_i=basis.interpolate(xs[0])[0][1],
+                                                          E_j=basis.interpolate(xs[0])[0][1])
+                                )
+                            )
 
         efficiencies.append(efficiency)
 

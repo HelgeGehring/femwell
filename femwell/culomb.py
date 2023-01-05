@@ -57,9 +57,9 @@ if __name__ == '__main__':
     )
 
     with tempfile.TemporaryDirectory() as tmpdirname:
-        mesh_from_OrderedDict(polygons, resolutions, filename=tmpdirname + '/mesh.msh', default_resolution_max=5)
+        mesh_from_OrderedDict(polygons, resolutions, filename=f'{tmpdirname}/mesh.msh', default_resolution_max=5)
         mesh_from_OrderedDict(polygons, resolutions, filename='mesh.msh', default_resolution_max=5)
-        mesh = Mesh.load(tmpdirname + '/mesh.msh')
+        mesh = Mesh.load(f'{tmpdirname}/mesh.msh')
 
     basis = Basis(mesh, ElementTriP1(), intorder=4)
     basis_epsilon_r = basis.with_element(ElementTriP0())
