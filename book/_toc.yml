@@ -1,0 +1,13 @@
+# Table of contents
+# Learn more at https://jupyterbook.org/customize/toc.html
+
+format: jb-book
+root: intro
+chapters:
+- file: math/index.md
+  sections:
+  - file: math/thermal
+  - file: math/coupled_mode_theory
+- file: markdown
+- file: notebooks
+- file: markdown-notebooks
