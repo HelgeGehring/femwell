@@ -12,5 +12,6 @@ dependencies:
       - shapely
       - pygmsh
       - meshio
+      - tqdm
       - git+https://github.com/kinnala/scikit-fem.git
       - git+https://github.com/HelgeGehring/femwell.git

@@ -1,7 +1,7 @@
 import tempfile
 from collections import OrderedDict
 
-from tqdm.auto import tqdm
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
 from shapely.geometry import box
