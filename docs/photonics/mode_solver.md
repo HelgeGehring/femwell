@@ -1,12 +1,6 @@
 ---
-jupytext:
-  formats: md:myst
-  text_representation:
-    extension: .md
-    format_name: myst
+file_format: mystnb
 kernelspec:
-  display_name: Python 3
-  language: python
   name: python3
 ---
 
@@ -18,8 +12,9 @@ kernelspec:
 :load: examples/waveguide_modes.py
 ```
 
-# Variation of the width
+## Variation of the width
 
 ```{code-cell} ipython3
+:tags: [remove-stderr]
 :load: examples/vary_width.py
 ```
