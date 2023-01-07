@@ -4,13 +4,13 @@ channels:
 dependencies:
   - python
   - pip
-  - gmsh
-  - python-gmsh
+  - mesa-libgl-devel-cos7-x86_64 # for gmsh
   - meshio
   - matplotlib
   - shapely
   - slepc4py=*=complex*
   - scipy
   - pip:
+      - pygmsh
       - git+https://github.com/kinnala/scikit-fem.git
       - git+https://github.com/HelgeGehring/femwell.git
