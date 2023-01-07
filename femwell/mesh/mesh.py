@@ -17,7 +17,7 @@ def break_line_(line, other_line):
     if not intersections.is_empty:
         for intersection in intersections.geoms if hasattr(intersections, 'geoms') else [intersections]:
             # if type == "", intersection.type != 'Point':
-            if intersection.type == 'Point':
+            if intersection.geom_type == 'Point':
                 line = linemerge(split(line, intersection))
             else:
                 new_coords_start, new_coords_end = intersection.boundary.geoms
@@ -42,15 +42,12 @@ def mesh_from_Dict(
     """
 
     with pygmsh.occ.geometry.Geometry() as geometry:
-
-        gmsh.initialize()
-
         # geometry = pygmsh.occ.geometry.Geometry()
         geometry.characteristic_length_min = default_resolution_min
         geometry.characteristic_length_max = default_resolution_max
         gmsh.option.setNumber("Mesh.Algorithm", gmsh_algorithm)
 
-        model = geometry.__enter__()
+        model = geometry
 
         # Add overall bounding box
         total = unary_union(list(shapes_dict.values()))
@@ -167,15 +164,12 @@ def mesh_from_OrderedDict(
     """
 
     with pygmsh.occ.geometry.Geometry() as geometry:
-
-        gmsh.initialize()
-
         # geometry = pygmsh.occ.geometry.Geometry()
         geometry.characteristic_length_min = default_resolution_min
         geometry.characteristic_length_max = default_resolution_max
         gmsh.option.setNumber("Mesh.Algorithm", gmsh_algorithm)
 
-        model = geometry.__enter__()
+        model = geometry
 
         # Break up shapes in order so that plane is tiled with non-overlapping layers, overriding shapes according to an order
         shapes_tiled_dict = OrderedDict()
@@ -193,7 +187,7 @@ def mesh_from_OrderedDict(
             broken_shapes = []
             for first_shape in first_shape.geoms if hasattr(first_shape, 'geoms') else [first_shape]:
                 # First line exterior
-                first_exterior_line = LineString(first_shape.exterior) if first_shape.type == "Polygon" else first_shape
+                first_exterior_line = LineString(first_shape.exterior) if first_shape.geom_type == "Polygon" else first_shape
                 for second_index, (second_name, second_shapes) in enumerate(shapes_dict.items()):
                     # Do not compare to itself
                     if second_name == first_name:
@@ -202,14 +196,14 @@ def mesh_from_OrderedDict(
                         second_shapes = shapes_tiled_dict[second_name]
                         for second_shape in second_shapes.geoms if hasattr(second_shapes, 'geoms') else [second_shapes]:
                             # Second line exterior
-                            second_exterior_line = LineString(second_shape.exterior) if second_shape.type == "Polygon" else second_shape
+                            second_exterior_line = LineString(second_shape.exterior) if second_shape.geom_type == "Polygon" else second_shape
                             first_exterior_line = break_line_(first_exterior_line, second_exterior_line)
                             # Second line interiors
-                            for second_interior_line in second_shape.interiors if second_shape.type == "Polygon" else []:
+                            for second_interior_line in second_shape.interiors if second_shape.geom_type == "Polygon" else []:
                                 second_interior_line = LineString(second_interior_line)
                                 first_exterior_line = break_line_(first_exterior_line, second_interior_line)
                 # First line interiors
-                if first_shape.type == "Polygon" or first_shape.type == "MultiPolygon":
+                if first_shape.geom_type in ["Polygon", "MultiPolygon"]:
                     first_shape_interiors = []
                     for first_interior_line in first_shape.interiors:
                         first_interior_line = LineString(first_interior_line)
@@ -228,11 +222,11 @@ def mesh_from_OrderedDict(
                                         intersections = first_interior_line.intersection(second_interior_line)
                                         first_interior_line = break_line_(first_interior_line, second_interior_line)
                         first_shape_interiors.append(first_interior_line)
-                if first_shape.type == "Polygon" or first_shape.type == "MultiPolygon":
+                if first_shape.geom_type in ["Polygon", "MultiPolygon"]:
                     broken_shapes.append(Polygon(first_exterior_line, holes=first_shape_interiors))
                 else:
                     broken_shapes.append(LineString(first_exterior_line))
-            if first_shape.type == "Polygon" or first_shape.type == "MultiPolygon":
+            if first_shape.geom_type in ["Polygon", "MultiPolygon"]:
                 polygons_broken_dict[first_name] = MultiPolygon(broken_shapes) if len(broken_shapes) > 1 else broken_shapes[0]
             else:
                 lines_broken_dict[first_name] = MultiLineString(broken_shapes) if len(broken_shapes) > 1 else broken_shapes[0]
@@ -251,7 +245,9 @@ def mesh_from_OrderedDict(
             polygon = meshtracker.shapely_xy_surfaces[index_surface]
             for index_segment in range(len(meshtracker.shapely_xy_segments)):
                 line = meshtracker.shapely_xy_segments[index_segment]
-                if polygon.contains(line - polygon.exterior):
+
+                intersection = line - polygon.exterior
+                if not intersection.is_empty and polygon.contains(intersection):
                     model.in_surface(meshtracker.gmsh_xy_segments[index_segment], meshtracker.gmsh_xy_surfaces[index_surface])
 
         # Refinement in surfaces

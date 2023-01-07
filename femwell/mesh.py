@@ -185,9 +185,6 @@ def mesh_from_polygons(
 
 
     with pygmsh.occ.geometry.Geometry() as geometry:
-
-        gmsh.initialize()
-
         # geometry = pygmsh.occ.geometry.Geometry()
         geometry.characteristic_length_min = default_resolution_min
         geometry.characteristic_length_max = default_resolution_max
