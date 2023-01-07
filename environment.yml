@@ -5,8 +5,8 @@ dependencies:
   - python
   - pip
   - slepc4py=*=complex*
+  - numpy
   - pip:
-      - numpy
       - matplotlib
       - scipy
       - shapely
