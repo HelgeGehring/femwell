@@ -310,7 +310,14 @@ def mesh_from_OrderedDict(
         if filename:
             gmsh.write(f"{filename}")
 
-        return mesh
+        import tempfile
+        import meshio
+        import contextlib
+
+        with contextlib.redirect_stdout(None):
+            with tempfile.TemporaryDirectory() as tmpdirname:
+                gmsh.write(f'{tmpdirname}/mesh.msh')
+                return meshio.read(f'{tmpdirname}/mesh.msh')
 
 
 if __name__ == "__main__":

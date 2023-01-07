@@ -8,6 +8,7 @@ from shapely.geometry import box
 from shapely.ops import clip_by_rect
 
 from skfem import Mesh, Basis, ElementTriP0
+from skfem.io.meshio import from_meshio
 
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.mode_solver import compute_modes, calculate_te_frac
@@ -30,8 +31,7 @@ if __name__ == '__main__':
         resolutions = dict(core={"resolution": 0.1, "distance": 1})
 
         with tempfile.TemporaryDirectory() as tmpdirname:
-            mesh_from_OrderedDict(polygons, resolutions, filename=f'{tmpdirname}/mesh.msh', default_resolution_max=.6)
-            mesh = Mesh.load(f'{tmpdirname}/mesh.msh')
+            mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, filename=f'{tmpdirname}/mesh.msh', default_resolution_max=.6))
 
         basis0 = Basis(mesh, ElementTriP0())
         epsilon = basis0.zeros() + 1
@@ -39,7 +39,7 @@ if __name__ == '__main__':
         epsilon[basis0.get_dofs(elements='box')] = 1.444 ** 2
 
         lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=num_modes)
-        all_lams[i] = lams
+        all_lams[i] = np.real(lams)
         all_te_fracs[i, :] = [calculate_te_frac(basis, xs[idx]) for idx in range(num_modes)]
 
     all_lams = np.real(all_lams)

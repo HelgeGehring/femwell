@@ -7,6 +7,7 @@ import shapely.geometry
 import shapely.affinity
 from shapely.ops import clip_by_rect
 from skfem import Mesh, Basis, ElementTriP0
+from skfem.io.meshio import from_meshio
 
 from femwell.mode_solver import compute_modes, plot_mode
 from femwell.mesh import mesh_from_OrderedDict
@@ -25,9 +26,7 @@ resolutions = dict(
 )
 
 with tempfile.TemporaryDirectory() as tmpdirname:
-    mesh_from_OrderedDict(polygons, resolutions, filename=f'{tmpdirname}/mesh.msh', default_resolution_max=10)
-
-    mesh = Mesh.load(f'{tmpdirname}/mesh.msh')
+    mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, filename=f'{tmpdirname}/mesh.msh', default_resolution_max=10))
 
 basis0 = Basis(mesh, ElementTriP0())
 epsilon = basis0.zeros(dtype=complex) + 1

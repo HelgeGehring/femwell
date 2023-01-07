@@ -25,5 +25,5 @@ test
 Variation of the width
 
 ```{code-cell} ipython3
-# :load: examples/vary_width.py
+:load: examples/vary_width.py
 ```
