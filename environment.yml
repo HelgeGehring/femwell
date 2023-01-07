@@ -1,16 +1,16 @@
 name: conda_env
 channels:
-  - conda-forge
   - defaults
 dependencies:
   - python
   - pip
-  - gmsh
-  - python-gmsh
-  - matplotlib
-  - shapely
-  - slepc4py=*=complex*
-  - scipy
+  - conda-forge::gmsh
+  - conda-forge::python-gmsh
+  - conda-forge::meshio
+  - conda-forge::matplotlib
+  - conda-forge::shapely
+  - conda-forge::scipy
+  - conda-forge::slepc4py=*=complex*
   - pip:
       - git+https://github.com/kinnala/scikit-fem.git
       - git+https://github.com/HelgeGehring/femwell.git
