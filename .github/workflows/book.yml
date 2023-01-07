@@ -1,4 +1,4 @@
-name: docs
+name: book
 
 on:
   push:
