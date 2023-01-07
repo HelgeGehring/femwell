@@ -14,15 +14,11 @@ kernelspec:
 
 ## Modes of a rectangular waveguide
 
-
-
-test
-
 ```{code-cell} ipython3
 :load: examples/waveguide_modes.py
 ```
 
-Variation of the width
+# Variation of the width
 
 ```{code-cell} ipython3
 :load: examples/vary_width.py
