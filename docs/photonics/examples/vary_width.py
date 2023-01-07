@@ -1,11 +1,10 @@
-import tempfile
 from collections import OrderedDict
 
-from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
 from shapely.geometry import box
 from shapely.ops import clip_by_rect
+from tqdm import tqdm
 
 from skfem import Mesh, Basis, ElementTriP0
 from skfem.io.meshio import from_meshio
@@ -27,14 +26,14 @@ for i, width in enumerate(tqdm(widths)):
         clad=clip_by_rect(core.buffer(1., resolution=4), -np.inf, 0, np.inf, np.inf)
     )
 
-    resolutions = dict(core={"resolution": 0.1, "distance": 1})
-
+    resolutions = {'core': {"resolution": 0.1, "distance": 1}}
+    
     mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=.6))
 
     basis0 = Basis(mesh, ElementTriP0())
-    epsilon = basis0.zeros() + 1
-    epsilon[basis0.get_dofs(elements='core')] = 2 ** 2
-    epsilon[basis0.get_dofs(elements='box')] = 1.444 ** 2
+    epsilon = basis0.zeros(dtype=complex)
+    for subdomain, n in {'core': 1.9963, 'box': 1.444, 'clad': 1}.items():
+        epsilon[basis0.get_dofs(elements=subdomain)] = n**2
 
     lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=num_modes)
     all_lams[i] = np.real(lams)
