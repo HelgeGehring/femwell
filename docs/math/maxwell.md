@@ -169,7 +169,7 @@ $$
 
 ## PML
 
-`link <http://www.hade.ch/docs/report_FDFD.pdf>`_
+http://www.hade.ch/docs/report_FDFD.pdf
 
 ## Bent Waveguides
 
