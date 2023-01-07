@@ -25,8 +25,7 @@ resolutions = dict(
     core={"resolution": .03, "distance": .1}
 )
 
-with tempfile.TemporaryDirectory() as tmpdirname:
-    mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, filename=f'{tmpdirname}/mesh.msh', default_resolution_max=10))
+mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=10))
 
 basis0 = Basis(mesh, ElementTriP0())
 epsilon = basis0.zeros(dtype=complex) + 1
