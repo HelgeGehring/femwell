@@ -1,2 +1,3 @@
 libgl1-mesa-glx
 libglu1-mesa
+libxcursor-dev
