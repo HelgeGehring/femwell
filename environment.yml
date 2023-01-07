@@ -3,6 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python
+  - pip
   - gmsh
   - python-gmsh
   - matplotlib

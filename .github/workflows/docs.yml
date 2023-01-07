@@ -28,6 +28,7 @@ jobs:
           sudo apt-get install -y libglu1-mesa
           poetry install --no-interaction
           source $VENV
+          pip install git+https://github.com/executablebooks/jupyter-book.git@update-myst-nb
           pip install --upgrade git+https://github.com/kinnala/scikit-fem.git
       - name: Install slepc4py
         run: |
@@ -40,28 +41,27 @@ jobs:
       - name: Make docs
         run: |
           source $VENV
-          cd docs
-          make html
+          jupyter-book build docs/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: './docs/build/html/'
+          path: './docs/_build/html/'
 
-  # deploy:
-  #   if: ${{ github.repository == 'HelgeGehring/femwell' }} # skip for forks
-  #   needs: build
+  deploy:
+    if: ${{ github.repository == 'HelgeGehring/femwell' }} # skip for forks
+    needs: build
 
-  #   permissions:
-  #     pages: write
-  #     id-token: write
+    permissions:
+      pages: write
+      id-token: write
 
-  #   environment:
-  #     name: github-pages
-  #     url: ${{ steps.deployment.outputs.page_url }}
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Deploy to GitHub Pages
-  #       id: deployment
-  #       uses: actions/deploy-pages@v1
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1

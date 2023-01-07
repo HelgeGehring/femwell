@@ -4,7 +4,7 @@ docs/build/
 *.egg-info/
 **/__pycache__/**
 build/
-book/_build
+docs/_build
 
 *.msh
 *.png
