@@ -48,3 +48,7 @@ parse:
 
 launch_buttons:
   thebe                  : true
+
+sphinx:
+  config:
+    execution_show_tb: True
