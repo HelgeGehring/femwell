@@ -8,6 +8,7 @@ dependencies:
   - matplotlib
   - shapely
   - slepc4py=*=complex*
+  - scipy
   - pip:
       - git+https://github.com/kinnala/scikit-fem.git
       - git+https://github.com/HelgeGehring/femwell.git
