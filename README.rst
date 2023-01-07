@@ -13,6 +13,7 @@ Working on a finite element based simulation tool for integrated circuits, elect
 The documentation is lagging behind the state of code, so there's several features for which there are only examples in the code.
 
 **You can try out the examples in the browser! Hover the rocket at the top on the example pages and click live code!**
+(Might take some time to load)
 
 ****************
 Working Features
