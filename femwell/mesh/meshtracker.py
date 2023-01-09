@@ -130,29 +130,29 @@ class MeshTracker():
                 segments.append(-gmsh_segment)
         self.model.add_physical(segments, f"{label}")
 
-    def add_xy_surface(self, shapely_xy_polygon, label=None, physical=True):
+    def add_xy_surface(self, shapely_xy_polygons, label=None, physical=True):
         """
         Add a xy surface corresponding to shapely_xy_polygon, or retrieve the existing gmsh model surface with equivalent coordinates (within tol.)
 
         Args:
-            shapely_xy_polygon (shapely.geometry.Polygon):
+            shapely_xy_polygons (shapely.geometry.(Multi)Polygon):
         """
         # Create surface
-        exterior_vertices = []
-        hole_loops = []
         surfaces_to_label = []
 
-        for _ in shapely_xy_polygon.geoms if hasattr(shapely_xy_polygon, 'geoms') else [shapely_xy_polygon]:
+        for shapely_xy_polygon in shapely_xy_polygons.geoms if hasattr(shapely_xy_polygons, 'geoms') else [shapely_xy_polygons]:
+            hole_loops = []
+            exterior_vertices = []
             # Parse holes
             for polygon_hole in list(shapely_xy_polygon.interiors):
                 hole_vertices = []
                 for vertex in shapely.geometry.MultiPoint(polygon_hole.coords).geoms:
-                    gmsh_point = self.add_get_point(vertex, label)
+                    # gmsh_point = self.add_get_point(vertex, label)
                     hole_vertices.append(vertex)
                 hole_loops.append(self.xy_channel_loop_from_vertices(hole_vertices, label))
             # Parse boundary
             for vertex in shapely.geometry.MultiPoint(shapely_xy_polygon.exterior.coords).geoms:
-                gmsh_point = self.add_get_point(vertex, label)
+                # gmsh_point = self.add_get_point(vertex, label)
                 exterior_vertices.append(vertex)
             channel_loop = self.xy_channel_loop_from_vertices(exterior_vertices, label)
 
