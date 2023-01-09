@@ -32,6 +32,8 @@ repository:
 html:
   use_issues_button: true
   use_repository_button: true
+  use_edit_page_button: true
+  extra_navbar: ""
 
 parse:
   myst_enable_extensions:
