@@ -19,7 +19,7 @@ c = .2
 
 wavelength = .8
 k0 = 2*np.pi/wavelength
-k0 = .75/a
+k0 = 1.03/a
 print(k0)
 
 print(k0, k0*a)
@@ -114,17 +114,19 @@ pep = SLEPc.PEP().create()
 A = A.assemble(basis_vec, epsilon=basis0.interpolate(epsilon))+asm(penalty, fbases, fbases)+asm(penalty2, fbases2, fbases2)
 B= B.assemble(basis_vec)
 C = C.assemble(basis_vec)
-mats = [PETSc.Mat().createAIJ(size=K.shape, csr=(K.indptr, K.indices, K.data)) for K in (A,B,C)]
+mats = [PETSc.Mat().createAIJ(size=K.shape, csr=(K.indptr, K.indices, K.data)) for K in (C,B,A)]
 pep.setOperators(mats)
-pep.setDimensions(basis_vec.N*2)
+pep.setDimensions(4)
 
 nev, ncv, mpd = pep.getDimensions()
 print("")
 print("Number of requested eigenvalues: %i" % nev)
 
-pep.setTarget(k0)
-pep.setWhichEigenpairs(SLEPc.PEP.Which.LARGEST_MAGNITUDE)
-#pep.setType(SLEPc.PEP.Type.LINEAR)
+pep.setTarget(1/k0)
+print('target', 1/k0)
+#pep.getST().setType((SLEPc.ST.Type.SINVERT))
+pep.setWhichEigenpairs(SLEPc.PEP.Which.TARGET_MAGNITUDE)
+pep.setType(SLEPc.PEP.Type.JD)
 #pep.setProblemType(SLEPc.PEP.ProblemType.GENERAL)
 print('set')
 def monitor(eps, its, nconv, eig, err):
@@ -140,10 +142,11 @@ xs = []
 
 for i in range(nconv):
     k = pep.getEigenpair(i, xr, xi)
+    print(k)
     error = pep.computeError(i)
     
     print("%9f%+9f j    %12g" % (k.real, k.imag, error))
-    ks.append(k)
+    ks.append(1/k)
     xs.append(np.array(xr))
 
 ks = np.array(ks)
@@ -181,12 +184,18 @@ xs = xs[:,idx]
 print(ks)
 
 plt.plot(np.real(ks))
+plt.plot(np.imag(ks))
 plt.show()
 
 #phis, basis_phi), (k_phis, basis_k_phi) = basis_vec.split(xs)
 
 for i in range(xs.shape[-1]):
-    ax=basis1.draw()
+    #fig, ax = plt.subplots()
+    ax = basis1.draw()
+    ax.set_aspect(1)
     ax.set_title(f'{ks[i]}')
-    basis_vec.plot(np.abs(xs[...,i]), shading='gouraud', ax=ax, colorbar=True).show()
+    basis_vec.mesh.draw(ax=ax, boundaries=True, boundaries_only=True)
+    for subdomain in basis_vec.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
+        basis_vec.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
+    basis_vec.plot(np.real(xs[...,i]), shading='gouraud', ax=ax, colorbar=True).show()
 basis_vec.plot(np.imag(xs[...,150]), ax=basis1.draw(), shading='gouraud').show()
