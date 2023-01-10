@@ -136,15 +136,15 @@ ks, xs = solve(
         #x=basis_vec.zeros(dtype=np.complex64),
         expand=True
     ),
-    solver=solver_eigen_slepc(k=15, which='SM', sigma=1)
-    #solver=solver_dense(k=5, which='LM', sigma=np.pi/2)
+    #solver=solver_eigen_slepc(k=15, which='SM', sigma=k0/10)
+    solver=solver_dense(k=5, which='LM', sigma=np.pi/2)
 )
 
 xs = xs[:basis_vec.N]
 
-idx = np.abs(ks) < 1e10
-ks = ks[idx]
-xs = xs[:,idx]
+#idx = np.abs(ks) < 1e10
+#ks = ks[idx]
+#xs = xs[:,idx]
 
 idx = np.abs(np.abs(ks)).argsort()[::1]   
 ks = ks[idx]

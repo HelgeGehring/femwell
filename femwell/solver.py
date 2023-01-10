@@ -5,7 +5,7 @@ def solver_eigen_slepc(**kwargs):
         'sigma': None,
         'k': 5,
         'which': 'TM',
-        'st': None
+        'st': 'SINVERT'
     }
 
     params.update(kwargs)
@@ -53,7 +53,7 @@ def solver_eigen_slepc(**kwargs):
         eps = SLEPc.EPS().create()
         eps.setDimensions(params['k'])
         eps.setOperators(K_, M_)
-        eps.setType(SLEPc.EPS.Type.LAPACK)
+        eps.setType(SLEPc.EPS.Type.KRYLOVSCHUR)
         if params['st']:
             eps.getST().setType(st[params['st']])
         eps.setWhichEigenpairs(which[params['which']])
