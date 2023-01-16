@@ -57,7 +57,7 @@ def mesh_from_Dict(
         listpoly = [a.intersection(b) for a, b in combinations(all_polygons, 2)]
         rings = [
             LineString(list(object.exterior.coords))
-            for object in listpoly if not (object.type in ["Point", "LineString"] or object.is_empty)
+            for object in listpoly if not (object.geom_type in ["Point", "LineString"] or object.is_empty)
         ]
 
         union = unary_union(rings)
@@ -214,10 +214,10 @@ def mesh_from_OrderedDict(
                                 second_shapes = shapes_tiled_dict[second_name]
                                 for second_shape in second_shapes.geoms if hasattr(second_shapes, 'geoms') else [second_shapes]:
                                     # Exterior
-                                    second_exterior_line = LineString(second_shape.exterior) if second_shape.type == "Polygon" else second_shape
+                                    second_exterior_line = LineString(second_shape.exterior) if second_shape.geom_type == "Polygon" else second_shape
                                     first_interior_line = break_line_(first_interior_line, second_exterior_line)
                                     # Interiors
-                                    for second_interior_line in second_shape.interiors if second_shape.type == "Polygon" else []:
+                                    for second_interior_line in second_shape.interiors if second_shape.geom_type == "Polygon" else []:
                                         second_interior_line = LineString(second_interior_line)
                                         intersections = first_interior_line.intersection(second_interior_line)
                                         first_interior_line = break_line_(first_interior_line, second_interior_line)
