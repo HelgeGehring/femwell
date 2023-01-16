@@ -65,5 +65,6 @@ jobs:
       - uses: s-weigand/trigger-mybinder-build@v1
         with:
           target-repo: HelgeGehring/femwell
+          target-state: HEAD
           service-name: gh
           debug: true
