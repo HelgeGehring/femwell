@@ -80,10 +80,11 @@ def solve_thermal_transient(
 
 
 if __name__ == '__main__':
+    import matplotlib.pyplot as plt
     from shapely.geometry import Polygon, LineString
     from collections import OrderedDict
+    from skfem.io import from_meshio
     from femwell.mesh import mesh_from_OrderedDict
-    import matplotlib.pyplot as plt
 
     # Simulating the TiN TOPS heater in https://doi.org/10.1364/OE.27.010456
 
@@ -142,9 +143,7 @@ if __name__ == '__main__':
         heater={"resolution": 0.05, "distance": 1}
     )
 
-    mesh_from_OrderedDict(polygons, resolutions, filename='mesh.msh', default_resolution_max=.3)
-
-    mesh = Mesh.load('mesh.msh')
+    mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=.3))
 
     basis0 = Basis(mesh, ElementTriP0(), intorder=4)
     thermal_conductivity_p0 = basis0.zeros()
@@ -164,7 +163,7 @@ if __name__ == '__main__':
     thermal_diffusivity_p0 *= 1e12  # 1e-12 -> conversion from m^2 -> um^2
 
     dt = .1e-5
-    steps = 200
+    steps = 100
     current = lambda t: 0.007 / polygons['heater'].area * ((t < dt * steps / 10) + (t > dt * steps / 2))
     basis, temperatures = solve_thermal_transient(basis0, thermal_conductivity_p0, thermal_diffusivity_p0,
                                                   specific_conductivity={"heater": 2.3e6},
@@ -182,18 +181,17 @@ if __name__ == '__main__':
 
     M = unit_load.assemble(basis)
 
-    print(np.max(temperatures), np.max(temperatures[0]), np.max(temperatures[-1]))
     times = np.array([dt * i for i in range(steps + 1)])
     plt.xlabel('Time [us]')
     plt.ylabel('Average temperature')
     plt.plot(times * 1e6, M @ np.array(temperatures).T / np.sum(M))
     plt.show()
 
-    for i in range(0, steps, 100):
-        fig, ax = plt.subplots(subplot_kw=dict(aspect=1))
-        for subdomain in mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
-            mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
-        basis.plot(temperatures[i], ax=ax, vmin=0, vmax=np.max(temperatures), shading='gouraud').show()
+    # for i in range(0, steps, 10):
+    #     fig, ax = plt.subplots(subplot_kw=dict(aspect=1))
+    #     for subdomain in mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
+    #         mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
+    #     basis.plot(temperatures[i], ax=ax, vmin=0, vmax=np.max(temperatures), shading='gouraud').show()
 
     # Calculate modes
 
@@ -213,8 +211,6 @@ if __name__ == '__main__':
         # basis0.plot(epsilon, colorbar=True).show()
 
         lams, basis_modes, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1)
-
-        print(lams)
 
         # plot_mode(basis_modes, xs[0])
         # plt.show()
