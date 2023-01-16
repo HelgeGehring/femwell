@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 from shapely.geometry import Polygon, LineString
@@ -117,8 +118,6 @@ plt.show()
 #     basis.plot(temperatures[i], ax=ax, vmin=0, vmax=np.max(temperatures), shading='gouraud').show()
 
 # Calculate modes
-
-from tqdm.auto import tqdm
 
 neffs = []
 for temperature in tqdm(temperatures):
