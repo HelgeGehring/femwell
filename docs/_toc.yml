@@ -10,3 +10,4 @@ chapters:
   - file: math/thermal
   - file: math/coupled_mode_theory
 - file: photonics/mode_solver
+- file: photonics/thermal_phase_shifter
