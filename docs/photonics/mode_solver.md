@@ -18,3 +18,9 @@ kernelspec:
 :tags: [remove-stderr]
 :load: examples/vary_width.py
 ```
+
+## Overlap with the mode of an optical fiber
+
+```{code-cell} ipython3
+:load: examples/fiber_overlap.py
+```
