@@ -58,13 +58,3 @@ jobs:
         run: |
           source $VENV
           poetry build
-
-  trigger-binder-build:
-    runs-on: [ubuntu-latest]
-    steps:
-      - uses: s-weigand/trigger-mybinder-build@v1
-        with:
-          target-repo: HelgeGehring/femwell
-          target-state: HEAD
-          service-name: gh
-          debug: true
