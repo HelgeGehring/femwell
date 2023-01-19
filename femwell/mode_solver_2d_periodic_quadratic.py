@@ -12,14 +12,16 @@ import shapely
 from mesh import mesh_from_OrderedDict
 from solver import solver_eigen_slepc
 
-height = 1
-a = .330
-b = .7
+height = 5.76/2+1
+a = .100
+b = .78
 c = .2
+slab = .920+1
+pml = 1
 
-wavelength = .8
+wavelength = 1
 k0 = 2*np.pi/wavelength
-k0 = 1.03/a
+#k0 = .75/a
 print(k0)
 
 print(k0, k0*a)
@@ -31,34 +33,46 @@ bottom = shapely.LineString([(x,-height) for x in np.linspace(0, a, 2)])
 
 box = shapely.box(0,-height,a,height)
 structure = shapely.box(0,-b/2,a,b/2)
+structure1 = shapely.box(0,height-slab,a,height)
+structure2 = shapely.box(0,-height+slab,a,-height)
 hole = shapely.box(a/4,-c/2,a/4*3,c/2)
 
 resolutions = {
-    'structure': {'resolution':.05, 'distance':.1},
-    'hole': {'resolution':.05, 'distance':.1}
+    'structure': {'resolution':.1, 'distance':.1},
+    'hole': {'resolution':.1, 'distance':.1}
 }
 
 mesh = from_meshio(mesh_from_OrderedDict(OrderedDict(
     left=left, right=right, top=top, bottom=bottom,
-    hole=hole,
+    #hole=hole,
     structure=structure,
+    structure1=structure1,
+    structure2=structure2,
     box=box,
 ), resolutions=resolutions, filename='mesh.msh', default_resolution_max=.1))
 
 
-basis_vec = Basis(mesh, ElementTriP1())
+basis_vec = Basis(mesh, ElementTriP2())
 basis0 = basis_vec.with_element(ElementTriP0())
 basis1 = basis_vec.with_element(ElementTriP1())
+basis_pml = basis_vec.with_element(ElementTriP2())
 
-epsilon = basis0.zeros(dtype=np.complex64) + 1.45
-epsilon[basis0.get_dofs(elements='structure')] = 3.5
+epsilon = basis0.zeros(dtype=np.complex64) + 1.39
+epsilon = basis0.project(lambda x: 1.45)
+#epsilon[basis0.get_dofs(elements='structure')] = 1.45
+#epsilon[basis0.get_dofs(elements='structure1')] = 1.45
+#epsilon[basis0.get_dofs(elements='structure2')] = 1.45
+epsilon[basis0.get_dofs(elements='box')] = 1.39
 epsilon**=2
 
-# basis0.plot(np.real(epsilon), ax=basis1.draw(),colorbar=True).show()
+pml = basis_pml.project(lambda x: 1+5j*(np.clip(np.abs(x[1])-height+pml, 0, np.inf)/pml)**2, dtype=np.complex64)
+
+basis0.plot(np.real(epsilon), ax=basis1.draw(),colorbar=True).show()
+basis_pml.plot(np.imag(pml), ax=basis1.draw(),colorbar=True).show()
 
 @BilinearForm(dtype=np.complex64)
 def A(phi, v, w):
-    return -dot(grad(phi), grad(v)) + k0**2 * w.epsilon * phi * v
+    return -d(phi)[0] * d(v)[0] - d(phi)[1] * d(v)[1] / w.pml**2 + k0**2 * w.epsilon * phi * v
 
 @BilinearForm(dtype=np.complex64)
 def B(phi, v, w):
@@ -111,12 +125,12 @@ import scipy.sparse
 
 pep = SLEPc.PEP().create()
 
-A = A.assemble(basis_vec, epsilon=basis0.interpolate(epsilon))+asm(penalty, fbases, fbases)+asm(penalty2, fbases2, fbases2)
+A = A.assemble(basis_vec, epsilon=basis0.interpolate(epsilon), pml=basis_pml.interpolate(pml))+asm(penalty, fbases, fbases)#+asm(penalty2, fbases2, fbases2)
 B= B.assemble(basis_vec)
 C = C.assemble(basis_vec)
-mats = [PETSc.Mat().createAIJ(size=K.shape, csr=(K.indptr, K.indices, K.data)) for K in (C,B,A)]
+mats = [PETSc.Mat().createAIJ(size=K.shape, csr=(K.indptr, K.indices, K.data)) for K in (A,B,C)]
 pep.setOperators(mats)
-pep.setDimensions(4)
+pep.setDimensions(basis_vec.N*2)
 
 nev, ncv, mpd = pep.getDimensions()
 print("")
@@ -125,8 +139,8 @@ print("Number of requested eigenvalues: %i" % nev)
 pep.setTarget(1/k0)
 print('target', 1/k0)
 #pep.getST().setType((SLEPc.ST.Type.SINVERT))
-pep.setWhichEigenpairs(SLEPc.PEP.Which.TARGET_MAGNITUDE)
-pep.setType(SLEPc.PEP.Type.JD)
+pep.setWhichEigenpairs(SLEPc.PEP.Which.LARGEST_MAGNITUDE)
+#pep.setType(SLEPc.PEP.Type.JD)
 #pep.setProblemType(SLEPc.PEP.ProblemType.GENERAL)
 print('set')
 def monitor(eps, its, nconv, eig, err):
@@ -142,11 +156,12 @@ xs = []
 
 for i in range(nconv):
     k = pep.getEigenpair(i, xr, xi)
-    print(k)
+    if np.abs(np.real(k))<8.8:
+        continue
     error = pep.computeError(i)
     
-    print("%9f%+9f j    %12g" % (k.real, k.imag, error))
-    ks.append(1/k)
+    #print("%9f%+9f j    %12g" % (k.real, k.imag, error))
+    ks.append(k)
     xs.append(np.array(xr))
 
 ks = np.array(ks)
@@ -181,8 +196,6 @@ idx = np.abs(np.abs(ks)).argsort()[::1]
 ks = ks[idx]
 xs = xs[:,idx]
 
-print(ks)
-
 plt.plot(np.real(ks))
 plt.plot(np.imag(ks))
 plt.show()
@@ -190,12 +203,22 @@ plt.show()
 #phis, basis_phi), (k_phis, basis_k_phi) = basis_vec.split(xs)
 
 for i in range(xs.shape[-1]):
-    #fig, ax = plt.subplots()
-    ax = basis1.draw()
-    ax.set_aspect(1)
-    ax.set_title(f'{ks[i]}')
-    basis_vec.mesh.draw(ax=ax, boundaries=True, boundaries_only=True)
-    for subdomain in basis_vec.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
-        basis_vec.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
-    basis_vec.plot(np.real(xs[...,i]), shading='gouraud', ax=ax, colorbar=True).show()
-basis_vec.plot(np.imag(xs[...,150]), ax=basis1.draw(), shading='gouraud').show()
+    fig, axs = plt.subplots(1,10,figsize=(10,4))
+    plt.title(f'{ks[i]}')
+    #ax = basis1.draw()
+
+    vminmax = np.max(np.abs(basis_vec.interpolate(xs[...,i])))
+    for j,ax in enumerate(axs):
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
+        ax.set_axis_off()
+        #ax.set_aspect(1)
+        basis_vec.mesh.draw(ax=ax, boundaries=True, boundaries_only=True)
+
+        phases = basis_vec.project(lambda x: np.exp(1j*ks[i]*(x[0]+j*a)), dtype=np.complex64)
+
+        #for subdomain in basis_vec.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
+        #    basis_vec.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
+        basis_vec.plot(np.imag(xs[...,i]*phases), shading='gouraud', ax=ax, vmin=-vminmax, vmax=vminmax, cmap='seismic')
+    fig.subplots_adjust(wspace=0, hspace=0)
+    plt.show()
