@@ -72,6 +72,30 @@ def solver_eigen_slepc(**kwargs):
 
     return solver
 
-from petsc4py import PETSc
-from slepc4py import SLEPc
-print(dir(SLEPc.EPS.Type))
+if __name__ == '__main__':
+    from petsc4py import PETSc
+    from slepc4py import SLEPc
+
+    import scipy.sparse
+
+    pep = SLEPc.PEP().create()
+
+    A = scipy.sparse.csr_array(([24.], ([0], [0])), shape=(1, 1), dtype=np.complex64)
+    B= scipy.sparse.csr_array(([10.], ([0], [0])), shape=(1, 1), dtype=np.complex64)
+    C = scipy.sparse.csr_array(([1.], ([0], [0])), shape=(1, 1), dtype=np.complex64)
+    mats = [PETSc.Mat().createAIJ(size=K.shape, csr=(K.indptr, K.indices, K.data)) for K in (A,B,C)]
+
+    pep.setOperators(mats)
+    print('set')
+    pep.solve()
+    print(nconv := pep.getConverged())
+
+    xr, xi = mats[0].createVecs()
+
+    for i in range(nconv):
+        k = pep.getEigenpair(i, xr, xi)
+        error = pep.computeError(i)
+        
+        print("%9f%+9f j    %12g" % (k.real, k.imag, error))
+        print(np.array(xr))
+        
