@@ -104,6 +104,7 @@ xs = xs[:,idx]
 print(ks)
 
 plt.plot(np.real(ks))
+plt.plot(np.imag(ks))
 plt.show()
 
 (phis, basis_phi), (k_phis, basis_k_phi) = basis_vec.split(xs)
