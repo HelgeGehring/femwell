@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 from skfem import *
 from skfem.helpers import *
+from skfem.utils import mpc
 from skfem.io import from_meshio
 import shapely
 
@@ -21,10 +22,6 @@ pml = 3
 
 wavelength = 1
 k0 = 2*np.pi/wavelength
-#k0 = .75/a
-print(k0)
-
-print(k0, k0*a)
 
 left = shapely.LineString([(0, y) for y in np.linspace(-height, height, 2)])
 right = shapely.LineString([(a, y) for y in np.linspace(-height, height, 2)])
@@ -35,7 +32,6 @@ box = shapely.box(0,-height,a,height)
 structure = shapely.box(0,-b/2,a,b/2)
 structure1 = shapely.box(0,height-slab,a,height)
 structure2 = shapely.box(0,-height+slab,a,-height)
-hole = shapely.box(a/4,-c/2,a/4*3,c/2)
 
 resolutions = {
     'structure': {'resolution':.1, 'distance':.1},
@@ -44,7 +40,6 @@ resolutions = {
 
 mesh = from_meshio(mesh_from_OrderedDict(OrderedDict(
     left=left, right=right, top=top, bottom=bottom,
-    #hole=hole,
     structure=structure,
     structure1=structure1,
     structure2=structure2,
@@ -55,23 +50,17 @@ basis_vec = Basis(mesh, ElementTriP1()*ElementTriP1())
 basis0 = basis_vec.with_element(ElementTriP0())
 basis1 = basis_vec.with_element(ElementTriP1())
 
-epsilon = basis0.zeros(dtype=np.complex64) + 1.39
-epsilon = basis0.project(lambda x: 1.45)
-#epsilon[basis0.get_dofs(elements='structure')] = 1.45
-#epsilon[basis0.get_dofs(elements='structure1')] = 1.45
-#epsilon[basis0.get_dofs(elements='structure2')] = 1.45
+epsilon = basis0.zeros(dtype=np.complex64) + 1.45
 epsilon[basis0.get_dofs(elements='box')] = 1.39
 epsilon**=2
-
 # basis0.plot(np.real(epsilon), ax=basis1.draw(),colorbar=True).show()
 
-
-pml = basis1.project(lambda x: (1j)*(np.clip(np.abs(x[1])-height+pml, 0, np.inf)/pml)**2, dtype=np.complex64)
+pml = basis1.project(lambda x: (.2j)*(np.clip(np.abs(x[1])-height+pml, 0, np.inf)/pml)**2, dtype=np.complex64)
 basis1.plot(np.real(pml),colorbar=True).show()
 
 @BilinearForm(dtype=np.complex64)
 def A(phi, k_phi, v, k_v, w):
-    return -d(phi)[0] * d(v)[0] - d(phi)[1] * d(v)[1] / (1+w.pml)**2 + k0**2 * (w.epsilon) * phi * v
+    return -d(phi)[0] * d(v)[0] - d(phi)[1] * d(v)[1] / (1)**2 + k0**2 * (w.epsilon+w.pml) * phi * v
 
 @BilinearForm(dtype=np.complex64)
 def B(phi, k_phi, v, k_v, w):
@@ -92,24 +81,6 @@ def I_phi(phi, k_phi, v, k_v, w):
 A = A.assemble(basis_vec, epsilon=basis0.interpolate(epsilon), pml=basis1.interpolate(pml)) + B.assemble(basis_vec) + I_k_phi.assemble(basis_vec)
 f = - C.assemble(basis_vec) + I_phi.assemble(basis_vec)
 
-# left = np.concatenate((basis_vec.get_dofs(facets='left').nodal['u^1'], basis_vec.get_dofs(facets='left').nodal['u^2']))
-# right = np.concatenate((basis_vec.get_dofs(facets='right').nodal['u^1'], basis_vec.get_dofs(facets='right').nodal['u^2']))
-
-# D = basis_vec.get_dofs({'top', 'bottom'}).all()
-
-# left = np.setdiff1d(left, D)
-# right = np.setdiff1d(right, D)
-
-# B = np.zeros((len(left), basis_vec.N))
-# B[range(len(left)), left] = 1
-# B[range(len(right)), right] = -1
-
-# A = bmat([[A, B.T],
-#           [B, None]], 'csr')
-# import scipy.sparse
-# f = bmat([[f, scipy.sparse.csr_array(np.empty((f.shape[0], len(left)), dtype=np.complex64))],
-#           [scipy.sparse.csr_array(np.empty((len(left),f.shape[1]), dtype=np.complex64)), None]], 'csr')
-
 
 def solver_dense(**kwargs):
     def solver(A,B):
@@ -117,30 +88,16 @@ def solver_dense(**kwargs):
         return scipy.linalg.eig(A.todense(),B.todense())
     return solver
 
+left = basis_vec.get_dofs(facets='left')
+right = basis_vec.get_dofs(facets='right')
+top = basis_vec.get_dofs(facets='top')
+bottom = basis_vec.get_dofs(facets='bottom')
 
-
-from skfem.multipoint import *
-
-
-T1, g1, I1 = multipoint(
-    basis_vec.get_dofs('left'),
-    (basis_vec.get_dofs('right'), [1]*len(basis_vec.get_dofs('right').flatten()))
-)
-T2, g2, I2 = multipoint(basis_vec.get_dofs('top')+basis_vec.get_dofs('bottom'), g= basis_vec.zeros())
-
-T, g = combine((T1, g1, I1), (T2, g2, I2))
-
-ks, xs = solve(T.T@A@T, T.T@f@T, solver=solver_dense())
-print(ks.shape, xs.shape)
-xs = T@xs
+ks, xs = solve(*mpc(A, f, M=left, S=np.concatenate((right, top, bottom))), solver=solver_dense())
 
 xs = xs[:basis_vec.N]
 
-#idx = np.abs(ks) < 1e10
-#ks = ks[idx]
-#xs = xs[:,idx]
-
-idx = np.abs(np.abs(ks)).argsort()[::1]   
+idx = np.abs(np.real(ks)).argsort()[::-1]   
 ks = ks[idx]
 xs = xs[:,idx]
 
@@ -153,27 +110,19 @@ plt.show()
 
 
 for i in range(xs.shape[-1]):
-    if np.abs(np.real(ks[i]))<8.7:
-        continue
-
     fig, axs = plt.subplots(1,10,figsize=(10,4))
     plt.title(f'{ks[i]}')
-    #ax = basis1.draw()
 
     vminmax = np.max(np.abs(basis_phi.interpolate(phis[...,i])))
     for j,ax in enumerate(axs):
-        #ax.set_xticklabels([])
+        ax.set_xticklabels([])
         if j > 0:
             ax.set_yticklabels([])
-        #ax.set_axis_off()
-        #ax.set_aspect(1)
+        ax.set_axis_off()
         basis_phi.mesh.draw(ax=ax, boundaries=True, boundaries_only=True)
 
         phases = basis_phi.project(lambda x: np.exp(1j*ks[i]*(x[0]+j*a)), dtype=np.complex64)
-
-        #for subdomain in basis_vec.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
-        #    basis_vec.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
-        phi_with_phase = basis_phi.project(basis_phi.interpolate(phis[...,i])*basis_phi.interpolate(phases), dtype=np.complex64)
+        phi_with_phase = basis_phi.project(basis_phi.interpolate(phis[...,i])*basis_phi.interpolate(phases), dtype=np.complex64) 
         basis_phi.plot(np.real(phi_with_phase), shading='gouraud', ax=ax, vmin=-vminmax, vmax=vminmax, cmap='seismic')
     fig.subplots_adjust(wspace=0, hspace=0)
     plt.show()
@@ -183,6 +132,6 @@ for i in range(phis.shape[-1]):
     #ax=basis1.draw()
     ax.set_title(f'{ks[i]}')
     phases = basis_phi.project(lambda x: np.exp(1j*ks[i]*(x[0])), dtype=np.complex64)
-    phi_with_phase = basis_phi.project(basis_phi.interpolate(phis[...,i])*basis_phi.interpolate(phase))
+    phi_with_phase = basis_phi.project(basis_phi.interpolate(phis[...,i]))
     basis_phi.plot(np.real(phases), ax=ax, shading='gouraud', colorbar=True).show()
 basis_phi.plot(np.imag(phis[...,150]), ax=basis1.draw(), shading='gouraud').show()
