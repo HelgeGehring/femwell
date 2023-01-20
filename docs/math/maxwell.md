@@ -306,6 +306,26 @@ which is used to calculate the potential for a given structure.
 Using {eq}`EdivPhi` the electric field can be calculated from the potential.
 
 
+## 2D Periodic
+
+From {eq}`maxwell_telegraph` we get for the transverse electric field $\Psi$ {cite}`Notaros2015`
+
+$$
+    \left( \partial_x^2 + \partial_y^2 + k_0^2 n^2(x,y) \right) \Psi(x,y) = 0
+$$
+
+with
+
+$$
+    \Psi(x,y) = \mathrm{e}^{\mathrm{i}kx}\Phi(x,y)
+$$
+
+leads to
+
+$$
+    \left( \partial_x^2 + \partial_y^2 + \mathrm{i}2k\partial_x - k^2 + k_0^2 n^2(x,y) \right) \Phi(x,y) = 0
+$$
+
 ## Bibliography
 
 ```{bibliography}
