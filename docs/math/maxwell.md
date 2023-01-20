@@ -251,7 +251,7 @@ $$
 $$
 
 ## Characteristic impedance
-`<https://ieeexplore.ieee.org/document/108320>`_
+https://ieeexplore.ieee.org/document/108320
 
 Power and current:
 
