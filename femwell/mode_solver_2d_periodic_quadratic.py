@@ -12,12 +12,12 @@ import shapely
 from mesh import mesh_from_OrderedDict
 from solver import solver_eigen_slepc
 
-height = 5.76/2+1
+height = 5.76/2+5
 a = .100
 b = .78
 c = .2
-slab = .920+1
-pml = 1
+slab = .920+5
+pml = 3
 
 wavelength = 1
 k0 = 2*np.pi/wavelength
@@ -52,7 +52,7 @@ mesh = from_meshio(mesh_from_OrderedDict(OrderedDict(
 ), resolutions=resolutions, filename='mesh.msh', default_resolution_max=.1))
 
 
-basis_vec = Basis(mesh, ElementTriP2())
+basis_vec = Basis(mesh, ElementTriP1())
 basis0 = basis_vec.with_element(ElementTriP0())
 basis1 = basis_vec.with_element(ElementTriP1())
 basis_pml = basis_vec.with_element(ElementTriP2())
