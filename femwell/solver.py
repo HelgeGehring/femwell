@@ -28,7 +28,13 @@ def solver_eigen_scipy_operator(**kwargs):
         from scipy.sparse.linalg import factorized
 
         M_inv = factorized(M)
-        return eigs(LinearOperator(K.shape, matvec=lambda v: M_inv(K @ v), dtype=np.complex64) , **params)
+        ks, xs = eigs(LinearOperator(K.shape, matvec=lambda v: M_inv(K @ v), dtype=np.complex64) , **params)
+
+        idx = np.abs(np.real(ks)).argsort()[::-1]   
+        ks = ks[idx]
+        xs = xs[:, idx]
+
+        return ks, xs
 
     return solver
 

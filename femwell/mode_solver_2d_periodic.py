@@ -88,12 +88,6 @@ bottom = basis_vec.get_dofs(facets='bottom')
 
 ks, xs = solve(*mpc(-A, -f, M=left, S=np.concatenate((right, top, bottom))), solver=solver_eigen_scipy_operator(k=10, which='LM'))
 
-xs = xs[:basis_vec.N]
-
-idx = np.abs(np.real(ks)).argsort()[::-1]   
-ks = ks[idx]
-xs = xs[:,idx]
-
 print(ks)
 
 plt.plot(np.real(ks))
