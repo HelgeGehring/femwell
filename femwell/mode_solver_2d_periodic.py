@@ -87,7 +87,6 @@ top = basis_vec.get_dofs(facets='top')
 bottom = basis_vec.get_dofs(facets='bottom')
 
 ks, xs = solve(*mpc(-A, -f, M=left, S=np.concatenate((right, top, bottom))), solver=solver_eigen_scipy_operator(k=10, which='LM'))
-print(xs.dtype)
 
 xs = xs[:basis_vec.N]
 
