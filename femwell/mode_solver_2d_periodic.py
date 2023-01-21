@@ -11,7 +11,7 @@ from skfem.io import from_meshio
 import shapely
 
 from mesh import mesh_from_OrderedDict
-from solver import solver_eigen_slepc
+from solver import solver_eigen_scipy_operator
 
 height = 5.76/2+5
 a = .100
@@ -60,7 +60,7 @@ basis1.plot(np.real(pml),colorbar=True).show()
 
 @BilinearForm(dtype=np.complex64)
 def A(phi, k_phi, v, k_v, w):
-    return -d(phi)[0] * d(v)[0] - d(phi)[1] * d(v)[1] / (1)**2 + k0**2 * (w.epsilon+w.pml) * phi * v
+    return -d(phi)[0] * d(v)[0] - d(phi)[1] * d(v)[1] + k0**2 * (w.epsilon+w.pml) * phi * v
 
 @BilinearForm(dtype=np.complex64)
 def B(phi, k_phi, v, k_v, w):
@@ -81,19 +81,13 @@ def I_phi(phi, k_phi, v, k_v, w):
 A = A.assemble(basis_vec, epsilon=basis0.interpolate(epsilon), pml=basis1.interpolate(pml)) + B.assemble(basis_vec) + I_k_phi.assemble(basis_vec)
 f = - C.assemble(basis_vec) + I_phi.assemble(basis_vec)
 
-
-def solver_dense(**kwargs):
-    def solver(A,B):
-        import scipy.linalg
-        return scipy.linalg.eig(A.todense(),B.todense())
-    return solver
-
 left = basis_vec.get_dofs(facets='left')
 right = basis_vec.get_dofs(facets='right')
 top = basis_vec.get_dofs(facets='top')
 bottom = basis_vec.get_dofs(facets='bottom')
 
-ks, xs = solve(*mpc(A, f, M=left, S=np.concatenate((right, top, bottom))), solver=solver_dense())
+ks, xs = solve(*mpc(-A, -f, M=left, S=np.concatenate((right, top, bottom))), solver=solver_eigen_scipy_operator(k=10, which='LM'))
+print(xs.dtype)
 
 xs = xs[:basis_vec.N]
 
@@ -134,5 +128,5 @@ for i in range(phis.shape[-1]):
     ax.set_title(f'{ks[i]}')
     phases = basis_phi.project(lambda x: np.exp(1j*ks[i]*(x[0])), dtype=np.complex64)
     phi_with_phase = basis_phi.project(basis_phi.interpolate(phis[...,i]))
-    basis_phi.plot(np.real(phases), ax=ax, shading='gouraud', colorbar=True).show()
+    basis_phi.plot(np.real(phi_with_phase), ax=ax, shading='gouraud', colorbar=True).show()
 basis_phi.plot(np.imag(phis[...,150]), ax=basis1.draw(), shading='gouraud').show()

@@ -1,5 +1,37 @@
 import numpy as np
 
+def solver_dense(**kwargs):
+    def solver(A, B):
+        import scipy.linalg
+        return scipy.linalg.eig(A.todense(), B.todense())
+    return solver
+
+def solver_eigen_scipy_operator(**kwargs):
+    """Solve generalized eigenproblem using SciPy (ARPACK).
+
+    Returns
+    -------
+    EigenSolver
+        A solver function that can be passed to :func:`solve`.
+
+    """
+    params = {
+        'sigma': 10,
+        'k': 5,
+    }
+    params.update(kwargs)
+
+    def solver(K, M, **solve_time_kwargs):
+        params.update(solve_time_kwargs)
+        from scipy.sparse.linalg import eigs
+        from scipy.sparse.linalg import LinearOperator
+        from scipy.sparse.linalg import factorized
+
+        M_inv = factorized(M)
+        return eigs(LinearOperator(K.shape, matvec=lambda v: M_inv(K @ v), dtype=np.complex64) , **params)
+
+    return solver
+
 def solver_eigen_slepc(**kwargs):
     params = {
         'sigma': None,
@@ -36,15 +68,6 @@ def solver_eigen_slepc(**kwargs):
 
         params.update(solve_time_kwargs)
 
-
-        filled_spots = set(zip(K.tocoo().row, K.tocoo().col))
-        for i in range(K.shape[0]):
-            if (i,i) not in filled_spots:
-                K[i,i]=0
-        filled_spots = set(zip(M.tocoo().row, M.tocoo().col))
-        for i in range(K.shape[0]):
-            if (i,i) not in filled_spots:
-                M[i,i]=0
 
         K_ = PETSc.Mat().createAIJ(size=K.shape, csr=(K.indptr, K.indices, K.data))
         M_ = PETSc.Mat().createAIJ(size=M.shape, csr=(M.indptr, M.indices, M.data))
