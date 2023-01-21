@@ -44,6 +44,11 @@ def compute_modes(basis_epsilon_r, epsilon_r, wavelength, mu_r, num_modes, order
                          solver=solver_eigen_scipy(k=num_modes, sigma=k0 ** 2 * np.max(epsilon_r) ** 2))
     else:
         lams, xs = solve(-A, -B, solver=solver_eigen_scipy(k=num_modes, sigma=k0 ** 2 * np.max(epsilon_r) ** 2))
+    
+    idx = np.abs(np.real(lams)).argsort()[::-1]   
+    lams = lams[idx]
+    xs = xs[:, idx]
+
     xs = xs.T
     xs[:, basis.split_indices()[1]] /= 1j * np.sqrt(lams[:, np.newaxis])  # undo the scaling E_3,new = beta * E_3
 
