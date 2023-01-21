@@ -18,6 +18,7 @@ def solver_eigen_scipy_operator(**kwargs):
     params = {
         'sigma': 10,
         'k': 5,
+        'which': 'LR'
     }
     params.update(kwargs)
 
@@ -30,9 +31,10 @@ def solver_eigen_scipy_operator(**kwargs):
         M_inv = factorized(M)
         ks, xs = eigs(LinearOperator(K.shape, matvec=lambda v: M_inv(K @ v), dtype=np.complex64) , **params)
 
-        idx = np.abs(np.real(ks)).argsort()[::-1]   
-        ks = ks[idx]
-        xs = xs[:, idx]
+        if params['which'] == 'LR':
+            idx = np.abs(np.real(ks)).argsort()[::-1]   
+            ks = ks[idx]
+            xs = xs[:, idx]
 
         return ks, xs
 
