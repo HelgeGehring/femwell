@@ -30,14 +30,14 @@ jobs:
           source $VENV
           pip install git+https://github.com/executablebooks/jupyter-book.git@update-myst-nb
           pip install --upgrade git+https://github.com/kinnala/scikit-fem.git
-      - name: Install slepc4py
-        run: |
-          source $VENV
-          export PETSC_CONFIGURE_OPTIONS="--with-scalar-type=complex"
-          pip install petsc
-          pip install petsc4py
-          pip install slepc
-          pip install slepc4py
+      #- name: Install slepc4py
+      #  run: |
+      #    source $VENV
+      #    export PETSC_CONFIGURE_OPTIONS="--with-scalar-type=complex"
+      #    pip install petsc
+      #    pip install petsc4py
+      #    pip install slepc
+      #    pip install slepc4py
       - name: Make docs
         run: |
           source $VENV

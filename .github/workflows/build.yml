@@ -35,14 +35,14 @@ jobs:
           poetry install --no-interaction --no-root
           source $VENV
           pip install --upgrade git+https://github.com/kinnala/scikit-fem.git
-      - name: Install slepc4py
-        run: |
-          source $VENV
-          export PETSC_CONFIGURE_OPTIONS="--with-scalar-type=complex"
-          pip install petsc
-          pip install petsc4py
-          pip install slepc
-          pip install slepc4py
+      #- name: Install slepc4py
+      #  run: |
+      #    source $VENV
+      #    export PETSC_CONFIGURE_OPTIONS="--with-scalar-type=complex"
+      #    pip install petsc
+      #    pip install petsc4py
+      #    pip install slepc
+      #    pip install slepc4py
       - name: Lint with flake8
         run: |
           source $VENV
