@@ -47,20 +47,19 @@ mesh = from_meshio(mesh_from_OrderedDict(OrderedDict(
 ), resolutions=resolutions, filename='mesh.msh', default_resolution_max=.1))
 
 basis_vec = Basis(mesh, ElementTriP1()*ElementTriP1())
-basis0 = basis_vec.with_element(ElementTriP0())
-basis1 = basis_vec.with_element(ElementTriP1())
+basis0 = basis_vec.with_element(ElementDG(ElementTriP1()))
 
 epsilon_r = basis0.zeros(dtype=np.complex64) + 1.45
 epsilon_r[basis0.get_dofs(elements='box')] = 1.39
 epsilon_r**=2
-# basis0.plot(np.real(epsilon), ax=basis1.draw(),colorbar=True).show()
+basis0.plot(np.real(epsilon_r), ax=mesh.draw(),colorbar=True).show()
+basis0.plot(np.imag(epsilon_r), ax=mesh.draw(),colorbar=True).show()
 
-pml = basis1.project(lambda x: (.2j)*(np.clip(np.abs(x[1])-height+pml, 0, np.inf)/pml)**2, dtype=np.complex64)
-basis1.plot(np.real(pml),colorbar=True).show()
+epsilon_r += basis0.project(lambda x: (.2j)*(np.clip(np.abs(x[1])-height+pml, 0, np.inf)/pml)**2, dtype=np.complex64)
 
 @BilinearForm(dtype=np.complex64)
 def A(phi, k_phi, v, k_v, w):
-    return -d(phi)[0] * d(v)[0] - d(phi)[1] * d(v)[1] + k0**2 * (w.epsilon+w.pml) * phi * v
+    return -d(phi)[0] * d(v)[0] - d(phi)[1] * d(v)[1] + k0**2 * (w.epsilon) * phi * v
 
 @BilinearForm(dtype=np.complex64)
 def B(phi, k_phi, v, k_v, w):
@@ -78,7 +77,7 @@ def I_k_phi(phi, k_phi, v, k_v, w):
 def I_phi(phi, k_phi, v, k_v, w):
     return phi * k_v
 
-A = A.assemble(basis_vec, epsilon=basis0.interpolate(epsilon_r), pml=basis1.interpolate(pml)) + B.assemble(basis_vec) + I_k_phi.assemble(basis_vec)
+A = A.assemble(basis_vec, epsilon=basis0.interpolate(epsilon_r)) + B.assemble(basis_vec) + I_k_phi.assemble(basis_vec)
 f = - C.assemble(basis_vec) + I_phi.assemble(basis_vec)
 
 left = basis_vec.get_dofs(facets='left')
@@ -98,28 +97,13 @@ plt.show()
 
 
 for i in range(xs.shape[-1]):
-    fig, axs = plt.subplots(1,10,figsize=(10,4))
+    fig, ax = plt.subplots(1,1,figsize=(10,4))
     plt.title(f'{ks[i]}')
-
     vminmax = np.max(np.abs(basis_phi.interpolate(phis[...,i])))
-    for j,ax in enumerate(axs):
-        ax.set_xticklabels([])
-        if j > 0:
-            ax.set_yticklabels([])
-        ax.set_axis_off()
-        basis_phi.mesh.draw(ax=ax, boundaries=True, boundaries_only=True)
 
-        phases = basis_phi.project(lambda x: np.exp(1j*ks[i]*(x[0]+j*a)), dtype=np.complex64)
+
+    for i_plot in range(10):
+        phases = basis_phi.project(lambda x: np.exp(1j*ks[i]*(x[0]+i_plot*a)), dtype=np.complex64)
         phi_with_phase = basis_phi.project(basis_phi.interpolate(phis[...,i])*basis_phi.interpolate(phases), dtype=np.complex64) 
-        basis_phi.plot(np.real(phi_with_phase), shading='gouraud', ax=ax, vmin=-vminmax, vmax=vminmax, cmap='seismic')
-    fig.subplots_adjust(wspace=0, hspace=0)
+        im = ax.tripcolor(mesh.p[0]+i_plot*a, mesh.p[1], mesh.t.T, np.real(phi_with_phase), cmap='seismic', shading='gouraud', vmin=-vminmax, vmax=vminmax)
     plt.show()
-
-for i in range(phis.shape[-1]):
-    fig, ax = plt.subplots()
-    #ax=basis1.draw()
-    ax.set_title(f'{ks[i]}')
-    phases = basis_phi.project(lambda x: np.exp(1j*ks[i]*(x[0])), dtype=np.complex64)
-    phi_with_phase = basis_phi.project(basis_phi.interpolate(phis[...,i]))
-    basis_phi.plot(np.real(phi_with_phase), ax=ax, shading='gouraud', colorbar=True).show()
-basis_phi.plot(np.imag(phis[...,150]), ax=basis1.draw(), shading='gouraud').show()
