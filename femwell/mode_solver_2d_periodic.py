@@ -14,7 +14,7 @@ from mesh import mesh_from_OrderedDict
 from solver import solver_eigen_scipy_operator
 
 height = 5.76/2+5
-a = .100
+a = .010
 b = .78
 c = .2
 slab = .920+5
@@ -44,7 +44,7 @@ mesh = from_meshio(mesh_from_OrderedDict(OrderedDict(
     structure1=structure1,
     structure2=structure2,
     box=box,
-), resolutions=resolutions, filename='mesh.msh', default_resolution_max=.1))
+), resolutions=resolutions, filename='mesh.msh', default_resolution_max=.05))
 
 basis_vec = Basis(mesh, ElementTriP1()*ElementTriP1())
 basis0 = basis_vec.with_element(ElementDG(ElementTriP1()))
@@ -55,7 +55,7 @@ epsilon_r**=2
 basis0.plot(np.real(epsilon_r), ax=mesh.draw(),colorbar=True).show()
 basis0.plot(np.imag(epsilon_r), ax=mesh.draw(),colorbar=True).show()
 
-epsilon_r += basis0.project(lambda x: (.2j)*(np.clip(np.abs(x[1])-height+pml, 0, np.inf)/pml)**2, dtype=np.complex64)
+epsilon_r += basis0.project(lambda x: (.5j)*(np.clip(np.abs(x[1])-height+pml, 0, np.inf)/pml)**2, dtype=np.complex64)
 
 @BilinearForm(dtype=np.complex64)
 def A(phi, k_phi, v, k_v, w):
@@ -86,6 +86,7 @@ top = basis_vec.get_dofs(facets='top')
 bottom = basis_vec.get_dofs(facets='bottom')
 
 ks, xs = solve(*mpc(-A, -f, M=left, S=np.concatenate((right, top, bottom))), solver=solver_eigen_scipy_operator(k=10, which='LM', sigma=k0 * epsilon_r.real.max()))
+(phis, basis_phi), (k_phis, basis_k_phi) = basis_vec.split(xs)
 
 print(ks)
 
@@ -93,7 +94,7 @@ plt.plot(np.real(ks))
 plt.plot(np.imag(ks))
 plt.show()
 
-(phis, basis_phi), (k_phis, basis_k_phi) = basis_vec.split(xs)
+
 
 
 for i in range(xs.shape[-1]):
@@ -101,9 +102,10 @@ for i in range(xs.shape[-1]):
     plt.title(f'{ks[i]}')
     vminmax = np.max(np.abs(basis_phi.interpolate(phis[...,i])))
 
-
-    for i_plot in range(10):
+    for i_plot in range(100):
         phases = basis_phi.project(lambda x: np.exp(1j*ks[i]*(x[0]+i_plot*a)), dtype=np.complex64)
         phi_with_phase = basis_phi.project(basis_phi.interpolate(phis[...,i])*basis_phi.interpolate(phases), dtype=np.complex64) 
         im = ax.tripcolor(mesh.p[0]+i_plot*a, mesh.p[1], mesh.t.T, np.real(phi_with_phase), cmap='seismic', shading='gouraud', vmin=-vminmax, vmax=vminmax)
+        ax.set_aspect(1)
     plt.show()
+    
