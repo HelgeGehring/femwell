@@ -34,3 +34,6 @@ flake8 = "*"
 [tool.poetry.group.docs.dependencies]
 tqdm = "*"
 sphinx-book-theme = "*"
+
+[tool.autopep8]
+max_line_length = 120
