@@ -53,8 +53,8 @@ def solve_periodic(basis_epsilon_r, epsilon_r):
 
 def plot_periodic(k, a, basis_phi, phi, num, ax):
     vminmax = np.max(np.abs(basis_phi.interpolate(phi)))
-    for i_plot in range(100):
-        phases = basis_phi.project(lambda x: np.exp(1j*ks[i]*(x[0]+i_plot*a)), dtype=np.complex64)
+    for i_plot in range(num):
+        phases = basis_phi.project(lambda x: np.exp(1j*k*(x[0]+i_plot*a)), dtype=np.complex64)
         phi_with_phase = basis_phi.project(
             basis_phi.interpolate(phi)*basis_phi.interpolate(phases), dtype=np.complex64)
         im = ax.tripcolor(basis_phi.mesh.p[0]+i_plot*a, basis_phi.mesh.p[1], basis_phi.mesh.t.T, np.real(phi_with_phase),
