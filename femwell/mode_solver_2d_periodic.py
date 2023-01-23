@@ -50,9 +50,9 @@ basis_vec = Basis(mesh, ElementTriP1()*ElementTriP1())
 basis0 = basis_vec.with_element(ElementTriP0())
 basis1 = basis_vec.with_element(ElementTriP1())
 
-epsilon = basis0.zeros(dtype=np.complex64) + 1.45
-epsilon[basis0.get_dofs(elements='box')] = 1.39
-epsilon**=2
+epsilon_r = basis0.zeros(dtype=np.complex64) + 1.45
+epsilon_r[basis0.get_dofs(elements='box')] = 1.39
+epsilon_r**=2
 # basis0.plot(np.real(epsilon), ax=basis1.draw(),colorbar=True).show()
 
 pml = basis1.project(lambda x: (.2j)*(np.clip(np.abs(x[1])-height+pml, 0, np.inf)/pml)**2, dtype=np.complex64)
@@ -78,7 +78,7 @@ def I_k_phi(phi, k_phi, v, k_v, w):
 def I_phi(phi, k_phi, v, k_v, w):
     return phi * k_v
 
-A = A.assemble(basis_vec, epsilon=basis0.interpolate(epsilon), pml=basis1.interpolate(pml)) + B.assemble(basis_vec) + I_k_phi.assemble(basis_vec)
+A = A.assemble(basis_vec, epsilon=basis0.interpolate(epsilon_r), pml=basis1.interpolate(pml)) + B.assemble(basis_vec) + I_k_phi.assemble(basis_vec)
 f = - C.assemble(basis_vec) + I_phi.assemble(basis_vec)
 
 left = basis_vec.get_dofs(facets='left')
@@ -86,7 +86,7 @@ right = basis_vec.get_dofs(facets='right')
 top = basis_vec.get_dofs(facets='top')
 bottom = basis_vec.get_dofs(facets='bottom')
 
-ks, xs = solve(*mpc(-A, -f, M=left, S=np.concatenate((right, top, bottom))), solver=solver_eigen_scipy_operator(k=10, which='LM'))
+ks, xs = solve(*mpc(-A, -f, M=left, S=np.concatenate((right, top, bottom))), solver=solver_eigen_scipy_operator(k=10, which='LM', sigma=k0 * epsilon_r.real.max()))
 
 print(ks)
 
