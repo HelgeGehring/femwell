@@ -51,6 +51,18 @@ def solve_periodic(basis_epsilon_r, epsilon_r):
     return ks, basis_phi, phis
 
 
+def plot_periodic(k, a, basis_phi, phi, num, ax):
+    vminmax = np.max(np.abs(basis_phi.interpolate(phi)))
+    for i_plot in range(100):
+        phases = basis_phi.project(lambda x: np.exp(1j*ks[i]*(x[0]+i_plot*a)), dtype=np.complex64)
+        phi_with_phase = basis_phi.project(
+            basis_phi.interpolate(phi)*basis_phi.interpolate(phases), dtype=np.complex64)
+        im = ax.tripcolor(basis_phi.mesh.p[0]+i_plot*a, basis_phi.mesh.p[1], basis_phi.mesh.t.T, np.real(phi_with_phase),
+                          cmap='seismic', shading='gouraud', vmin=-vminmax, vmax=vminmax)
+        ax.set_aspect(1)
+    return im
+
+
 if __name__ == '__main__':
     height = 5.76/2+5
     a = .010
@@ -108,13 +120,5 @@ if __name__ == '__main__':
     for i, k in enumerate(ks):
         fig, ax = plt.subplots(1, 1, figsize=(10, 4))
         plt.title(f'{k}')
-        vminmax = np.max(np.abs(basis_phi.interpolate(phis[..., i])))
-
-        for i_plot in range(100):
-            phases = basis_phi.project(lambda x: np.exp(1j*ks[i]*(x[0]+i_plot*a)), dtype=np.complex64)
-            phi_with_phase = basis_phi.project(basis_phi.interpolate(
-                phis[..., i])*basis_phi.interpolate(phases), dtype=np.complex64)
-            im = ax.tripcolor(mesh.p[0]+i_plot*a, mesh.p[1], mesh.t.T, np.real(phi_with_phase),
-                              cmap='seismic', shading='gouraud', vmin=-vminmax, vmax=vminmax)
-            ax.set_aspect(1)
+        plot_periodic(k, a, basis_phi, phis[..., i], 100, ax)
         plt.show()
