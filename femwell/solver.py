@@ -27,8 +27,10 @@ def solver_eigen_scipy_operator(**kwargs):
         from scipy.sparse.linalg import eigs
         from scipy.sparse.linalg import LinearOperator
         from scipy.sparse.linalg import factorized
+        from scipy.sparse.linalg import splu
 
-        M_inv = factorized(M)
+        # M_inv = factorized(M)
+        M_inv = splu(M).solve
         ks, xs = eigs(LinearOperator(K.shape, matvec=lambda v: M_inv(K @ v), dtype=np.complex64) , **params)
 
         if params['which'] == 'LR':
