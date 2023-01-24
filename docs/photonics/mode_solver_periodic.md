@@ -12,3 +12,10 @@ kernelspec:
 :tags: [remove-stderr]
 :load: examples/bragg_filter.py
 ```
+
+## Grating coupler
+
+```{code-cell} ipython3
+:tags: [remove-stderr]
+:load: examples/grating_coupler.py
+```
