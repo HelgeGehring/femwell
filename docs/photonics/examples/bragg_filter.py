@@ -29,7 +29,7 @@ structure = shapely.box(0,-b/2,a,b/2)
 hole = shapely.box(a/4,-c/2,a/4*3,c/2)
 
 resolutions = {
-    'hole': {'resolution':.05, 'distance':1}
+    'hole': {'resolution':.1, 'distance':1}
 }
 
 mesh = from_meshio(mesh_from_OrderedDict(OrderedDict(

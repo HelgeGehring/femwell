@@ -15,8 +15,8 @@ from femwell.solver import solver_eigen_scipy_invert, solver_dense, solver_eigen
 
 def solve_periodic(basis_epsilon_r, epsilon_r, k0):
     fbases = [
-    FacetBasis(basis_epsilon_r.mesh, ElementTriP1()*ElementTriP1(), facets='left'),
-    FacetBasis(basis_epsilon_r.mesh, ElementTriP1()*ElementTriP1(), facets='right'),
+    FacetBasis(basis_epsilon_r.mesh, ElementTriP1(), facets='left'),
+    FacetBasis(basis_epsilon_r.mesh, ElementTriP1(), facets='right'),
     ]
     assert np.all(fbases[0].default_parameters()['x'][1] == fbases[1].default_parameters()['x'][1])
 
@@ -68,7 +68,8 @@ def plot_periodic(k, a, basis_phi, phi, num, ax):
         phases = basis_phi.project(lambda x: np.exp(1j*k*(x[0]+i_plot*a)), dtype=np.complex64)
         phi_with_phase = basis_phi.project(
             basis_phi.interpolate(phi)*basis_phi.interpolate(phases), dtype=np.complex64)
-        im = ax.tripcolor(basis_phi.mesh.p[0]+i_plot*a, basis_phi.mesh.p[1], basis_phi.mesh.t.T, np.real(phi_with_phase),
+        mesh, z = basis_phi.refinterp(np.real(phi_with_phase), nrefs=3)
+        im = ax.tripcolor(mesh.p[0]+i_plot*a, mesh.p[1], mesh.t.T, z,
                           cmap='seismic', shading='gouraud', vmin=-vminmax, vmax=vminmax)
         ax.set_aspect(1)
     return im
