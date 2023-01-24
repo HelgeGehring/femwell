@@ -10,11 +10,19 @@ from skfem.utils import mpc
 from skfem.io import from_meshio
 import shapely
 
-from mesh import mesh_from_OrderedDict
-from solver import solver_eigen_scipy_operator
+from femwell.solver import solver_eigen_scipy_operator, solver_dense, solver_eigen_slepc
 
 
-def solve_periodic(basis_epsilon_r, epsilon_r):
+def solve_periodic(basis_epsilon_r, epsilon_r, k0):
+    fbases = [
+    FacetBasis(basis_epsilon_r.mesh, ElementTriP1()*ElementTriP1(), facets='left'),
+    FacetBasis(basis_epsilon_r.mesh, ElementTriP1()*ElementTriP1(), facets='right'),
+    ]
+    assert np.all(fbases[0].default_parameters()['x'][1] == fbases[1].default_parameters()['x'][1])
+
+
+    basis_vec = Basis(basis_epsilon_r.mesh, ElementTriP1()*ElementTriP1())
+
     @BilinearForm(dtype=np.complex64)
     def A(phi, k_phi, v, k_v, w):
         return -d(phi)[0] * d(v)[0] - d(phi)[1] * d(v)[1] + k0**2 * (w.epsilon) * phi * v
@@ -44,8 +52,11 @@ def solve_periodic(basis_epsilon_r, epsilon_r):
     top = basis_vec.get_dofs(facets='top')
     bottom = basis_vec.get_dofs(facets='bottom')
 
-    ks, xs = solve(*mpc(-A, -f, M=left, S=np.concatenate((right, top, bottom))),
-                   solver=solver_eigen_scipy_operator(k=10, which='LM', sigma=k0 * epsilon_r.real.max()))
+    left = np.setdiff1d(left, top+bottom)
+    right = np.setdiff1d(right, top+bottom)
+
+    ks, xs = solve(*mpc(A, f, M=left, S=np.concatenate((right, top, bottom))),
+                   solver=solver_dense(k=10, which='LM', sigma=k0 * np.sqrt(epsilon_r.real.max())))
     (phis, basis_phi), (k_phis, basis_k_phi) = basis_vec.split(xs)
 
     return ks, basis_phi, phis
@@ -64,6 +75,8 @@ def plot_periodic(k, a, basis_phi, phi, num, ax):
 
 
 if __name__ == '__main__':
+    from femwell.mesh import mesh_from_OrderedDict
+    
     height = 5.76/2+5
     a = .010
     b = .78
@@ -109,8 +122,7 @@ if __name__ == '__main__':
     epsilon_r += basis_epsilon_r.project(lambda x: (.5j) *
                                          (np.clip(np.abs(x[1])-height+pml, 0, np.inf)/pml)**2, dtype=np.complex64)
 
-    ks, basis_phi, phis = solve_periodic(basis_epsilon_r, epsilon_r)
-
+    ks, basis_phi, phis = solve_periodic(basis_epsilon_r, epsilon_r, k0)
     print(ks)
 
     plt.plot(np.real(ks))
