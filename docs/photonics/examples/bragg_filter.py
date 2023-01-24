@@ -19,8 +19,8 @@ c = .2
 
 k0 = .7/a # 1.05/a
 
-left = shapely.LineString([(0, y) for y in np.linspace(-height, height, 2)])
-right = shapely.LineString([(a, y) for y in np.linspace(-height, height, 2)])
+left = shapely.LineString([(0, y) for y in np.linspace(-height, height, 20)])
+right = shapely.LineString([(a, y) for y in np.linspace(-height, height, 20)])
 top = shapely.LineString([(x,height) for x in np.linspace(0, a, 2)])
 bottom = shapely.LineString([(x,-height) for x in np.linspace(0, a, 2)])
 
@@ -53,16 +53,18 @@ idx = np.abs(np.imag(ks*a)) < .5
 ks = ks[idx]
 phis = phis[:,idx]
 
-print(ks)
+#print(ks)
 
-plt.plot(np.real(ks))
-plt.plot(np.imag(ks))
-plt.show()
+#plt.plot(np.real(ks))
+#plt.plot(np.imag(ks))
+#plt.show()
 
 for i, k in enumerate(ks):
-    basis_phi.plot(np.real(phis[...,i]), shading='gouraud', colorbar=True, ax=mesh.draw()).show()
-    fig, axs = plt.subplots(1, 1)
+    fig, axs = plt.subplots(1, 2, figsize=(13,5), gridspec_kw={'width_ratios': [1, 10]})
+    mesh.draw(ax=axs[0], boundaries=True, boundaries_only=True)
+    basis_phi.plot(np.real(phis[...,i]), shading='gouraud', colorbar=True,ax=axs[0])
+    axs[0].set_aspect(1)
     plt.title(f'{k*a}')
     #axs[0].set_aspect(1)
-    plot_periodic(k, a, basis_phi, phis[..., i], 100, axs)
+    plot_periodic(k, a, basis_phi, phis[..., i], 10, axs[1])
     plt.show()
