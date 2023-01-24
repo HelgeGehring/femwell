@@ -3,7 +3,17 @@ import numpy as np
 def solver_dense(**kwargs):
     def solver(A, B):
         import scipy.linalg
-        return scipy.linalg.eig(A.todense(), B.todense())
+
+        ks, xs = scipy.linalg.eig(A.todense(), B.todense())
+
+        if kwargs['which'] == 'LM':
+            idx = np.abs(ks-kwargs['sigma']).argsort()
+            ks = ks[idx]
+            xs = xs[:, idx]
+        return ks, xs
+
+    
+
     return solver
 
 def solver_eigen_scipy_operator(**kwargs):
@@ -35,6 +45,10 @@ def solver_eigen_scipy_operator(**kwargs):
 
         if params['which'] == 'LR':
             idx = np.abs(np.real(ks)).argsort()[::-1]   
+            ks = ks[idx]
+            xs = xs[:, idx]
+        if params['which'] == 'LM':
+            idx = np.abs(np.abs(ks)-sigma).argsort()[::-1]   
             ks = ks[idx]
             xs = xs[:, idx]
 
