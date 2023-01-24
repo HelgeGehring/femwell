@@ -6,6 +6,8 @@ kernelspec:
 
 # Solve modes of periodic structures
 
+Reproducing the examples of {cite}`Notaros2015`.
+
 ## Bragg filters
 
 ```{code-cell} ipython3
@@ -18,4 +20,11 @@ kernelspec:
 ```{code-cell} ipython3
 :tags: [remove-stderr]
 :load: examples/grating_coupler.py
+```
+
+## Bibliography
+
+```{bibliography}
+:style: unsrt
+:filter: docname in docnames
 ```
