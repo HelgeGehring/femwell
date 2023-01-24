@@ -34,14 +34,46 @@ def solver_eigen_scipy_operator(**kwargs):
 
     def solver(K, M, **solve_time_kwargs):
         params.update(solve_time_kwargs)
+        import scipy.sparse.linalg
         from scipy.sparse.linalg import eigs
         from scipy.sparse.linalg import LinearOperator
         from scipy.sparse.linalg import factorized
         from scipy.sparse.linalg import splu
 
-        # M_inv = factorized(M)
         M_inv = splu(M).solve
         ks, xs = eigs(LinearOperator(K.shape, matvec=lambda v: M_inv(K @ v), dtype=np.complex64) , **params)
+
+        if params['which'] == 'LR':
+            idx = np.abs(np.real(ks)).argsort()[::-1]   
+            ks = ks[idx]
+            xs = xs[:, idx]
+
+        return ks, xs
+
+    return solver
+
+def solver_eigen_scipy_invert(**kwargs):
+    """Solve generalized eigenproblem using SciPy (ARPACK).
+
+    Returns
+    -------
+    EigenSolver
+        A solver function that can be passed to :func:`solve`.
+
+    """
+    params = {
+        'sigma': 10,
+        'k': 5,
+        'which': 'LR'
+    }
+    params.update(kwargs)
+
+    def solver(K, M, **solve_time_kwargs):
+        params.update(solve_time_kwargs)
+        import scipy.sparse.linalg
+        A = scipy.sparse.linalg.inv(M)@K
+
+        ks, xs = scipy.sparse.linalg.eigs(A , **params)
 
         if params['which'] == 'LR':
             idx = np.abs(np.real(ks)).argsort()[::-1]   
