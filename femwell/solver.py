@@ -47,10 +47,6 @@ def solver_eigen_scipy_operator(**kwargs):
             idx = np.abs(np.real(ks)).argsort()[::-1]   
             ks = ks[idx]
             xs = xs[:, idx]
-        if params['which'] == 'LM':
-            idx = np.abs(np.abs(ks)-sigma).argsort()[::-1]   
-            ks = ks[idx]
-            xs = xs[:, idx]
 
         return ks, xs
 
