@@ -195,6 +195,8 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title='E', directi
     fig, axs = plt.subplots(*rc, subplot_kw=dict(aspect=1))
     for ax in axs:
         basis.mesh.draw(ax=ax, boundaries=True, boundaries_only=True)
+        for subdomain in basis.mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
+            basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
 
     for ax, component in zip(axs, 'xyz'):
         ax.set_title(f'${title}_{component}$')
