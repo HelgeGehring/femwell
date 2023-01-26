@@ -13,5 +13,5 @@ dependencies:
       - pygmsh
       - meshio
       - tqdm
-      - git+https://github.com/HelgeGehring/scikit-fem.git@add-utils-mpc
+      - git+https://github.com/HelgeGehring/scikit-fem.git@utils-mpc-generalized
       - git+https://github.com/HelgeGehring/femwell.git

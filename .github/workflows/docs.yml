@@ -30,7 +30,7 @@ jobs:
           source $VENV
           pip install git+https://github.com/executablebooks/jupyter-book.git@update-myst-nb
           pip uninstall -y scikit-fem
-          pip install --upgrade git+https://github.com/HelgeGehring/scikit-fem.git@add-utils-mpc
+          pip install --upgrade git+https://github.com/HelgeGehring/scikit-fem.git@utils-mpc-generalized
       #- name: Install slepc4py
       #  run: |
       #    source $VENV
