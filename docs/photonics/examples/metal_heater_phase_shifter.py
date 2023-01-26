@@ -63,7 +63,7 @@ resolutions = dict(
 
 mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=.6))
 
-currents = np.linspace(0.007, 10e-3, 10) / polygons['heater'].area
+currents = np.linspace(0.0, 10e-3, 10) / polygons['heater'].area
 neffs = []
 
 for current in tqdm(currents):
@@ -94,7 +94,7 @@ for current in tqdm(currents):
     neffs.append(np.real(lams[0]))
 
 print(f'Phase shift: {2 * np.pi / 1.55 * (neffs[-1] - neffs[0]) * 320}')
-plt.xlabel('Power')
+plt.xlabel('Current (mA)')
 plt.ylabel('$n_{eff}$')
-plt.plot(currents, neffs)
+plt.plot(currents*1e3, neffs)
 plt.show()
