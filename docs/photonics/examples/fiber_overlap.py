@@ -3,7 +3,7 @@ from collections import OrderedDict
 import matplotlib.pyplot as plt
 import numpy as np
 import shapely.geometry
-from skfem import Basis, ElementTriP0, ElementTriP1, Functional, Mesh
+from skfem import Basis, ElementTriP0, ElementTriP1, Functional
 from skfem.io import from_meshio
 from tqdm import tqdm
 

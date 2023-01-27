@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from shapely.geometry import box
 from shapely.ops import clip_by_rect
-from skfem import Basis, ElementTriP0, Mesh
+from skfem import Basis, ElementTriP0
 from skfem.io.meshio import from_meshio
 from tqdm import tqdm
 

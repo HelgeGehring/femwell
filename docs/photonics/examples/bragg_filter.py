@@ -3,8 +3,7 @@ from collections import OrderedDict
 import matplotlib.pyplot as plt
 import numpy as np
 import shapely
-from skfem import *
-from skfem.helpers import *
+from skfem import Basis, ElementTriP0
 from skfem.io import from_meshio
 
 from femwell.mesh import mesh_from_OrderedDict

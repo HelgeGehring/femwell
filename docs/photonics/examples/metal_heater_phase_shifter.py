@@ -8,7 +8,7 @@ from skfem.io import from_meshio
 from tqdm import tqdm
 
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import compute_modes, plot_mode
+from femwell.mode_solver import compute_modes
 from femwell.thermal import solve_thermal
 
 # Simulating the TiN TOPS heater in https://doi.org/10.1364/OE.27.010456
@@ -96,6 +96,7 @@ for current in tqdm(currents):
 
     lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1)
 
+    # from femwell.mode_solver import plot_mode
     # plot_mode(basis, xs[0])
     # plt.show()
 

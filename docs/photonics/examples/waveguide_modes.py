@@ -5,7 +5,7 @@ import numpy as np
 import shapely
 import shapely.affinity
 from shapely.ops import clip_by_rect
-from skfem import Basis, ElementTriP0, Mesh
+from skfem import Basis, ElementTriP0
 from skfem.io.meshio import from_meshio
 
 from femwell.mesh import mesh_from_OrderedDict
