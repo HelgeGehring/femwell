@@ -1,7 +1,16 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from skfem import *
-from skfem.helpers import *
+from skfem import (
+    Basis,
+    BilinearForm,
+    ElementDG,
+    ElementTriP0,
+    ElementTriP1,
+    Mesh,
+    condense,
+    solve,
+)
+from skfem.helpers import grad, inner
 
 from femwell.mesh import mesh_from_OrderedDict
 
