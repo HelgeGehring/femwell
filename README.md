@@ -22,7 +22,7 @@ The documentation is lagging behind the state of code, so there's several featur
 - Eigenmodes of waveguides and determining their effective refractive index
 - Bragg grating cells
 - Grating coupler cells
-- Eigenmode of a coaxial cable and it's specific impedance
+- Eigenmode of a coaxial cable and its specific impedance
 - Eigenmodes of electric transmission lines and determining their propagation constant (in work)
 - Static thermal profiles
 - Transient thermal behavior
