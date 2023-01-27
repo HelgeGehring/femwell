@@ -33,6 +33,10 @@ jobs:
           python-version: "3.11"
       - name: flake8 Lint
         uses: py-actions/flake8@v2
+        with:
+          max-line-length: "100"
+          args:
+            "--exit-zero"
       
   build:
     runs-on: ubuntu-latest

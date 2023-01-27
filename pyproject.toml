@@ -37,6 +37,3 @@ sphinx-book-theme = "*"
 
 [tool.black]
 line-length = 100
-
-[tool.flake8]
-max-line-length = 100
