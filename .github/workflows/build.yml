@@ -14,14 +14,18 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  pre-commit:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
-      - uses: rickstaa/action-black@v1
-        with:
-          black_args: ". --check"
+      - uses: actions/setup-python@v4
+      - uses: pre-commit/action@v3.0.0
+      
+  build:
+    needs: [pre-commit]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
