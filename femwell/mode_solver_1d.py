@@ -1,5 +1,15 @@
-from skfem import *
-from skfem.helpers import *
+import numpy as np
+from skfem import (
+    Basis,
+    BilinearForm,
+    ElementLineP0,
+    ElementLineP1,
+    MeshLine,
+    condense,
+    solve,
+    solver_eigen_scipy_sym,
+)
+from skfem.helpers import dot, grad, inner
 
 mesh = MeshLine(np.linspace(-1, 1, 201))
 mesh = mesh.with_subdomains({"core": lambda p: abs(p[0]) < 0.11})
