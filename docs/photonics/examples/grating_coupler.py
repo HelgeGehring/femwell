@@ -47,7 +47,7 @@ structure = shapely.Polygon(
 )
 
 resolutions = {
-    #'structure': {'resolution':.03, 'distance':.5}
+    # 'structure': {'resolution':.03, 'distance':.5}
 }
 
 mesh = from_meshio(

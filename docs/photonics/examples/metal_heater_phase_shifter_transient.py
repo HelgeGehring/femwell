@@ -98,7 +98,12 @@ thermal_diffusivity_p0 *= 1e12  # 1e-12 -> conversion from m^2 -> um^2
 
 dt = 0.1e-5
 steps = 100
-current = lambda t: 0.007 / polygons["heater"].area * ((t < dt * steps / 10) + (t > dt * steps / 2))
+
+
+def current(t):
+    return 0.007 / polygons["heater"].area * ((t < dt * steps / 10) + (t > dt * steps / 2))
+
+
 basis, temperatures = solve_thermal_transient(
     basis0,
     thermal_conductivity_p0,
@@ -128,7 +133,8 @@ plt.show()
 #     fig, ax = plt.subplots(subplot_kw=dict(aspect=1))
 #     for subdomain in mesh.subdomains.keys() - {'gmsh:bounding_entities'}:
 #         mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
-#     basis.plot(temperatures[i], ax=ax, vmin=0, vmax=np.max(temperatures), shading='gouraud').show()
+#     basis.plot(temperatures[i], ax=ax, vmin=0, vmax=np.max(temperatures), shading='gouraud')
+#     plt.show()
 
 # Calculate modes
 
@@ -137,7 +143,7 @@ for temperature in tqdm(temperatures):
     # basis.plot(temperature, vmin=0, vmax=np.max(temperatures))
     # plt.show()
 
-    from femwell.mode_solver import compute_modes, plot_mode
+    from femwell.mode_solver import compute_modes
 
     temperature0 = basis0.project(basis.interpolate(temperature))
     epsilon = basis0.zeros() + (1.444 + 1.00e-5 * temperature0) ** 2
@@ -148,6 +154,7 @@ for temperature in tqdm(temperatures):
 
     lams, basis_modes, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1)
 
+    # from femwell.mode_solver import plot_mode
     # plot_mode(basis_modes, xs[0])
     # plt.show()
 
