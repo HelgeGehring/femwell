@@ -19,6 +19,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - uses: rickstaa/action-black@v1
+        with:
+          black_args: ". --check"
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
@@ -43,6 +46,9 @@ jobs:
       #    pip install petsc4py
       #    pip install slepc
       #    pip install slepc4py
+      - name: Lint with flake8
+        run: |
+
       - name: Lint with flake8
         run: |
           source $VENV
