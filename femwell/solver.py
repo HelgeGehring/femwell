@@ -154,7 +154,8 @@ if __name__ == "__main__":
     pep.setOperators(mats)
     print("set")
     pep.solve()
-    print(nconv := pep.getConverged())
+    nconv = pep.getConverged()
+    print(nconv)
 
     xr, xi = mats[0].createVecs()
 
