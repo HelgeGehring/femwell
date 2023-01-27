@@ -11,7 +11,7 @@ from skfem.io.meshio import from_meshio
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.mode_solver import compute_modes, plot_mode
 
-wg_width = 0.2
+wg_width = 1
 wg_thickness = 0.3
 core = shapely.geometry.box(-wg_width / 2, -wg_thickness / 2, +wg_width / 2, +wg_thickness / 2)
 env = shapely.affinity.scale(core.buffer(5, resolution=8), xfact=0.5)
