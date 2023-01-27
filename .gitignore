@@ -10,6 +10,7 @@ docs/_build
 *.png
 *.h5
 *.xdmf
+*.ipynb
 
 .vscode/
 *.iml
