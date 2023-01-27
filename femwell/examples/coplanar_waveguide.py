@@ -38,9 +38,7 @@ def mesh_waveguide(filename, wsim, hclad, hsi, wcore, hcore):
         core_interface={"resolution": 0.003, "distance": 1},
     )
 
-    return mesh_from_OrderedDict(
-        polygons, resolutions, filename=filename, default_resolution_max=1
-    )
+    return mesh_from_OrderedDict(polygons, resolutions, filename=filename, default_resolution_max=1)
 
 
 def mesh_waveguide_1(filename, wsim, hclad, hsi, wcore, hcore, gap):
@@ -72,16 +70,12 @@ def mesh_waveguide_1(filename, wsim, hclad, hsi, wcore, hcore, gap):
         core_r_interface={"resolution": 0.003, "distance": 1},
     )
 
-    return mesh_from_OrderedDict(
-        polygons, resolutions, filename=filename, default_resolution_max=1
-    )
+    return mesh_from_OrderedDict(polygons, resolutions, filename=filename, default_resolution_max=1)
 
 
 def mesh_coax(filename, radius_inner, radius_outer):
     core = shapely.Point(0, 0).buffer(radius_inner)
-    isolator2 = shapely.Point(0, 0).buffer(
-        (radius_outer + radius_inner) / 4, resolution=32
-    )
+    isolator2 = shapely.Point(0, 0).buffer((radius_outer + radius_inner) / 4, resolution=32)
     isolator = shapely.Point(0, 0).buffer(radius_outer)
 
     polygons = OrderedDict(
@@ -96,9 +90,7 @@ def mesh_coax(filename, radius_inner, radius_outer):
         isolator={"resolution": 0.5, "distance": 1},
     )
 
-    return mesh_from_OrderedDict(
-        polygons, resolutions, filename=filename, default_resolution_max=1
-    )
+    return mesh_from_OrderedDict(polygons, resolutions, filename=filename, default_resolution_max=1)
 
 
 if __name__ == "__main__":
@@ -106,9 +98,7 @@ if __name__ == "__main__":
 
     with tempfile.TemporaryDirectory() as tmpdirname:
         mesh_coax(radius_inner=0.512, radius_outer=2.23039, filename="mesh.msh")
-        mesh_coax(
-            radius_inner=0.512, radius_outer=2.23039, filename=tmpdirname + "/mesh.msh"
-        )
+        mesh_coax(radius_inner=0.512, radius_outer=2.23039, filename=tmpdirname + "/mesh.msh")
         mesh = Mesh.load(tmpdirname + "/mesh.msh")
 
     basis0 = Basis(mesh, ElementTriP0(), intorder=4)
@@ -145,8 +135,7 @@ if __name__ == "__main__":
         xbs = calculate_hfield(
             basis,
             xs[mode_i],
-            lams[mode_i]
-            * (2 * np.pi / (scipy.constants.speed_of_light / frequency * 1e3)),
+            lams[mode_i] * (2 * np.pi / (scipy.constants.speed_of_light / frequency * 1e3)),
             omega=2 * np.pi * frequency * 1e-3,
         )
 
@@ -158,9 +147,7 @@ if __name__ == "__main__":
             facet_basis = FacetBasis(
                 ht_basis.mesh, ht_basis.elem, facets=mesh.boundaries[conductor]
             )
-            current = abs(
-                current_form.assemble(facet_basis, H=facet_basis.interpolate(ht))
-            )
+            current = abs(current_form.assemble(facet_basis, H=facet_basis.interpolate(ht)))
             currents[conductors_i, mode_i] = current
 
     characteristic_impedances = np.linalg.inv(currents).T @ np.linalg.inv(currents)

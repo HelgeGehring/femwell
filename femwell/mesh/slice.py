@@ -77,9 +77,7 @@ def get_mode_regions(component, layerstack, tol=1e-6):
 
     x_changing_bounds = []
     x_not_changing_bounds = []
-    for x1, x2 in [
-        (x_bounds[i] + tol, x_bounds[i + 1] - tol) for i in range(len(x_bounds) - 1)
-    ]:
+    for x1, x2 in [(x_bounds[i] + tol, x_bounds[i + 1] - tol) for i in range(len(x_bounds) - 1)]:
         found_different = False
         for layername, polygons in layer_polygons_dict.items():
             if found_different:
@@ -103,9 +101,7 @@ def get_mode_regions(component, layerstack, tol=1e-6):
 def slice_component_xbounds(component, layerstack, mesh_step=100 * nm):
     """Returns minimal list of x-coordinates where cross-section is to be taken."""
     # Process polygon to extract regions of change and free propagation
-    x_changing_bounds, x_not_changing_bounds = get_mode_regions(
-        component, layerstack, tol=1e-6
-    )
+    x_changing_bounds, x_not_changing_bounds = get_mode_regions(component, layerstack, tol=1e-6)
 
     # Where geometry is changing, mesh according to mesh_step
     x_coordinates = [np.arange(x1, x2, mesh_step) for x1, x2 in x_changing_bounds]

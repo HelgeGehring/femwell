@@ -36,9 +36,7 @@ for width in widths:
     epsilon[basis0.get_dofs(elements="box")] = 1.444**2
     # basis0.plot(epsilon, colorbar=True).show()
 
-    lams, basis, xs = compute_modes(
-        basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=10
-    )
+    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=10)
 
     fig, axs = plot_mode(basis, np.real(xs[0]), colorbar=False)
     plt.show()

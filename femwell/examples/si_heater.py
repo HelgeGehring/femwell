@@ -88,9 +88,7 @@ resolutions = dict(
     heater_r={"resolution": 0.01, "distance": 1},
 )
 
-mesh_from_OrderedDict(
-    polygons, resolutions, filename="mesh.msh", default_resolution_max=0.4
-)
+mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=0.4)
 
 mesh = Mesh.load("mesh.msh")
 
@@ -110,11 +108,7 @@ thermal_conductivity_p0 *= 1e-12  # 1e-12 -> conversion from 1/m^2 -> 1/um^2
 
 power = 25.2e-3
 current = np.sqrt(
-    power
-    * 1e5
-    * (polygons["heater_l"].area + polygons["heater_r"].area)
-    * 1e-12
-    / 320e-6
+    power * 1e5 * (polygons["heater_l"].area + polygons["heater_r"].area) * 1e-12 / 320e-6
 )
 print(current)
 

@@ -71,9 +71,7 @@ resolutions = dict(
     core_2={"resolution": 0.03, "distance": 1},
 )
 
-mesh_from_OrderedDict(
-    polygons, resolutions, filename="mesh.msh", default_resolution_max=0.2
-)
+mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=0.2)
 
 mesh = Mesh.load("mesh.msh")
 basis0 = Basis(mesh, ElementTriP0(), intorder=4)
@@ -84,9 +82,7 @@ epsilon[basis0.get_dofs(elements="clad")] = 1.444**2
 epsilon[basis0.get_dofs(elements="box")] = 1.444**2
 basis0.plot(epsilon, colorbar=True).show()
 
-lams_1, basis, xs_1 = compute_modes(
-    basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=1
-)
+lams_1, basis, xs_1 = compute_modes(basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=1)
 print(lams_1)
 
 plot_mode(basis, np.real(xs_1[0]))
@@ -99,9 +95,7 @@ epsilon_2[basis0.get_dofs(elements="clad")] = 1.444**2
 epsilon_2[basis0.get_dofs(elements="box")] = 1.444**2
 basis0.plot(epsilon_2, colorbar=True).show()
 
-lams_2, basis, xs_2 = compute_modes(
-    basis0, epsilon_2, wavelength=wavelength, mu_r=1, num_modes=1
-)
+lams_2, basis, xs_2 = compute_modes(basis0, epsilon_2, wavelength=wavelength, mu_r=1, num_modes=1)
 print(lams_2)
 
 plot_mode(basis, np.real(xs_2[0]))
@@ -158,9 +152,7 @@ kappas = np.array(
 )
 print(kappas)
 
-delta = 0.5 * (
-    np.real(lams_1[0]) * k0 + kappas[1, 1] - (np.real(lams_2[0]) * k0 + kappas[0, 0])
-)
+delta = 0.5 * (np.real(lams_1[0]) * k0 + kappas[1, 1] - (np.real(lams_2[0]) * k0 + kappas[0, 0]))
 print(delta, np.real(lams_1[0]) * k0, kappas[1, 1])
 
 beta_c = (kappas[0, 1] * kappas[1, 0] + delta**2) ** 0.5

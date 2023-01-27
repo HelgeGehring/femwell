@@ -157,9 +157,7 @@ if __name__ == "__main__":
         heater={"resolution": 0.05, "distance": 1},
     )
 
-    mesh = from_meshio(
-        mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=0.3)
-    )
+    mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=0.3))
 
     basis0 = Basis(mesh, ElementTriP0(), intorder=4)
     thermal_conductivity_p0 = basis0.zeros()
@@ -186,9 +184,7 @@ if __name__ == "__main__":
     dt = 0.1e-5
     steps = 100
     current = (
-        lambda t: 0.007
-        / polygons["heater"].area
-        * ((t < dt * steps / 10) + (t > dt * steps / 2))
+        lambda t: 0.007 / polygons["heater"].area * ((t < dt * steps / 10) + (t > dt * steps / 2))
     )
     basis, temperatures = solve_thermal_transient(
         basis0,
@@ -237,9 +233,7 @@ if __name__ == "__main__":
         ) ** 2
         # basis0.plot(epsilon, colorbar=True).show()
 
-        lams, basis_modes, xs = compute_modes(
-            basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1
-        )
+        lams, basis_modes, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1)
 
         # plot_mode(basis_modes, xs[0])
         # plt.show()

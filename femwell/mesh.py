@@ -55,23 +55,15 @@ class MeshTracker:
         return None, 1
 
     def get_gmsh_points_from_label(self, label):
-        indices = [
-            idx for idx, value in enumerate(self.points_labels) if value == label
-        ]
+        indices = [idx for idx, value in enumerate(self.points_labels) if value == label]
         return [self.gmsh_points[index]._id for index in indices]
 
     def get_gmsh_xy_lines_from_label(self, label):
-        indices = [
-            idx
-            for idx, value in enumerate(self.xy_segments_main_labels)
-            if value == label
-        ]
+        indices = [idx for idx, value in enumerate(self.xy_segments_main_labels) if value == label]
         return [self.gmsh_xy_segments[index]._id for index in indices]
 
     def get_gmsh_xy_surfaces_from_label(self, label):
-        indices = [
-            idx for idx, value in enumerate(self.xy_surfaces_labels) if value == label
-        ]
+        indices = [idx for idx, value in enumerate(self.xy_surfaces_labels) if value == label]
         return [self.gmsh_xy_surfaces[index]._id for index in indices]
 
     """
@@ -80,9 +72,7 @@ class MeshTracker:
 
     def xy_channel_loop_from_vertices(self, vertices, label):
         edges = []
-        for vertex1, vertex2 in [
-            (vertices[i], vertices[i + 1]) for i in range(len(vertices) - 1)
-        ]:
+        for vertex1, vertex2 in [(vertices[i], vertices[i + 1]) for i in range(len(vertices) - 1)]:
             gmsh_line, orientation = self.add_get_xy_segment(vertex1, vertex2, label)
             if orientation:
                 edges.append(gmsh_line)
@@ -178,9 +168,7 @@ class MeshTracker:
                 hole_vertices.append(vertex)
             hole_loops.append(self.xy_channel_loop_from_vertices(hole_vertices, label))
         # Parse boundary
-        for vertex in shapely.geometry.MultiPoint(
-            shapely_xy_polygon.exterior.coords
-        ).geoms:
+        for vertex in shapely.geometry.MultiPoint(shapely_xy_polygon.exterior.coords).geoms:
             gmsh_point = self.add_get_point(vertex, label)
             exterior_vertices.append(vertex)
         channel_loop = self.xy_channel_loop_from_vertices(exterior_vertices, label)
@@ -307,35 +295,25 @@ def mesh_from_polygons(
                                         if second_shape.geom_type == "Polygon"
                                         else []
                                     ):
-                                        second_interior_line = LineString(
+                                        second_interior_line = LineString(second_interior_line)
+                                        intersections = first_interior_line.intersection(
                                             second_interior_line
-                                        )
-                                        intersections = (
-                                            first_interior_line.intersection(
-                                                second_interior_line
-                                            )
                                         )
                                         first_interior_line = break_line(
                                             first_interior_line, second_interior_line
                                         )
                         first_shape_interiors.append(first_interior_line)
                 if first_shape.geom_type in ["Polygon", "MultiPolygon"]:
-                    broken_shapes.append(
-                        Polygon(first_exterior_line, holes=first_shape_interiors)
-                    )
+                    broken_shapes.append(Polygon(first_exterior_line, holes=first_shape_interiors))
                 else:
                     broken_shapes.append(LineString(first_exterior_line))
             if first_shape.geom_type in ["Polygon", "MultiPolygon"]:
                 polygons_broken_dict[first_name] = (
-                    MultiPolygon(broken_shapes)
-                    if len(broken_shapes) > 1
-                    else broken_shapes[0]
+                    MultiPolygon(broken_shapes) if len(broken_shapes) > 1 else broken_shapes[0]
                 )
             else:
                 lines_broken_dict[first_name] = (
-                    MultiLineString(broken_shapes)
-                    if len(broken_shapes) > 1
-                    else broken_shapes[0]
+                    MultiLineString(broken_shapes) if len(broken_shapes) > 1 else broken_shapes[0]
                 )
 
         # Add lines, reusing line segments

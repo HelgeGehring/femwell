@@ -71,18 +71,10 @@ def test_lines():
     offset_core2 = 1
 
     # Lines can be added, which is useful to define boundary conditions at various simulation edges
-    left_edge = LineString(
-        [(-wsim / 2, -hcore / 2 - hbox), (-wsim / 2, -hcore / 2 + hclad)]
-    )
-    right_edge = LineString(
-        [(wsim / 2, -hcore / 2 - hbox), (wsim / 2, -hcore / 2 + hclad)]
-    )
-    top_edge = LineString(
-        [(-wsim / 2, -hcore / 2 + hclad), (wsim / 2, -hcore / 2 + hclad)]
-    )
-    bottom_edge = LineString(
-        [(-wsim / 2, -hcore / 2 - hbox), (wsim / 2, -hcore / 2 - hbox)]
-    )
+    left_edge = LineString([(-wsim / 2, -hcore / 2 - hbox), (-wsim / 2, -hcore / 2 + hclad)])
+    right_edge = LineString([(wsim / 2, -hcore / 2 - hbox), (wsim / 2, -hcore / 2 + hclad)])
+    top_edge = LineString([(-wsim / 2, -hcore / 2 + hclad), (wsim / 2, -hcore / 2 + hclad)])
+    bottom_edge = LineString([(-wsim / 2, -hcore / 2 - hbox), (wsim / 2, -hcore / 2 - hbox)])
 
     # The order in which objects are inserted into the OrderedDict determines overrrides
     shapes = OrderedDict()

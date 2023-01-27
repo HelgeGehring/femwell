@@ -57,9 +57,7 @@ def solve_coulomb(basis, epsilon_r, fixed_boundaries, phi_k, phi_n, phi_p, dopin
         u[basis.get_dofs(key)] = value
 
     return basis, solve(
-        *condense(
-            A + B, C, x=u, D={key: basis.get_dofs(key) for key in fixed_boundaries}
-        )
+        *condense(A + B, C, x=u, D={key: basis.get_dofs(key) for key in fixed_boundaries})
     )
 
 
@@ -105,10 +103,7 @@ def solve_continuity_equations(basis, phi_i, p_i_1, n_i_1, pn):
     @LinearForm
     def force_recombination(v, w):
         return (
-            elementary_charge
-            * intrinsic_charge**2
-            / recombination_function(w.p_i_1, w.n_i_1)
-            * v
+            elementary_charge * intrinsic_charge**2 / recombination_function(w.p_i_1, w.n_i_1) * v
         )
 
     A = drift_diffusion.assemble(basis, phi_i=basis.interpolate(phi_i), mu=400)
@@ -129,8 +124,7 @@ def solve_continuity_equations(basis, phi_i, p_i_1, n_i_1, pn):
             D=basis.get_dofs(facets="left") + basis.get_dofs(facets="right"),
             x=basis.zeros()
             + basis.project(
-                basis.interpolate(doping)
-                * np.exp(-basis.interpolate(phi_i) / v_threshold)
+                basis.interpolate(doping) * np.exp(-basis.interpolate(phi_i) / v_threshold)
             ),
         )
     )
@@ -182,14 +176,10 @@ if __name__ == "__main__":
             # basis_vec.plot(-u_grad, ax=ax)
             plt.show()
 
-        basis_n, phi_n_new = solve_continuity_equations(
-            basis_epsilon_r, phi_0, phi_n, phi_p, "n"
-        )
+        basis_n, phi_n_new = solve_continuity_equations(basis_epsilon_r, phi_0, phi_n, phi_p, "n")
         basis_n.plot(phi_n_new, shading="gouraud", colorbar=True).show()
 
-        basis_p, phi_p_new = solve_continuity_equations(
-            basis_epsilon_r, phi_0, phi_n, phi_p, "p"
-        )
+        basis_p, phi_p_new = solve_continuity_equations(basis_epsilon_r, phi_0, phi_n, phi_p, "p")
         basis_p.plot(phi_p_new, shading="gouraud", colorbar=True).show()
 
         phi_n, phi_p = phi_n_new, phi_p_new

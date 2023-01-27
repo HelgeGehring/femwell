@@ -220,9 +220,7 @@ def mesh_from_OrderedDict(
                     if first_shape.geom_type == "Polygon"
                     else first_shape
                 )
-                for second_index, (second_name, second_shapes) in enumerate(
-                    shapes_dict.items()
-                ):
+                for second_index, (second_name, second_shapes) in enumerate(shapes_dict.items()):
                     # Do not compare to itself
                     if second_name == first_name:
                         continue
@@ -284,35 +282,25 @@ def mesh_from_OrderedDict(
                                         if second_shape.geom_type == "Polygon"
                                         else []
                                     ):
-                                        second_interior_line = LineString(
+                                        second_interior_line = LineString(second_interior_line)
+                                        intersections = first_interior_line.intersection(
                                             second_interior_line
-                                        )
-                                        intersections = (
-                                            first_interior_line.intersection(
-                                                second_interior_line
-                                            )
                                         )
                                         first_interior_line = break_line_(
                                             first_interior_line, second_interior_line
                                         )
                         first_shape_interiors.append(first_interior_line)
                 if first_shape.geom_type in ["Polygon", "MultiPolygon"]:
-                    broken_shapes.append(
-                        Polygon(first_exterior_line, holes=first_shape_interiors)
-                    )
+                    broken_shapes.append(Polygon(first_exterior_line, holes=first_shape_interiors))
                 else:
                     broken_shapes.append(LineString(first_exterior_line))
             if first_shape.geom_type in ["Polygon", "MultiPolygon"]:
                 polygons_broken_dict[first_name] = (
-                    MultiPolygon(broken_shapes)
-                    if len(broken_shapes) > 1
-                    else broken_shapes[0]
+                    MultiPolygon(broken_shapes) if len(broken_shapes) > 1 else broken_shapes[0]
                 )
             else:
                 lines_broken_dict[first_name] = (
-                    MultiLineString(broken_shapes)
-                    if len(broken_shapes) > 1
-                    else broken_shapes[0]
+                    MultiLineString(broken_shapes) if len(broken_shapes) > 1 else broken_shapes[0]
                 )
 
         # Add lines, reusing line segments
@@ -444,9 +432,7 @@ if __name__ == "__main__":
         ]
     )
 
-    source = LineString(
-        [(width_wg_2 / 2, -length_wg_1 / 2), (-width_wg_2 / 2, -length_wg_1 / 2)]
-    )
+    source = LineString([(width_wg_2 / 2, -length_wg_1 / 2), (-width_wg_2 / 2, -length_wg_1 / 2)])
     print(source)
 
     polygons = OrderedDict(

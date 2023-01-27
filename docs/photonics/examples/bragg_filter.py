@@ -66,9 +66,7 @@ phis = phis[:, idx]
 # plt.show()
 
 for i, k in enumerate(ks):
-    fig, axs = plt.subplots(
-        1, 2, figsize=(13, 5), gridspec_kw={"width_ratios": [1, 10]}
-    )
+    fig, axs = plt.subplots(1, 2, figsize=(13, 5), gridspec_kw={"width_ratios": [1, 10]})
     mesh.draw(ax=axs[0], boundaries=True, boundaries_only=True)
     basis_phi.plot(np.real(phis[..., i]), shading="gouraud", colorbar=True, ax=axs[0])
     axs[0].set_aspect(1)

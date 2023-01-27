@@ -72,9 +72,7 @@ resolutions = dict(
     heater={"resolution": 0.05, "distance": 1},
 )
 
-mesh = from_meshio(
-    mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=0.3)
-)
+mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=0.3))
 
 basis0 = Basis(mesh, ElementTriP0(), intorder=4)
 thermal_conductivity_p0 = basis0.zeros()
@@ -100,11 +98,7 @@ thermal_diffusivity_p0 *= 1e12  # 1e-12 -> conversion from m^2 -> um^2
 
 dt = 0.1e-5
 steps = 100
-current = (
-    lambda t: 0.007
-    / polygons["heater"].area
-    * ((t < dt * steps / 10) + (t > dt * steps / 2))
-)
+current = lambda t: 0.007 / polygons["heater"].area * ((t < dt * steps / 10) + (t > dt * steps / 2))
 basis, temperatures = solve_thermal_transient(
     basis0,
     thermal_conductivity_p0,
@@ -152,9 +146,7 @@ for temperature in tqdm(temperatures):
     ) ** 2
     # basis0.plot(epsilon, colorbar=True).show()
 
-    lams, basis_modes, xs = compute_modes(
-        basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1
-    )
+    lams, basis_modes, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1)
 
     # plot_mode(basis_modes, xs[0])
     # plt.show()

@@ -35,5 +35,8 @@ flake8 = "*"
 tqdm = "*"
 sphinx-book-theme = "*"
 
-[tool.autopep8]
-max_line_length = 120
+[tool.black]
+line-length = 100
+
+[tool.flake8]
+max-line-length = 100

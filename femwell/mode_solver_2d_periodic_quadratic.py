@@ -93,11 +93,7 @@ basis_pml.plot(np.imag(pml), ax=basis1.draw(), colorbar=True).show()
 
 @BilinearForm(dtype=np.complex64)
 def A(phi, v, w):
-    return (
-        -d(phi)[0] * d(v)[0]
-        - d(phi)[1] * d(v)[1] / w.pml**2
-        + k0**2 * w.epsilon * phi * v
-    )
+    return -d(phi)[0] * d(v)[0] - d(phi)[1] * d(v)[1] / w.pml**2 + k0**2 * w.epsilon * phi * v
 
 
 @BilinearForm(dtype=np.complex64)
@@ -115,9 +111,7 @@ fbases = [
     FacetBasis(mesh, basis_vec.elem, facets="right"),
 ]
 
-assert np.all(
-    fbases[0].default_parameters()["x"][1] == fbases[1].default_parameters()["x"][1]
-)
+assert np.all(fbases[0].default_parameters()["x"][1] == fbases[1].default_parameters()["x"][1])
 
 
 @BilinearForm(dtype=np.complex64)
@@ -163,10 +157,7 @@ A = A.assemble(
 )  # +asm(penalty2, fbases2, fbases2)
 B = B.assemble(basis_vec)
 C = C.assemble(basis_vec)
-mats = [
-    PETSc.Mat().createAIJ(size=K.shape, csr=(K.indptr, K.indices, K.data))
-    for K in (A, B, C)
-]
+mats = [PETSc.Mat().createAIJ(size=K.shape, csr=(K.indptr, K.indices, K.data)) for K in (A, B, C)]
 pep.setOperators(mats)
 pep.setDimensions(basis_vec.N * 2)
 

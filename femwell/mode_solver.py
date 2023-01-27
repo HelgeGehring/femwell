@@ -67,17 +67,13 @@ def compute_modes(
     if metallic_boundaries:
         lams, xs = solve(
             *condense(-A, -B, D=basis.get_dofs()),
-            solver=solver_eigen_scipy(
-                k=num_modes, sigma=k0**2 * np.max(epsilon_r) ** 2
-            ),
+            solver=solver_eigen_scipy(k=num_modes, sigma=k0**2 * np.max(epsilon_r) ** 2),
         )
     else:
         lams, xs = solve(
             -A,
             -B,
-            solver=solver_eigen_scipy(
-                k=num_modes, sigma=k0**2 * np.max(epsilon_r) ** 2
-            ),
+            solver=solver_eigen_scipy(k=num_modes, sigma=k0**2 * np.max(epsilon_r) ** 2),
         )
 
     idx = np.abs(np.real(lams)).argsort()[::-1]
@@ -90,9 +86,7 @@ def compute_modes(
     )  # undo the scaling E_3,new = beta * E_3
 
     for i, lam in enumerate(lams):
-        H = calculate_hfield(
-            basis, xs[i], np.sqrt(lam), omega=k0 * scipy.constants.speed_of_light
-        )
+        H = calculate_hfield(basis, xs[i], np.sqrt(lam), omega=k0 * scipy.constants.speed_of_light)
         xs[i] /= np.sqrt(calculate_overlap(basis, xs[i], H, basis, xs[i], H))
 
     return np.sqrt(lams)[:num_modes] / k0, basis, xs[:num_modes]
@@ -143,9 +137,7 @@ def calculate_energy_current_density(basis, xs):
 def calculate_overlap(basis_i, E_i, H_i, basis_j, E_j, H_j):
     @Functional
     def overlap(w):
-        return cross(np.conj(w["E_i"][0]), w["H_j"][0]) + cross(
-            w["E_j"][0], np.conj(w["H_i"][0])
-        )
+        return cross(np.conj(w["E_i"][0]), w["H_j"][0]) + cross(w["E_j"][0], np.conj(w["H_i"][0]))
 
     if basis_i == basis_j:
         return 0.5 * overlap.assemble(
@@ -169,13 +161,9 @@ def calculate_overlap(basis_i, E_i, H_i, basis_j, E_j, H_j):
     def overlap(w):
         return cross(
             np.conj(w["E_i"][0]),
-            np.array(
-                (ht_x_basis.interpolator(ht_x)(w.x), ht_y_basis.interpolator(ht_y)(w.x))
-            ),
+            np.array((ht_x_basis.interpolator(ht_x)(w.x), ht_y_basis.interpolator(ht_y)(w.x))),
         ) + cross(
-            np.array(
-                (et_x_basis.interpolator(et_x)(w.x), et_y_basis.interpolator(et_y)(w.x))
-            ),
+            np.array((et_x_basis.interpolator(et_x)(w.x), et_y_basis.interpolator(et_y)(w.x))),
             np.conj(w["H_i"][0]),
         )
 
@@ -190,9 +178,7 @@ def calculate_scalar_product(basis_i, E_i, basis_j, H_j):
         return cross(np.conj(w["E_i"][0]), w["H_j"][0])
 
     if basis_i == basis_j:
-        return overlap.assemble(
-            basis_i, E_i=basis_i.interpolate(E_i), H_j=basis_j.interpolate(H_j)
-        )
+        return overlap.assemble(basis_i, E_i=basis_i.interpolate(E_i), H_j=basis_j.interpolate(H_j))
     basis_j_fix = basis_j.with_element(ElementVector(ElementTriP1()))
 
     (et, et_basis), (ez, ez_basis) = basis_j.split(H_j)
@@ -203,9 +189,7 @@ def calculate_scalar_product(basis_i, E_i, basis_j, H_j):
     def overlap(w):
         return cross(
             np.conj(w["E_i"][0]),
-            np.array(
-                (ht_x_basis.interpolator(ht_x)(w.x), ht_y_basis.interpolator(ht_y)(w.x))
-            ),
+            np.array((ht_x_basis.interpolator(ht_x)(w.x), ht_y_basis.interpolator(ht_y)(w.x))),
         )
 
     return overlap.assemble(basis_i, E_i=basis_i.interpolate(E_i))
@@ -341,9 +325,7 @@ if __name__ == "__main__":
 
     resolutions = dict(core={"resolution": 0.05, "distance": 1})
 
-    mesh_from_OrderedDict(
-        polygons, resolutions, filename="mesh.msh", default_resolution_max=0.2
-    )
+    mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=0.2)
 
     mesh = Mesh.load("mesh.msh")
     basis = Basis(mesh, ElementTriN2() * ElementTriP2())

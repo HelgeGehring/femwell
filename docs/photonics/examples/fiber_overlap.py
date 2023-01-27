@@ -17,9 +17,7 @@ polygons = OrderedDict(core=core, clad=core.buffer(15, resolution=4))
 
 resolutions = dict(core={"resolution": 0.01, "distance": 0.1})
 
-mesh = from_meshio(
-    mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=10)
-)
+mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=10))
 
 basis0 = Basis(mesh, ElementTriP0(), intorder=4)
 epsilon = basis0.zeros().astype(complex)

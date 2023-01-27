@@ -18,17 +18,13 @@ def solve_periodic(basis_epsilon_r, epsilon_r, k0):
         FacetBasis(basis_epsilon_r.mesh, ElementTriP1(), facets="left"),
         FacetBasis(basis_epsilon_r.mesh, ElementTriP1(), facets="right"),
     ]
-    assert np.all(
-        fbases[0].default_parameters()["x"][1] == fbases[1].default_parameters()["x"][1]
-    )
+    assert np.all(fbases[0].default_parameters()["x"][1] == fbases[1].default_parameters()["x"][1])
 
     basis_vec = Basis(basis_epsilon_r.mesh, ElementTriP1() * ElementTriP1())
 
     @BilinearForm(dtype=np.complex64)
     def A(phi, k_phi, v, k_v, w):
-        return (
-            -d(phi)[0] * d(v)[0] - d(phi)[1] * d(v)[1] + k0**2 * (w.epsilon) * phi * v
-        )
+        return -d(phi)[0] * d(v)[0] - d(phi)[1] * d(v)[1] + k0**2 * (w.epsilon) * phi * v
 
     @BilinearForm(dtype=np.complex64)
     def B(phi, k_phi, v, k_v, w):

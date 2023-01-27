@@ -49,13 +49,9 @@ def solve_thermal(
         domain,
         current_density,
     ) in current_densities.items():  # sum up the sources for the heating
-        core_basis = Basis(
-            basis.mesh, basis.elem, elements=basis.mesh.subdomains[domain]
-        )
+        core_basis = Basis(basis.mesh, basis.elem, elements=basis.mesh.subdomains[domain])
         joule_heating_rhs += (
-            current_density**2
-            / specific_conductivity[domain]
-            * unit_load.assemble(core_basis)
+            current_density**2 / specific_conductivity[domain] * unit_load.assemble(core_basis)
         )
 
     thermal_conductivity_lhs = asm(
@@ -100,9 +96,7 @@ if __name__ == "__main__":
     w_heater = 2
 
     polygons = OrderedDict(
-        bottom=LineString(
-            [(-w_sim / 2, -h_core / 2 - h_box), (w_sim / 2, -h_core / 2 - h_box)]
-        ),
+        bottom=LineString([(-w_sim / 2, -h_core / 2 - h_box), (w_sim / 2, -h_core / 2 - h_box)]),
         core=Polygon(
             [
                 (-w_core / 2, -h_core / 2),
@@ -144,9 +138,7 @@ if __name__ == "__main__":
         heater={"resolution": 0.05, "distance": 1},
     )
 
-    mesh_from_OrderedDict(
-        polygons, resolutions, filename="mesh.msh", default_resolution_max=0.4
-    )
+    mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=0.4)
 
     mesh = Mesh.load("mesh.msh")
     print(mesh.boundaries)
@@ -187,9 +179,7 @@ if __name__ == "__main__":
         ) ** 2
         # basis0.plot(epsilon, colorbar=True).show()
 
-        lams, basis, xs = compute_modes(
-            basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=5
-        )
+        lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=5)
 
         print(lams)
 

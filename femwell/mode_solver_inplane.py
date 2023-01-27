@@ -77,9 +77,7 @@ def compute_modes(basis_epsilon_r, epsilon_r, mu_r, num_modes, phase_x):
     D2 = asm(penalty, fbases, fbases, phase=1)
 
     lams, xs = solve(
-        *condense(
-            A + D1, B, D=basis.get_dofs(["top", "bottom"]), x=basis.zeros(dtype=complex)
-        ),
+        *condense(A + D1, B, D=basis.get_dofs(["top", "bottom"]), x=basis.zeros(dtype=complex)),
         solver=solver_slepc(k=num_modes, which="LR", sigma=10)
     )
 
@@ -102,9 +100,7 @@ if __name__ == "__main__":
 
     polygons = OrderedDict(
         left=LineString(((0, -cell_height / 2), (0, cell_height / 2))),
-        right=LineString(
-            ((cell_width, -cell_height / 2), (cell_width, cell_height / 2))
-        ),
+        right=LineString(((cell_width, -cell_height / 2), (cell_width, cell_height / 2))),
         top=LineString(((0, cell_height / 2), (cell_width, cell_height / 2))),
         bottom=LineString(((0, -cell_height / 2), (cell_width, -cell_height / 2))),
         hole=hole,
@@ -138,9 +134,7 @@ if __name__ == "__main__":
         )
         results.append((lams[:5], basis, xs))
 
-    lams = np.array(
-        [np.sort(result[0]) / (2 * np.pi / cell_width) for result in results]
-    )
+    lams = np.array([np.sort(result[0]) / (2 * np.pi / cell_width) for result in results])
     plt.plot(phases, lams)
     plt.show()
 

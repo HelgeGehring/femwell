@@ -27,9 +27,7 @@ for i, width in enumerate(tqdm(widths)):
 
     resolutions = {"core": {"resolution": 0.1, "distance": 1}}
 
-    mesh = from_meshio(
-        mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=0.6)
-    )
+    mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=0.6))
 
     basis0 = Basis(mesh, ElementTriP0())
     epsilon = basis0.zeros(dtype=complex)

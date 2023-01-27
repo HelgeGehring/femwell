@@ -148,8 +148,7 @@ if __name__ == "__main__":
     B = scipy.sparse.csr_array(([10.0], ([0], [0])), shape=(1, 1), dtype=np.complex64)
     C = scipy.sparse.csr_array(([1.0], ([0], [0])), shape=(1, 1), dtype=np.complex64)
     mats = [
-        PETSc.Mat().createAIJ(size=K.shape, csr=(K.indptr, K.indices, K.data))
-        for K in (A, B, C)
+        PETSc.Mat().createAIJ(size=K.shape, csr=(K.indptr, K.indices, K.data)) for K in (A, B, C)
     ]
 
     pep.setOperators(mats)

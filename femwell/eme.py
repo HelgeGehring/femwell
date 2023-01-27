@@ -40,12 +40,8 @@ def compute_interface_s_matrix(
             E_j = xs_b[j]
             H_i = calculate_hfield(basis_a, E_i, lams_a[i] * (2 * np.pi / 1.55))
             H_j = calculate_hfield(basis_b, E_j, lams_b[j] * (2 * np.pi / 1.55))
-            products_ab[i, j] = np.abs(
-                calculate_scalar_product(basis_a, E_i, basis_b, H_j)
-            )
-            products_ba[j, i] = np.abs(
-                calculate_scalar_product(basis_b, E_j, basis_a, H_i)
-            )
+            products_ab[i, j] = np.abs(calculate_scalar_product(basis_a, E_i, basis_b, H_j))
+            products_ba[j, i] = np.abs(calculate_scalar_product(basis_b, E_j, basis_a, H_i))
 
     T_ab = 2 * np.linalg.inv(products_ab + products_ba.T)
     R_ab = 0.5 * (products_ba.T - products_ab) @ T_ab
@@ -73,10 +69,7 @@ def compute_propagation_s_matrix(modes, length, wavelength):
     lams, basis, xs = modes  # lams is neff
     betas = lams * 2 * np.pi / wavelength
     # S = np.diag(np.exp(-1 * 2j * np.pi * np.abs(betas) * length))
-    s_dict = {
-        (f"left@{i}", f"right@{i}"): np.exp(beta * length)
-        for i, beta in enumerate(betas)
-    }
+    s_dict = {(f"left@{i}", f"right@{i}"): np.exp(beta * length) for i, beta in enumerate(betas)}
     s_dict = {**s_dict, **{(p2, p1): v for (p1, p2), v in s_dict.items()}}
     return s_dict
 

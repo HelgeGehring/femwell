@@ -19,9 +19,7 @@ def solve_coulomb(basis_epsilon_r, epsilon_r, fixed_boundaries):
     for key, value in fixed_boundaries.items():
         u[basis.get_dofs(key)] = value
 
-    return basis, solve(
-        *condense(A, x=u, D={key: basis.get_dofs(key) for key in fixed_boundaries})
-    )
+    return basis, solve(*condense(A, x=u, D={key: basis.get_dofs(key) for key in fixed_boundaries}))
 
 
 if __name__ == "__main__":
@@ -36,12 +34,8 @@ if __name__ == "__main__":
     electrode_start_x = core_width / 2 + 2.629
     electrode_width = 4.4
 
-    electrode_left = box(
-        -electrode_start_x - electrode_width, 0.5, -electrode_start_x, 0.5 + 1.8
-    )
-    electrode_right = box(
-        electrode_start_x, 0.5, electrode_start_x + electrode_width, 0.5 + 1.8
-    )
+    electrode_left = box(-electrode_start_x - electrode_width, 0.5, -electrode_start_x, 0.5 + 1.8)
+    electrode_right = box(electrode_start_x, 0.5, electrode_start_x + electrode_width, 0.5 + 1.8)
     slab = box(-10, 0, 10, 0.5)
     core = box(-core_width / 2, 0.5, core_width / 2, 0.8)
     env = slab.buffer(20, resolution=8)
@@ -66,9 +60,7 @@ if __name__ == "__main__":
             filename=f"{tmpdirname}/mesh.msh",
             default_resolution_max=5,
         )
-        mesh_from_OrderedDict(
-            polygons, resolutions, filename="mesh.msh", default_resolution_max=5
-        )
+        mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=5)
         mesh = Mesh.load(f"{tmpdirname}/mesh.msh")
 
     basis = Basis(mesh, ElementTriP1(), intorder=4)
@@ -86,23 +78,17 @@ if __name__ == "__main__":
     )
 
     fig, ax = plt.subplots()
-    for subdomain in basis_epsilon_r.mesh.subdomains.keys() - {
-        "gmsh:bounding_entities"
-    }:
+    for subdomain in basis_epsilon_r.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
         basis_epsilon_r.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
     basis_u.plot(u, ax=ax, shading="gouraud", colorbar=True)
     # basis_vec.plot(-u_grad, ax=ax)
     plt.show()
 
     fig, ax = plt.subplots()
-    for subdomain in basis_epsilon_r.mesh.subdomains.keys() - {
-        "gmsh:bounding_entities"
-    }:
+    for subdomain in basis_epsilon_r.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
         basis_epsilon_r.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
     basis_grad = basis_u.with_element(ElementDG(basis_u.elem))
-    e_x = basis_u.project(
-        -basis_epsilon_r.interpolate(epsilon) * basis_u.interpolate(u).grad[0]
-    )
+    e_x = basis_u.project(-basis_epsilon_r.interpolate(epsilon) * basis_u.interpolate(u).grad[0])
     basis_u.plot(e_x, ax=ax, shading="gouraud", colorbar=True)
     plt.show()
 
@@ -127,9 +113,7 @@ if __name__ == "__main__":
         epsilon **= 2
         # basis_epsilon_r.plot(epsilon, colorbar=True).show()
 
-        neffs, basis_modes, modes = compute_modes(
-            basis_epsilon_r, epsilon, 1.55, 1, 1, order=1
-        )
+        neffs, basis_modes, modes = compute_modes(basis_epsilon_r, epsilon, 1.55, 1, 1, order=1)
         voltages_neffs.append(neffs[0])
 
         # plot_mode(basis_modes, modes[0])

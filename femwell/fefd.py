@@ -19,9 +19,7 @@ from skfem.helpers import curl, dot, grad, inner
 from femwell.mode_solver import plot_mode
 
 
-def compute_modes(
-    basis, basis_epsilon_r, epsilon_r, wavelength, mu_r, source, D=None, x0=None
-):
+def compute_modes(basis, basis_epsilon_r, epsilon_r, wavelength, mu_r, source, D=None, x0=None):
     k0 = 2 * np.pi / wavelength
     one_over_u_r = 1 / mu_r
 
@@ -97,9 +95,7 @@ if __name__ == "__main__":
         ]
     )
 
-    source = LineString(
-        [(width_wg_2 / 2, -length_wg_1 / 2), (-width_wg_2 / 2, -length_wg_1 / 2)]
-    )
+    source = LineString([(width_wg_2 / 2, -length_wg_1 / 2), (-width_wg_2 / 2, -length_wg_1 / 2)])
 
     polygons = OrderedDict(
         source=source,
@@ -135,12 +131,8 @@ if __name__ == "__main__":
     epsilon[basis0.get_dofs(elements="pml")] = (2.8 + 1j) ** 2
     basis0.plot(np.real(epsilon)).show()
 
-    basis0_source = FacetBasis(
-        mesh, basis0.elem, facets=mesh.boundaries["source"], intorder=4
-    )
-    basis_source = FacetBasis(
-        mesh, basis.elem, facets=mesh.boundaries["source"], intorder=4
-    )
+    basis0_source = FacetBasis(mesh, basis0.elem, facets=mesh.boundaries["source"], intorder=4)
+    basis_source = FacetBasis(mesh, basis.elem, facets=mesh.boundaries["source"], intorder=4)
 
     # source = basis_source.project(
     #    lambda x: [np.array([0 + 0 * x[0], 0 * np.exp(0 * x[0] ** 2) + 0 * x[0]]), 1 + 0 * x[0]])
@@ -155,9 +147,7 @@ if __name__ == "__main__":
     @BilinearForm
     def lhs(u, v, w):
         t = np.array([w.n[1], -w.n[0]])
-        return -1 / k0**2 * inner(dot(grad(u), t), dot(grad(v), t)) + w[
-            "epsilon"
-        ] * inner(u, v)
+        return -1 / k0**2 * inner(dot(grad(u), t), dot(grad(v), t)) + w["epsilon"] * inner(u, v)
 
     @BilinearForm
     def rhs(u, v, w):

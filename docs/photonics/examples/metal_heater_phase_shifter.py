@@ -23,9 +23,7 @@ h_heater = 0.14
 w_heater = 2
 
 polygons = OrderedDict(
-    bottom=LineString(
-        [(-w_sim / 2, -h_core / 2 - h_box), (w_sim / 2, -h_core / 2 - h_box)]
-    ),
+    bottom=LineString([(-w_sim / 2, -h_core / 2 - h_box), (w_sim / 2, -h_core / 2 - h_box)]),
     core=Polygon(
         [
             (-w_core / 2, -h_core / 2),
@@ -67,9 +65,7 @@ resolutions = dict(
     heater={"resolution": 0.1, "distance": 1},
 )
 
-mesh = from_meshio(
-    mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=0.6)
-)
+mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=0.6))
 
 currents = np.linspace(0.0, 10e-3, 10) / polygons["heater"].area
 neffs = []
@@ -98,9 +94,7 @@ for current in tqdm(currents):
     ) ** 2
     # basis0.plot(epsilon, colorbar=True).show()
 
-    lams, basis, xs = compute_modes(
-        basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1
-    )
+    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1)
 
     # plot_mode(basis, xs[0])
     # plt.show()
