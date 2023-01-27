@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import skfem
 from scipy.constants import Boltzmann, elementary_charge
-from skfem import *
-from skfem.helpers import *
+from skfem import Basis, BilinearForm, ElementTriP1, LinearForm, condense, solve
+from skfem.helpers import grad, inner
 
 # like desicribed in https://www.politesi.polimi.it/bitstream/10589/94468/3/2014_7_Bortolossi.pdf
 

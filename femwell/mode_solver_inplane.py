@@ -1,25 +1,18 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.sparse.linalg
 from skfem import (
     Basis,
     BilinearForm,
-    ElementTriN1,
     ElementTriN2,
     ElementTriP0,
-    ElementTriP1,
     ElementTriP2,
-    ElementVector,
     FacetBasis,
-    Functional,
     Mesh,
     asm,
     condense,
     solve,
-    solver_eigen_scipy,
-    solver_eigen_scipy_sym,
 )
-from skfem.helpers import cross, curl, dot, grad, inner
+from skfem.helpers import curl, dot, grad, inner
 from tqdm import tqdm
 
 from femwell.mode_solver import solver_slepc
@@ -88,7 +81,7 @@ if __name__ == "__main__":
     from collections import OrderedDict
 
     from mesh import mesh_from_OrderedDict
-    from shapely.geometry import LineString, Point, Polygon, box
+    from shapely.geometry import LineString, box
 
     width = 0.4
     cell_width = 0.45
