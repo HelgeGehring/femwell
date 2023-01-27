@@ -105,7 +105,7 @@ if __name__ == "__main__":
     voltages_neffs = []
 
     for voltage in voltages:
-        from mode_solver import compute_modes, plot_mode
+        from mode_solver import compute_modes
 
         epsilon = basis_epsilon_r.zeros() + 1.445
         epsilon[basis_epsilon_r.get_dofs(elements="core")] = 1.989
@@ -125,6 +125,7 @@ if __name__ == "__main__":
         neffs, basis_modes, modes = compute_modes(basis_epsilon_r, epsilon, 1.55, 1, 1, order=1)
         voltages_neffs.append(neffs[0])
 
+        # from mode_solver import plot_mode
         # plot_mode(basis_modes, modes[0])
         # plt.show()
 

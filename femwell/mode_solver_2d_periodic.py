@@ -5,7 +5,7 @@ from collections import OrderedDict
 import matplotlib.pyplot as plt
 import numpy as np
 import shapely
-from skfem import Basis, BilinearForm, ElementDG, ElementTriP1, FacetBasis, asm, solve
+from skfem import Basis, BilinearForm, ElementDG, ElementTriP1, FacetBasis, solve
 from skfem.helpers import d, grad
 from skfem.io import from_meshio
 from skfem.utils import mpc

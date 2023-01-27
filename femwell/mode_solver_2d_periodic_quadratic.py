@@ -17,7 +17,6 @@ from skfem import (
 )
 from skfem.helpers import d, grad
 from skfem.io import from_meshio
-from solver import solver_eigen_slepc
 
 height = 5.76 / 2 + 5
 a = 0.100
@@ -144,7 +143,6 @@ def penalty2(phi, v, w):
     return 1.0 / 1e-2 * (ju + jv)
 
 
-import scipy.sparse
 from petsc4py import PETSc
 from slepc4py import SLEPc
 
