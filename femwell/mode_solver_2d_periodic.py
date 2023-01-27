@@ -4,8 +4,8 @@ from collections import OrderedDict
 import numpy as np
 import matplotlib.pyplot as plt
 
-from skfem import *
-from skfem.helpers import *
+from skfem import Basis, ElementDG, ElementTriP1, BilinearForm, FacetBasis, asm, solve
+from skfem.helpers import grad, d
 from skfem.utils import mpc
 from skfem.io import from_meshio
 import shapely
