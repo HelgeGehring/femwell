@@ -4,7 +4,15 @@ from collections import OrderedDict
 import numpy as np
 import matplotlib.pyplot as plt
 
-from skfem import Basis, ElementTriP0, ElementTriP1, ElementTriP2, BilinearForm, FacetBasis, asm
+from skfem import (
+    Basis,
+    ElementTriP0,
+    ElementTriP1,
+    ElementTriP2,
+    BilinearForm,
+    FacetBasis,
+    asm,
+)
 from skfem.helpers import grad, d
 from skfem.io import from_meshio
 import shapely
