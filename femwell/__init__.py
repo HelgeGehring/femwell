@@ -1,6 +1,9 @@
-import importlib.metadata
+try:
+    from importlib import metadata
+except ImportError:  # for Python<3.8
+    import importlib_metadata as metadata
 
 try:
-    __version__ = importlib.metadata.version(__package__ or __name__)
-except importlib.metadata.PackageNotFoundError:
+    __version__ = metadata.version(__package__ or __name__)
+except metadata.PackageNotFoundError:
     __version__ = "git"
