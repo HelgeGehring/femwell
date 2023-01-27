@@ -1,21 +1,20 @@
 import matplotlib.pyplot as plt
 import numpy as np
-
 from skfem import (
-    BilinearForm,
     Basis,
+    BilinearForm,
     ElementTriN1,
+    ElementTriN2,
     ElementTriP0,
     ElementTriP1,
-    Mesh,
-    solve,
-    FacetBasis,
-    condense,
-    InteriorFacetBasis,
     ElementTriP2,
-    ElementTriN2,
+    FacetBasis,
+    InteriorFacetBasis,
+    Mesh,
+    condense,
+    solve,
 )
-from skfem.helpers import curl, grad, dot, inner
+from skfem.helpers import curl, dot, grad, inner
 
 from femwell.mode_solver import plot_mode
 
@@ -52,8 +51,9 @@ def compute_modes(
 
 if __name__ == "__main__":
     from collections import OrderedDict
-    from shapely.geometry import Polygon, LineString
+
     from mesh import mesh_from_OrderedDict
+    from shapely.geometry import LineString, Polygon
 
     width = 4
     length = 10.5

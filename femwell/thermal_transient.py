@@ -2,8 +2,7 @@ from typing import Dict
 
 import numpy as np
 from scipy.sparse.linalg import splu
-
-from skfem import asm, ElementTriP0, BilinearForm, LinearForm, Basis, Mesh, enforce
+from skfem import Basis, BilinearForm, ElementTriP0, LinearForm, Mesh, asm, enforce
 from skfem.helpers import dot
 
 from femwell.thermal import solve_thermal
@@ -88,10 +87,12 @@ def solve_thermal_transient(
 
 
 if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    from shapely.geometry import Polygon, LineString
     from collections import OrderedDict
+
+    import matplotlib.pyplot as plt
+    from shapely.geometry import LineString, Polygon
     from skfem.io import from_meshio
+
     from femwell.mesh import mesh_from_OrderedDict
 
     # Simulating the TiN TOPS heater in https://doi.org/10.1364/OE.27.010456

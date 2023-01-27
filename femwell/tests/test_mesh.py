@@ -1,13 +1,12 @@
-from typing import Dict, Optional, Tuple, List
+from collections import OrderedDict
+from typing import Dict, List, Optional, Tuple
 
+import gmsh
 import numpy as np
 import pygmsh
-import gmsh
 import shapely
-from shapely.geometry import Point, LineString, Polygon, MultiPolygon
-from shapely.ops import split, linemerge
-
-from collections import OrderedDict
+from shapely.geometry import LineString, MultiPolygon, Point, Polygon
+from shapely.ops import linemerge, split
 
 from femwell.mesh import mesh_from_OrderedDict
 
@@ -62,7 +61,6 @@ def test_inclusion():
 
 
 def test_lines():
-
     wmode = 1
     wsim = 2
     hclad = 2

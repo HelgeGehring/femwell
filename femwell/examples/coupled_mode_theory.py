@@ -2,18 +2,19 @@
 # https://www.fiberoptics4sale.com/blogs/wave-optics/two-mode-coupling
 
 from collections import OrderedDict
-from shapely.geometry import Polygon
-import numpy as np
+
 import matplotlib.pyplot as plt
-from skfem import Mesh, Basis, ElementTriP0
+import numpy as np
+from shapely.geometry import Polygon
+from skfem import Basis, ElementTriP0, Mesh
 
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.mode_solver import (
+    calculate_coupling_coefficient,
+    calculate_hfield,
+    calculate_overlap,
     compute_modes,
     plot_mode,
-    calculate_overlap,
-    calculate_hfield,
-    calculate_coupling_coefficient,
 )
 
 w_sim = 4

@@ -1,17 +1,17 @@
+from collections import OrderedDict
+from typing import Dict, Optional
+
 import gdsfactory as gf
+import numpy as np
+from gdsfactory.component import Component
 from gdsfactory.simulation.gmsh import (
     cleanup_component,
-    order_layerstack,
     get_uz_bounds_layers,
+    order_layerstack,
 )
-from gdsfactory.component import Component
 from gdsfactory.tech import LayerStack
-from collections import OrderedDict
-import numpy as np
-from typing import Optional, Dict
-
-from shapely.geometry import MultiPoint, Polygon, LineString, MultiPolygon
 from shapely.affinity import translate
+from shapely.geometry import LineString, MultiPoint, MultiPolygon, Polygon
 
 # from femwell.mesh import mesh_from_Dict
 
@@ -157,7 +157,6 @@ def slice_component_xbounds(component, layerstack, mesh_step=100 * nm):
 
 
 if __name__ == "__main__":
-
     import gdsfactory as gf
     import gdsfactory.simulation.gmsh as gfmesh
 
@@ -209,8 +208,8 @@ if __name__ == "__main__":
     """
     (2) Get LayerStack
     """
-    from gdsfactory.tech import get_layer_stack_generic, LayerStack
     import numpy as np
+    from gdsfactory.tech import LayerStack, get_layer_stack_generic
 
     filtered_layerstack = LayerStack(
         layers={

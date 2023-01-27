@@ -31,10 +31,7 @@ def solver_eigen_scipy_operator(**kwargs):
     def solver(K, M, **solve_time_kwargs):
         params.update(solve_time_kwargs)
         import scipy.sparse.linalg
-        from scipy.sparse.linalg import eigs
-        from scipy.sparse.linalg import LinearOperator
-        from scipy.sparse.linalg import factorized
-        from scipy.sparse.linalg import splu
+        from scipy.sparse.linalg import LinearOperator, eigs, factorized, splu
 
         M_inv = splu(M).solve
         ks, xs = eigs(
@@ -141,10 +138,9 @@ def solver_eigen_slepc(**kwargs):
 
 
 if __name__ == "__main__":
+    import scipy.sparse
     from petsc4py import PETSc
     from slepc4py import SLEPc
-
-    import scipy.sparse
 
     pep = SLEPc.PEP().create()
 

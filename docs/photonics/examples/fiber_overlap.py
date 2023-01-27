@@ -1,17 +1,15 @@
 from collections import OrderedDict
 
-from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
 import shapely.geometry
-
-from skfem import Mesh, Basis, ElementTriP0, ElementTriP1, Functional
+from skfem import Basis, ElementTriP0, ElementTriP1, Functional, Mesh
 from skfem.io import from_meshio
+from tqdm import tqdm
 
-from femwell.mode_solver import compute_modes, plot_mode
-from femwell.mesh import mesh_from_OrderedDict
 from femwell.fiber import e_field_gaussian
-
+from femwell.mesh import mesh_from_OrderedDict
+from femwell.mode_solver import compute_modes, plot_mode
 
 core = shapely.geometry.box(-0.1, -0.15, 0.1, 0.15)
 

@@ -1,23 +1,22 @@
 # implementing https://opg.optica.org/ol/fulltext.cfm?uri=ol-40-6-1053&id=312806
 
 from collections import OrderedDict
-import numpy as np
-import matplotlib.pyplot as plt
 
+import matplotlib.pyplot as plt
+import numpy as np
+import shapely
+from mesh import mesh_from_OrderedDict
 from skfem import (
     Basis,
+    BilinearForm,
     ElementTriP0,
     ElementTriP1,
     ElementTriP2,
-    BilinearForm,
     FacetBasis,
     asm,
 )
-from skfem.helpers import grad, d
+from skfem.helpers import d, grad
 from skfem.io import from_meshio
-import shapely
-
-from mesh import mesh_from_OrderedDict
 from solver import solver_eigen_slepc
 
 height = 5.76 / 2 + 5
@@ -151,10 +150,9 @@ def penalty2(phi, v, w):
     return 1.0 / 1e-2 * (ju + jv)
 
 
+import scipy.sparse
 from petsc4py import PETSc
 from slepc4py import SLEPc
-
-import scipy.sparse
 
 pep = SLEPc.PEP().create()
 

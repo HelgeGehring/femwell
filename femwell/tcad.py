@@ -1,8 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.constants import elementary_charge, Boltzmann
-
 import skfem
+from scipy.constants import Boltzmann, elementary_charge
 from skfem import *
 from skfem.helpers import *
 

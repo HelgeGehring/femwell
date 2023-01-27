@@ -1,16 +1,16 @@
 # implementing https://opg.optica.org/ol/fulltext.cfm?uri=ol-40-6-1053&id=312806
 
 from collections import OrderedDict
-import numpy as np
+
 import matplotlib.pyplot as plt
-
-from skfem import Basis, ElementDG, ElementTriP1, BilinearForm, FacetBasis, asm, solve
-from skfem.helpers import grad, d
-from skfem.utils import mpc
-from skfem.io import from_meshio
+import numpy as np
 import shapely
+from skfem import Basis, BilinearForm, ElementDG, ElementTriP1, FacetBasis, asm, solve
+from skfem.helpers import d, grad
+from skfem.io import from_meshio
+from skfem.utils import mpc
 
-from femwell.solver import solver_eigen_scipy_invert, solver_dense, solver_eigen_slepc
+from femwell.solver import solver_dense, solver_eigen_scipy_invert, solver_eigen_slepc
 
 
 def solve_periodic(basis_epsilon_r, epsilon_r, k0):

@@ -1,5 +1,4 @@
 import tempfile
-
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
@@ -7,12 +6,11 @@ import numpy as np
 import scipy.constants
 import shapely
 import shapely.ops
-
 from shapely.geometry import LineString, box
-from skfem import Mesh, Basis, ElementTriP0
+from skfem import Basis, ElementTriP0, Mesh
 
-from femwell.mode_solver import compute_modes, plot_mode, calculate_hfield
 from femwell.mesh import mesh_from_OrderedDict
+from femwell.mode_solver import calculate_hfield, compute_modes, plot_mode
 
 
 def mesh_waveguide(filename, wsim, hclad, hsi, wcore, hcore):

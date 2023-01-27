@@ -2,20 +2,22 @@
 Adapted from F. Laporte at https://github.com/flaport/meow/blob/main/meow/eme/common.py
 and references.
 """
-import numpy as np
-import matplotlib.pyplot as plt
-from femwell.mode_solver import (
-    calculate_overlap,
-    calculate_scalar_product,
-    calculate_hfield,
-    plot_mode,
-)
 import sys
 
-sys.path.insert(0, "./mesh")
-from femwell.mesh.slice import slice_component_xbounds
+import matplotlib.pyplot as plt
+import numpy as np
 
+from femwell.mode_solver import (
+    calculate_hfield,
+    calculate_overlap,
+    calculate_scalar_product,
+    plot_mode,
+)
+
+sys.path.insert(0, "./mesh")
 import sax
+
+from femwell.mesh.slice import slice_component_xbounds
 
 try:
     import klujax
@@ -186,27 +188,23 @@ def compute_total_S_matrix(
 
 
 if __name__ == "__main__":
-
     import tempfile
-    from tqdm.auto import tqdm
-
-    import matplotlib.pyplot as plt
-    from matplotlib import cm
-    import numpy as np
-
-    from skfem import Mesh, Basis, ElementTriP0
-
-    from femwell.mode_solver import (
-        compute_modes,
-        plot_mode,
-        calculate_overlap,
-        calculate_hfield,
-    )
 
     # from femwell.waveguide import mesh_waveguide
-
     import gdsfactory as gf
     import gdsfactory.simulation.gmsh as gfmesh
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from matplotlib import cm
+    from skfem import Basis, ElementTriP0, Mesh
+    from tqdm.auto import tqdm
+
+    from femwell.mode_solver import (
+        calculate_hfield,
+        calculate_overlap,
+        compute_modes,
+        plot_mode,
+    )
 
     """
     The below mininmal example shows how to
@@ -253,8 +251,8 @@ if __name__ == "__main__":
     """
     (2) Get LayerStack
     """
-    from gdsfactory.tech import get_layer_stack_generic, LayerStack
     import numpy as np
+    from gdsfactory.tech import LayerStack, get_layer_stack_generic
 
     filtered_layerstack = LayerStack(
         layers={

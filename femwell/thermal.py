@@ -1,17 +1,16 @@
 from typing import Dict
 
 import numpy as np
-
 from skfem import (
-    asm,
+    Basis,
+    BilinearForm,
     ElementTriP0,
     ElementTriP1,
-    BilinearForm,
     LinearForm,
-    Basis,
-    solve,
-    condense,
     Mesh,
+    asm,
+    condense,
+    solve,
 )
 from skfem.helpers import dot
 
@@ -82,9 +81,11 @@ def solve_thermal(
 
 
 if __name__ == "__main__":
-    from shapely.geometry import Polygon, LineString
     from collections import OrderedDict
+
     import matplotlib.pyplot as plt
+    from shapely.geometry import LineString, Polygon
+
     from femwell.mesh import mesh_from_OrderedDict
 
     # Simulating the TiN TOPS heater in https://doi.org/10.1364/OE.27.010456

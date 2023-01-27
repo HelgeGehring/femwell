@@ -1,18 +1,15 @@
 import tempfile
-
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
 import numpy as np
-
-from shapely.geometry import Polygon
-
 import skfem
+from shapely.geometry import Polygon
+from skfem import Basis, ElementTriP0, ElementVector, Mesh
 from skfem.io.meshio import from_meshio
-from skfem import Mesh, Basis, ElementTriP0, ElementVector
 
-from femwell.mode_solver import compute_modes, plot_mode
 from femwell.mesh import mesh_from_OrderedDict
+from femwell.mode_solver import compute_modes, plot_mode
 
 
 def mesh_waveguide(filename, wsim, hclad, hbox, wcore, hcore):

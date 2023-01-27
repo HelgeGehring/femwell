@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-
 from skfem import *
 from skfem.helpers import *
 
@@ -29,10 +28,9 @@ if __name__ == "__main__":
     # Reproduce https://doi.org/10.3390/
 
     import tempfile
+    from collections import OrderedDict
 
     from shapely.geometry import box
-
-    from collections import OrderedDict
 
     core_width = 1.532
     electrode_start_x = core_width / 2 + 2.629

@@ -1,10 +1,9 @@
 from collections import OrderedDict
 
-import numpy as np
 import matplotlib.pyplot as plt
-from shapely.geometry import Polygon, LineString
-
-from skfem import ElementTriP0, Basis, Mesh
+import numpy as np
+from shapely.geometry import LineString, Polygon
+from skfem import Basis, ElementTriP0, Mesh
 
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.thermal import solve_thermal

@@ -1,12 +1,12 @@
 from collections import OrderedDict
 
-from tqdm import tqdm
-import numpy as np
 import matplotlib.pyplot as plt
-from shapely.geometry import Polygon, LineString
-
+import numpy as np
+from shapely.geometry import LineString, Polygon
 from skfem import Basis, ElementTriP0, LinearForm
 from skfem.io import from_meshio
+from tqdm import tqdm
+
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.thermal_transient import solve_thermal_transient
 

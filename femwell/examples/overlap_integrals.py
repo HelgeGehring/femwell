@@ -1,16 +1,15 @@
 import tempfile
-from tqdm.auto import tqdm
 
 import matplotlib.pyplot as plt
 import numpy as np
-
-from skfem import Mesh, Basis, ElementTriP0
+from skfem import Basis, ElementTriP0, Mesh
+from tqdm.auto import tqdm
 
 from femwell.mode_solver import (
+    calculate_hfield,
+    calculate_overlap,
     compute_modes,
     plot_mode,
-    calculate_overlap,
-    calculate_hfield,
 )
 from femwell.waveguide import mesh_waveguide
 

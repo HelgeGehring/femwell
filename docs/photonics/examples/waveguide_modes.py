@@ -1,15 +1,15 @@
 from collections import OrderedDict
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import shapely
 import shapely.affinity
 from shapely.ops import clip_by_rect
-from skfem import Mesh, Basis, ElementTriP0
+from skfem import Basis, ElementTriP0, Mesh
 from skfem.io.meshio import from_meshio
 
-from femwell.mode_solver import compute_modes, plot_mode
 from femwell.mesh import mesh_from_OrderedDict
+from femwell.mode_solver import compute_modes, plot_mode
 
 wg_width = 0.2
 wg_thickness = 0.3

@@ -1,20 +1,19 @@
-from typing import Dict, Optional, Tuple, List
+from collections import OrderedDict
+from typing import Dict, List, Optional, Tuple
 
+import gmsh
 import numpy as np
 import pygmsh
-import gmsh
 import shapely
 from shapely.geometry import (
-    Point,
-    LineString,
-    Polygon,
-    MultiPolygon,
     LinearRing,
+    LineString,
     MultiLineString,
+    MultiPolygon,
+    Point,
+    Polygon,
 )
-from shapely.ops import split, linemerge
-
-from collections import OrderedDict
+from shapely.ops import linemerge, split
 
 
 class MeshTracker:

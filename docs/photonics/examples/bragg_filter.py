@@ -1,15 +1,14 @@
 from collections import OrderedDict
-import numpy as np
-import matplotlib.pyplot as plt
 
+import matplotlib.pyplot as plt
+import numpy as np
+import shapely
 from skfem import *
 from skfem.helpers import *
 from skfem.io import from_meshio
-import shapely
 
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver_2d_periodic import solve_periodic, plot_periodic
-
+from femwell.mode_solver_2d_periodic import plot_periodic, solve_periodic
 
 height = 1
 a = 0.330

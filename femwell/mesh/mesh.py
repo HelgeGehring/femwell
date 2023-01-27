@@ -1,23 +1,22 @@
-from typing import Dict, Optional, Tuple, List
-
-import numpy as np
-import pygmsh
-import gmsh
-import shapely
-from shapely.geometry import (
-    Point,
-    LineString,
-    Polygon,
-    MultiPolygon,
-    LinearRing,
-    MultiLineString,
-)
-from shapely.ops import split, linemerge, polygonize, unary_union
-
-from femwell.mesh.meshtracker import MeshTracker
-
 from collections import OrderedDict
 from itertools import combinations, product
+from typing import Dict, List, Optional, Tuple
+
+import gmsh
+import numpy as np
+import pygmsh
+import shapely
+from shapely.geometry import (
+    LinearRing,
+    LineString,
+    MultiLineString,
+    MultiPolygon,
+    Point,
+    Polygon,
+)
+from shapely.ops import linemerge, polygonize, split, unary_union
+
+from femwell.mesh.meshtracker import MeshTracker
 
 
 def break_line_(line, other_line):
@@ -404,9 +403,10 @@ def mesh_from_OrderedDict(
         if filename:
             gmsh.write(f"{filename}")
 
-        import tempfile
-        import meshio
         import contextlib
+        import tempfile
+
+        import meshio
 
         with contextlib.redirect_stdout(None):
             with tempfile.TemporaryDirectory() as tmpdirname:
@@ -415,12 +415,11 @@ def mesh_from_OrderedDict(
 
 
 if __name__ == "__main__":
+    from collections import OrderedDict
 
     import gmsh
-
-    from collections import OrderedDict
-    from shapely.geometry import Polygon, LineString
     from mesh import mesh_from_OrderedDict
+    from shapely.geometry import LineString, Polygon
 
     width = 4
     length = 10.5

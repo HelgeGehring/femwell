@@ -4,13 +4,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from shapely.geometry import box
 from shapely.ops import clip_by_rect
+from skfem import Basis, ElementTriP0, Mesh
+from skfem.io.meshio import from_meshio
 from tqdm import tqdm
 
-from skfem import Mesh, Basis, ElementTriP0
-from skfem.io.meshio import from_meshio
-
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import compute_modes, calculate_te_frac
+from femwell.mode_solver import calculate_te_frac, compute_modes
 
 wavelength = 1.55
 num_modes = 8

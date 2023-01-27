@@ -3,25 +3,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.constants
 import scipy.sparse.linalg
-
 from skfem import (
-    BilinearForm,
     Basis,
+    BilinearForm,
+    ElementDG,
     ElementTriN1,
     ElementTriN2,
-    ElementDG,
     ElementTriP0,
     ElementTriP1,
     ElementTriP2,
     ElementVector,
-    Mesh,
     Functional,
     LinearForm,
+    Mesh,
     condense,
     solve,
 )
-from skfem.helpers import curl, grad, dot, inner, cross
-
+from skfem.helpers import cross, curl, dot, grad, inner
 from skfem.utils import solver_eigen_scipy
 
 
@@ -298,8 +296,10 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title="E", directi
 
 
 if __name__ == "__main__":
-    from shapely.geometry import Polygon
     from collections import OrderedDict
+
+    from shapely.geometry import Polygon
+
     from femwell.mesh import mesh_from_OrderedDict
 
     x_min = 0
