@@ -13,12 +13,16 @@ The documentation is lagging behind the state of code, so there's several featur
 
 # Working Features
 - Photonic eigenmode solver
+- Periodic photonic eigenmode solver
 - Electric eigenmode solver
 - Thermal mode solver (static and transient)
 - Coulomb solver
 
 # Possible Simulations
 - Eigenmodes of waveguides and determining their effective refractive index
+- Bragg grating cells
+- Grating coupler cells
+- Eigenmode of a coaxial cable and it's specific impedance
 - Eigenmodes of electric transmission lines and determining their propagation constant (in work)
 - Static thermal profiles
 - Transient thermal behavior
