@@ -4,18 +4,26 @@ import numpy as np
 import pygmsh
 import gmsh
 import shapely
-from shapely.geometry import Point, LineString, Polygon, MultiPolygon, LinearRing, MultiLineString
+from shapely.geometry import (
+    Point,
+    LineString,
+    Polygon,
+    MultiPolygon,
+    LinearRing,
+    MultiLineString,
+)
 from shapely.ops import split, linemerge
 
 from collections import OrderedDict
 
-class MeshTracker():
-    def __init__(self, model, atol=1E-3):
-        '''
-        Map between shapely and gmsh 
+
+class MeshTracker:
+    def __init__(self, model, atol=1e-3):
+        """
+        Map between shapely and gmsh
         Shapely is useful for built-in geometry equivalencies and extracting orientation, instead of doing it manually
         We can also track information about the entities using labels (useful for selective mesh refinement later)
-        '''
+        """
         self.shapely_points = []
         self.gmsh_points = []
         self.points_labels = []
@@ -32,9 +40,10 @@ class MeshTracker():
     """
     Retrieve existing geometry
     """
+
     def get_point_index(self, xy_point):
         for index, shapely_point in enumerate(self.shapely_points):
-            if xy_point.equals_exact(shapely_point, self.atol) :
+            if xy_point.equals_exact(shapely_point, self.atol):
                 return index
         return None
 
@@ -48,23 +57,34 @@ class MeshTracker():
         return None, 1
 
     def get_gmsh_points_from_label(self, label):
-        indices = [idx for idx, value in enumerate(self.points_labels) if value == label]
+        indices = [
+            idx for idx, value in enumerate(self.points_labels) if value == label
+        ]
         return [self.gmsh_points[index]._id for index in indices]
 
     def get_gmsh_xy_lines_from_label(self, label):
-        indices = [idx for idx, value in enumerate(self.xy_segments_main_labels) if value == label]
+        indices = [
+            idx
+            for idx, value in enumerate(self.xy_segments_main_labels)
+            if value == label
+        ]
         return [self.gmsh_xy_segments[index]._id for index in indices]
 
     def get_gmsh_xy_surfaces_from_label(self, label):
-        indices = [idx for idx, value in enumerate(self.xy_surfaces_labels) if value == label]
+        indices = [
+            idx for idx, value in enumerate(self.xy_surfaces_labels) if value == label
+        ]
         return [self.gmsh_xy_surfaces[index]._id for index in indices]
 
     """
     Channel loop utilities (no need to track)
     """
+
     def xy_channel_loop_from_vertices(self, vertices, label):
         edges = []
-        for vertex1, vertex2 in [(vertices[i], vertices[i + 1]) for i in range(len(vertices)-1)]:
+        for vertex1, vertex2 in [
+            (vertices[i], vertices[i + 1]) for i in range(len(vertices) - 1)
+        ]:
             gmsh_line, orientation = self.add_get_xy_segment(vertex1, vertex2, label)
             if orientation:
                 edges.append(gmsh_line)
@@ -75,6 +95,7 @@ class MeshTracker():
     """
     Adding geometry
     """
+
     def add_get_point(self, shapely_xy_point, label=None):
         """
         Add a shapely point to the gmsh model, or retrieve the existing gmsh model points with equivalent coordinates (within tol.)
@@ -93,7 +114,6 @@ class MeshTracker():
             self.points_labels.append(label)
         return gmsh_point
 
-
     def add_get_xy_segment(self, shapely_xy_point1, shapely_xy_point2, label):
         """
         Add a shapely segment (2-point line) to the gmsh model in the xy plane, or retrieve the existing gmsh segment with equivalent coordinates (within tol.)
@@ -102,13 +122,20 @@ class MeshTracker():
             shapely_xy_point1 (shapely.geometry.Point): first x, y coordinates
             shapely_xy_point2 (shapely.geometry.Point): second x, y coordinates
         """
-        index, orientation = self.get_xy_segment_index_and_orientation(shapely_xy_point1, shapely_xy_point2)
+        index, orientation = self.get_xy_segment_index_and_orientation(
+            shapely_xy_point1, shapely_xy_point2
+        )
         if index is not None:
             gmsh_segment = self.gmsh_xy_segments[index]
             self.xy_segments_secondary_labels[index] = label
         else:
-            gmsh_segment = self.model.add_line(self.add_get_point(shapely_xy_point1), self.add_get_point(shapely_xy_point2))
-            self.shapely_xy_segments.append(shapely.geometry.LineString([shapely_xy_point1, shapely_xy_point2]))
+            gmsh_segment = self.model.add_line(
+                self.add_get_point(shapely_xy_point1),
+                self.add_get_point(shapely_xy_point2),
+            )
+            self.shapely_xy_segments.append(
+                shapely.geometry.LineString([shapely_xy_point1, shapely_xy_point2])
+            )
             self.gmsh_xy_segments.append(gmsh_segment)
             self.xy_segments_main_labels.append(label)
             self.xy_segments_secondary_labels.append(None)
@@ -122,8 +149,12 @@ class MeshTracker():
             shapely_xy_curve (shapely.geometry.LineString): curve
         """
         segments = []
-        for shapely_xy_point1, shapely_xy_point2 in zip(shapely_xy_curve.coords[:-1], shapely_xy_curve.coords[1:]):
-            gmsh_segment, orientation = self.add_get_xy_segment(Point(shapely_xy_point1), Point(shapely_xy_point2), label)
+        for shapely_xy_point1, shapely_xy_point2 in zip(
+            shapely_xy_curve.coords[:-1], shapely_xy_curve.coords[1:]
+        ):
+            gmsh_segment, orientation = self.add_get_xy_segment(
+                Point(shapely_xy_point1), Point(shapely_xy_point2), label
+            )
             if orientation:
                 segments.append(gmsh_segment)
             else:
@@ -140,7 +171,11 @@ class MeshTracker():
         # Create surface
         surfaces_to_label = []
 
-        for shapely_xy_polygon in shapely_xy_polygons.geoms if hasattr(shapely_xy_polygons, 'geoms') else [shapely_xy_polygons]:
+        for shapely_xy_polygon in (
+            shapely_xy_polygons.geoms
+            if hasattr(shapely_xy_polygons, "geoms")
+            else [shapely_xy_polygons]
+        ):
             hole_loops = []
             exterior_vertices = []
             # Parse holes
@@ -149,9 +184,13 @@ class MeshTracker():
                 for vertex in shapely.geometry.MultiPoint(polygon_hole.coords).geoms:
                     # gmsh_point = self.add_get_point(vertex, label)
                     hole_vertices.append(vertex)
-                hole_loops.append(self.xy_channel_loop_from_vertices(hole_vertices, label))
+                hole_loops.append(
+                    self.xy_channel_loop_from_vertices(hole_vertices, label)
+                )
             # Parse boundary
-            for vertex in shapely.geometry.MultiPoint(shapely_xy_polygon.exterior.coords).geoms:
+            for vertex in shapely.geometry.MultiPoint(
+                shapely_xy_polygon.exterior.coords
+            ).geoms:
                 # gmsh_point = self.add_get_point(vertex, label)
                 exterior_vertices.append(vertex)
             channel_loop = self.xy_channel_loop_from_vertices(exterior_vertices, label)

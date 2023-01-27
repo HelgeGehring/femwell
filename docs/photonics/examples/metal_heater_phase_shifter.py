@@ -1,4 +1,3 @@
-
 from collections import OrderedDict
 
 from tqdm import tqdm
@@ -20,50 +19,59 @@ h_box = 1
 w_core = 0.5
 h_core = 0.22
 offset_heater = 2.2
-h_heater = .14
+h_heater = 0.14
 w_heater = 2
 
 polygons = OrderedDict(
-    bottom=LineString([
-        (-w_sim / 2, -h_core / 2 - h_box),
-        (w_sim / 2, -h_core / 2 - h_box)
-    ]),
-    core=Polygon([
-        (-w_core / 2, -h_core / 2),
-        (-w_core / 2, h_core / 2),
-        (w_core / 2, h_core / 2),
-        (w_core / 2, -h_core / 2),
-    ]),
-    heater=Polygon([
-        (-w_heater / 2, -h_heater / 2 + offset_heater),
-        (-w_heater / 2, h_heater / 2 + offset_heater),
-        (w_heater / 2, h_heater / 2 + offset_heater),
-        (w_heater / 2, -h_heater / 2 + offset_heater),
-    ]),
-    clad=Polygon([
-        (-w_sim / 2, -h_core / 2),
-        (-w_sim / 2, -h_core / 2 + h_clad),
-        (w_sim / 2, -h_core / 2 + h_clad),
-        (w_sim / 2, -h_core / 2),
-    ]),
-    box=Polygon([
-        (-w_sim / 2, -h_core / 2),
-        (-w_sim / 2, -h_core / 2 - h_box),
-        (w_sim / 2, -h_core / 2 - h_box),
-        (w_sim / 2, -h_core / 2),
-    ])
+    bottom=LineString(
+        [(-w_sim / 2, -h_core / 2 - h_box), (w_sim / 2, -h_core / 2 - h_box)]
+    ),
+    core=Polygon(
+        [
+            (-w_core / 2, -h_core / 2),
+            (-w_core / 2, h_core / 2),
+            (w_core / 2, h_core / 2),
+            (w_core / 2, -h_core / 2),
+        ]
+    ),
+    heater=Polygon(
+        [
+            (-w_heater / 2, -h_heater / 2 + offset_heater),
+            (-w_heater / 2, h_heater / 2 + offset_heater),
+            (w_heater / 2, h_heater / 2 + offset_heater),
+            (w_heater / 2, -h_heater / 2 + offset_heater),
+        ]
+    ),
+    clad=Polygon(
+        [
+            (-w_sim / 2, -h_core / 2),
+            (-w_sim / 2, -h_core / 2 + h_clad),
+            (w_sim / 2, -h_core / 2 + h_clad),
+            (w_sim / 2, -h_core / 2),
+        ]
+    ),
+    box=Polygon(
+        [
+            (-w_sim / 2, -h_core / 2),
+            (-w_sim / 2, -h_core / 2 - h_box),
+            (w_sim / 2, -h_core / 2 - h_box),
+            (w_sim / 2, -h_core / 2),
+        ]
+    ),
 )
 
 resolutions = dict(
     core={"resolution": 0.04, "distance": 1},
     clad={"resolution": 0.6, "distance": 1},
     box={"resolution": 0.6, "distance": 1},
-    heater={"resolution": 0.1, "distance": 1}
+    heater={"resolution": 0.1, "distance": 1},
 )
 
-mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=.6))
+mesh = from_meshio(
+    mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=0.6)
+)
 
-currents = np.linspace(0.0, 10e-3, 10) / polygons['heater'].area
+currents = np.linspace(0.0, 10e-3, 10) / polygons["heater"].area
 neffs = []
 
 for current in tqdm(currents):
@@ -73,28 +81,34 @@ for current in tqdm(currents):
         thermal_conductivity_p0[basis0.get_dofs(elements=domain)] = value
     thermal_conductivity_p0 *= 1e-12  # 1e-12 -> conversion from 1/m^2 -> 1/um^2
 
-    basis, temperature = solve_thermal(basis0, thermal_conductivity_p0,
-                                        specific_conductivity={"heater": 2.3e6},
-                                        current_densities={"heater": current},
-                                        fixed_boundaries={'bottom': 0})
+    basis, temperature = solve_thermal(
+        basis0,
+        thermal_conductivity_p0,
+        specific_conductivity={"heater": 2.3e6},
+        current_densities={"heater": current},
+        fixed_boundaries={"bottom": 0},
+    )
     # basis.plot(temperature, colorbar=True)
     # plt.show()
 
     temperature0 = basis0.project(basis.interpolate(temperature))
     epsilon = basis0.zeros() + (1.444 + 1.00e-5 * temperature0) ** 2
-    epsilon[basis0.get_dofs(elements='core')] = \
-        (3.4777 + 1.86e-4 * temperature0[basis0.get_dofs(elements='core')]) ** 2
+    epsilon[basis0.get_dofs(elements="core")] = (
+        3.4777 + 1.86e-4 * temperature0[basis0.get_dofs(elements="core")]
+    ) ** 2
     # basis0.plot(epsilon, colorbar=True).show()
 
-    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1)
+    lams, basis, xs = compute_modes(
+        basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1
+    )
 
     # plot_mode(basis, xs[0])
     # plt.show()
 
     neffs.append(np.real(lams[0]))
 
-print(f'Phase shift: {2 * np.pi / 1.55 * (neffs[-1] - neffs[0]) * 320}')
-plt.xlabel('Current (mA)')
-plt.ylabel('$n_{eff}$')
-plt.plot(currents*1e3, neffs)
+print(f"Phase shift: {2 * np.pi / 1.55 * (neffs[-1] - neffs[0]) * 320}")
+plt.xlabel("Current (mA)")
+plt.ylabel("$n_{eff}$")
+plt.plot(currents * 1e3, neffs)
 plt.show()

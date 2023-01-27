@@ -4,7 +4,14 @@ import numpy as np
 import pygmsh
 import gmsh
 import shapely
-from shapely.geometry import Point, LineString, Polygon, MultiPolygon, LinearRing, MultiLineString
+from shapely.geometry import (
+    Point,
+    LineString,
+    Polygon,
+    MultiPolygon,
+    LinearRing,
+    MultiLineString,
+)
 from shapely.ops import split, linemerge, polygonize, unary_union
 
 from femwell.mesh.meshtracker import MeshTracker
@@ -12,12 +19,15 @@ from femwell.mesh.meshtracker import MeshTracker
 from collections import OrderedDict
 from itertools import combinations, product
 
+
 def break_line_(line, other_line):
     intersections = line.intersection(other_line)
     if not intersections.is_empty:
-        for intersection in intersections.geoms if hasattr(intersections, 'geoms') else [intersections]:
+        for intersection in (
+            intersections.geoms if hasattr(intersections, "geoms") else [intersections]
+        ):
             # if type == "", intersection.type != 'Point':
-            if intersection.geom_type == 'Point':
+            if intersection.geom_type == "Point":
                 line = linemerge(split(line, intersection))
             else:
                 new_coords_start, new_coords_end = intersection.boundary.geoms
@@ -34,7 +44,7 @@ def mesh_from_Dict(
     filename: Optional[str] = None,
     gmsh_algorithm: int = 5,
     global_quad: Optional[bool] = False,
-    verbose: bool = False
+    verbose: bool = False,
 ):
     """
     Given a dict of shapely Polygons, creates a mesh conformal to all the BooleanFragment surfaces and interfaces from the intersection of all polygons.
@@ -57,7 +67,8 @@ def mesh_from_Dict(
         listpoly = [a.intersection(b) for a, b in combinations(all_polygons, 2)]
         rings = [
             LineString(list(object.exterior.coords))
-            for object in listpoly if not (object.geom_type in ["Point", "LineString"] or object.is_empty)
+            for object in listpoly
+            if not (object.geom_type in ["Point", "LineString"] or object.is_empty)
         ]
 
         union = unary_union(rings)
@@ -82,9 +93,15 @@ def mesh_from_Dict(
                         surface_indices.append(index)
                         if resolutions:
                             if index in surface_resolution_mapping:
-                                surface_resolution_mapping[index] = min(resolutions[polygon_name]["resolution"], surface_resolution_mapping[index])
+                                surface_resolution_mapping[index] = min(
+                                    resolutions[polygon_name]["resolution"],
+                                    surface_resolution_mapping[index],
+                                )
                             else:
-                                surface_resolution_mapping[index] = min(resolutions[polygon_name]["resolution"], default_resolution_max)
+                                surface_resolution_mapping[index] = min(
+                                    resolutions[polygon_name]["resolution"],
+                                    default_resolution_max,
+                                )
             meshtracker.model.add_physical(surfaces, polygon_name)
             surface_name_mapping[polygon_name] = surface_indices
 
@@ -96,10 +113,16 @@ def mesh_from_Dict(
             for surface_indices in surface_name_mapping.values():
                 for surface_index in surface_indices:
                     gmsh.model.mesh.field.add("MathEval", n)
-                    gmsh.model.mesh.field.setString(n, "F", f"{surface_resolution_mapping[surface_index]}")
-                    gmsh.model.mesh.field.add("Restrict", n+1)
-                    gmsh.model.mesh.field.setNumber(n+1, "InField", n)
-                    gmsh.model.mesh.field.setNumbers(n+1, "SurfacesList", [meshtracker.gmsh_xy_surfaces[surface_index]._id])
+                    gmsh.model.mesh.field.setString(
+                        n, "F", f"{surface_resolution_mapping[surface_index]}"
+                    )
+                    gmsh.model.mesh.field.add("Restrict", n + 1)
+                    gmsh.model.mesh.field.setNumber(n + 1, "InField", n)
+                    gmsh.model.mesh.field.setNumbers(
+                        n + 1,
+                        "SurfacesList",
+                        [meshtracker.gmsh_xy_surfaces[surface_index]._id],
+                    )
                     # # Around surface
                     # mesh_distance = mesh_setting["distance"]
                     # gmsh.model.mesh.field.add("Distance", n+2)
@@ -112,7 +135,7 @@ def mesh_from_Dict(
                     # gmsh.model.mesh.field.setNumber(n+3, "DistMin", 0)
                     # gmsh.model.mesh.field.setNumber(n+3, "DistMax", mesh_distance)
                     # Save and increment
-                    refinement_fields.append(n+1)
+                    refinement_fields.append(n + 1)
                     # refinement_fields.append(n+3)
                     n += 2
 
@@ -156,7 +179,7 @@ def mesh_from_OrderedDict(
     filename: Optional[str] = None,
     gmsh_algorithm: int = 5,
     global_quad: Optional[bool] = False,
-    verbose: bool = False
+    verbose: bool = False,
 ):
     """
     Given an ordered dict of shapely Polygons, creates a mesh containing polygon surfaces according to the dict order.
@@ -173,9 +196,13 @@ def mesh_from_OrderedDict(
 
         # Break up shapes in order so that plane is tiled with non-overlapping layers, overriding shapes according to an order
         shapes_tiled_dict = OrderedDict()
-        for lower_index, (lower_name, lower_shape) in reversed(list(enumerate(shapes_dict.items()))):
+        for lower_index, (lower_name, lower_shape) in reversed(
+            list(enumerate(shapes_dict.items()))
+        ):
             diff_shape = lower_shape
-            for higher_index, (higher_name, higher_shape) in reversed(list(enumerate(shapes_dict.items()))[:lower_index]):
+            for higher_index, (higher_name, higher_shape) in reversed(
+                list(enumerate(shapes_dict.items()))[:lower_index]
+            ):
                 diff_shape = diff_shape.difference(higher_shape)
             shapes_tiled_dict[lower_name] = diff_shape
 
@@ -185,51 +212,109 @@ def mesh_from_OrderedDict(
         for first_index, (first_name, first_shape) in enumerate(shapes_dict.items()):
             first_shape = shapes_tiled_dict[first_name]
             broken_shapes = []
-            for first_shape in first_shape.geoms if hasattr(first_shape, 'geoms') else [first_shape]:
+            for first_shape in (
+                first_shape.geoms if hasattr(first_shape, "geoms") else [first_shape]
+            ):
                 # First line exterior
-                first_exterior_line = LineString(first_shape.exterior) if first_shape.geom_type == "Polygon" else first_shape
-                for second_index, (second_name, second_shapes) in enumerate(shapes_dict.items()):
+                first_exterior_line = (
+                    LineString(first_shape.exterior)
+                    if first_shape.geom_type == "Polygon"
+                    else first_shape
+                )
+                for second_index, (second_name, second_shapes) in enumerate(
+                    shapes_dict.items()
+                ):
                     # Do not compare to itself
                     if second_name == first_name:
                         continue
                     else:
                         second_shapes = shapes_tiled_dict[second_name]
-                        for second_shape in second_shapes.geoms if hasattr(second_shapes, 'geoms') else [second_shapes]:
+                        for second_shape in (
+                            second_shapes.geoms
+                            if hasattr(second_shapes, "geoms")
+                            else [second_shapes]
+                        ):
                             # Second line exterior
-                            second_exterior_line = LineString(second_shape.exterior) if second_shape.geom_type == "Polygon" else second_shape
-                            first_exterior_line = break_line_(first_exterior_line, second_exterior_line)
+                            second_exterior_line = (
+                                LineString(second_shape.exterior)
+                                if second_shape.geom_type == "Polygon"
+                                else second_shape
+                            )
+                            first_exterior_line = break_line_(
+                                first_exterior_line, second_exterior_line
+                            )
                             # Second line interiors
-                            for second_interior_line in second_shape.interiors if second_shape.geom_type == "Polygon" else []:
+                            for second_interior_line in (
+                                second_shape.interiors
+                                if second_shape.geom_type == "Polygon"
+                                else []
+                            ):
                                 second_interior_line = LineString(second_interior_line)
-                                first_exterior_line = break_line_(first_exterior_line, second_interior_line)
+                                first_exterior_line = break_line_(
+                                    first_exterior_line, second_interior_line
+                                )
                 # First line interiors
                 if first_shape.geom_type in ["Polygon", "MultiPolygon"]:
                     first_shape_interiors = []
                     for first_interior_line in first_shape.interiors:
                         first_interior_line = LineString(first_interior_line)
-                        for second_index, (second_name, second_shapes) in enumerate(shapes_dict.items()):
+                        for second_index, (second_name, second_shapes) in enumerate(
+                            shapes_dict.items()
+                        ):
                             if second_name == first_name:
                                 continue
                             else:
                                 second_shapes = shapes_tiled_dict[second_name]
-                                for second_shape in second_shapes.geoms if hasattr(second_shapes, 'geoms') else [second_shapes]:
+                                for second_shape in (
+                                    second_shapes.geoms
+                                    if hasattr(second_shapes, "geoms")
+                                    else [second_shapes]
+                                ):
                                     # Exterior
-                                    second_exterior_line = LineString(second_shape.exterior) if second_shape.geom_type == "Polygon" else second_shape
-                                    first_interior_line = break_line_(first_interior_line, second_exterior_line)
+                                    second_exterior_line = (
+                                        LineString(second_shape.exterior)
+                                        if second_shape.geom_type == "Polygon"
+                                        else second_shape
+                                    )
+                                    first_interior_line = break_line_(
+                                        first_interior_line, second_exterior_line
+                                    )
                                     # Interiors
-                                    for second_interior_line in second_shape.interiors if second_shape.geom_type == "Polygon" else []:
-                                        second_interior_line = LineString(second_interior_line)
-                                        intersections = first_interior_line.intersection(second_interior_line)
-                                        first_interior_line = break_line_(first_interior_line, second_interior_line)
+                                    for second_interior_line in (
+                                        second_shape.interiors
+                                        if second_shape.geom_type == "Polygon"
+                                        else []
+                                    ):
+                                        second_interior_line = LineString(
+                                            second_interior_line
+                                        )
+                                        intersections = (
+                                            first_interior_line.intersection(
+                                                second_interior_line
+                                            )
+                                        )
+                                        first_interior_line = break_line_(
+                                            first_interior_line, second_interior_line
+                                        )
                         first_shape_interiors.append(first_interior_line)
                 if first_shape.geom_type in ["Polygon", "MultiPolygon"]:
-                    broken_shapes.append(Polygon(first_exterior_line, holes=first_shape_interiors))
+                    broken_shapes.append(
+                        Polygon(first_exterior_line, holes=first_shape_interiors)
+                    )
                 else:
                     broken_shapes.append(LineString(first_exterior_line))
             if first_shape.geom_type in ["Polygon", "MultiPolygon"]:
-                polygons_broken_dict[first_name] = MultiPolygon(broken_shapes) if len(broken_shapes) > 1 else broken_shapes[0]
+                polygons_broken_dict[first_name] = (
+                    MultiPolygon(broken_shapes)
+                    if len(broken_shapes) > 1
+                    else broken_shapes[0]
+                )
             else:
-                lines_broken_dict[first_name] = MultiLineString(broken_shapes) if len(broken_shapes) > 1 else broken_shapes[0]
+                lines_broken_dict[first_name] = (
+                    MultiLineString(broken_shapes)
+                    if len(broken_shapes) > 1
+                    else broken_shapes[0]
+                )
 
         # Add lines, reusing line segments
         meshtracker = MeshTracker(model=model)
@@ -248,7 +333,10 @@ def mesh_from_OrderedDict(
 
                 intersection = line - polygon.exterior
                 if not intersection.is_empty and polygon.contains(intersection):
-                    model.in_surface(meshtracker.gmsh_xy_segments[index_segment], meshtracker.gmsh_xy_surfaces[index_surface])
+                    model.in_surface(
+                        meshtracker.gmsh_xy_segments[index_segment],
+                        meshtracker.gmsh_xy_surfaces[index_surface],
+                    )
 
         # Refinement in surfaces
         n = 0
@@ -258,23 +346,29 @@ def mesh_from_OrderedDict(
             mesh_resolution = mesh_setting["resolution"]
             gmsh.model.mesh.field.add("MathEval", n)
             gmsh.model.mesh.field.setString(n, "F", f"{mesh_resolution}")
-            gmsh.model.mesh.field.add("Restrict", n+1)
-            gmsh.model.mesh.field.setNumber(n+1, "InField", n)
-            gmsh.model.mesh.field.setNumbers(n+1, "SurfacesList", meshtracker.get_gmsh_xy_surfaces_from_label(label))
+            gmsh.model.mesh.field.add("Restrict", n + 1)
+            gmsh.model.mesh.field.setNumber(n + 1, "InField", n)
+            gmsh.model.mesh.field.setNumbers(
+                n + 1,
+                "SurfacesList",
+                meshtracker.get_gmsh_xy_surfaces_from_label(label),
+            )
             # Around surface
             mesh_distance = mesh_setting["distance"]
-            gmsh.model.mesh.field.add("Distance", n+2)
-            gmsh.model.mesh.field.setNumbers(n+2, "CurvesList", meshtracker.get_gmsh_xy_lines_from_label(label))
-            gmsh.model.mesh.field.setNumber(n+2, "Sampling", 100)
-            gmsh.model.mesh.field.add("Threshold", n+3)
-            gmsh.model.mesh.field.setNumber(n+3, "InField", n+2)
-            gmsh.model.mesh.field.setNumber(n+3, "SizeMin", mesh_resolution)
-            gmsh.model.mesh.field.setNumber(n+3, "SizeMax", default_resolution_max)
-            gmsh.model.mesh.field.setNumber(n+3, "DistMin", 0)
-            gmsh.model.mesh.field.setNumber(n+3, "DistMax", mesh_distance)
+            gmsh.model.mesh.field.add("Distance", n + 2)
+            gmsh.model.mesh.field.setNumbers(
+                n + 2, "CurvesList", meshtracker.get_gmsh_xy_lines_from_label(label)
+            )
+            gmsh.model.mesh.field.setNumber(n + 2, "Sampling", 100)
+            gmsh.model.mesh.field.add("Threshold", n + 3)
+            gmsh.model.mesh.field.setNumber(n + 3, "InField", n + 2)
+            gmsh.model.mesh.field.setNumber(n + 3, "SizeMin", mesh_resolution)
+            gmsh.model.mesh.field.setNumber(n + 3, "SizeMax", default_resolution_max)
+            gmsh.model.mesh.field.setNumber(n + 3, "DistMin", 0)
+            gmsh.model.mesh.field.setNumber(n + 3, "DistMax", mesh_distance)
             # Save and increment
-            refinement_fields.append(n+1)
-            refinement_fields.append(n+3)
+            refinement_fields.append(n + 1)
+            refinement_fields.append(n + 3)
             n += 4
 
         if global_quad:
@@ -316,8 +410,8 @@ def mesh_from_OrderedDict(
 
         with contextlib.redirect_stdout(None):
             with tempfile.TemporaryDirectory() as tmpdirname:
-                gmsh.write(f'{tmpdirname}/mesh.msh')
-                return meshio.read(f'{tmpdirname}/mesh.msh')
+                gmsh.write(f"{tmpdirname}/mesh.msh")
+                return meshio.read(f"{tmpdirname}/mesh.msh")
 
 
 if __name__ == "__main__":
@@ -330,29 +424,30 @@ if __name__ == "__main__":
 
     width = 4
     length = 10.5
-    pml = .5
+    pml = 0.5
 
-    width_wg_1 = .5
+    width_wg_1 = 0.5
     length_wg_1 = 5
 
     width_wg_2 = 2
     length_wg_2 = 5
 
-    core = Polygon([
-        (-width_wg_1 / 2, -length_wg_1),
-        (-width_wg_1 / 2, 0),
-        (-width_wg_2 / 2, 0),
-        (-width_wg_2 / 2, length_wg_2),
-        (width_wg_2 / 2, length_wg_2),
-        (width_wg_2 / 2, 0),
-        (width_wg_1 / 2, 0),
-        (width_wg_1 / 2, -length_wg_1),
-    ])
+    core = Polygon(
+        [
+            (-width_wg_1 / 2, -length_wg_1),
+            (-width_wg_1 / 2, 0),
+            (-width_wg_2 / 2, 0),
+            (-width_wg_2 / 2, length_wg_2),
+            (width_wg_2 / 2, length_wg_2),
+            (width_wg_2 / 2, 0),
+            (width_wg_1 / 2, 0),
+            (width_wg_1 / 2, -length_wg_1),
+        ]
+    )
 
-    source = LineString([
-        (width_wg_2 / 2, -length_wg_1 / 2),
-        (-width_wg_2 / 2, -length_wg_1 / 2)
-    ])
+    source = LineString(
+        [(width_wg_2 / 2, -length_wg_1 / 2), (-width_wg_2 / 2, -length_wg_1 / 2)]
+    )
     print(source)
 
     polygons = OrderedDict(
@@ -364,10 +459,12 @@ if __name__ == "__main__":
 
     resolutions = dict(
         source={"resolution": 0.02, "distance": 1},
-        core={"resolution": .02, "distance": 1},
+        core={"resolution": 0.02, "distance": 1},
     )
 
-    mesh = mesh_from_OrderedDict(polygons, resolutions, filename='mesh.msh', default_resolution_max=.3)
+    mesh = mesh_from_OrderedDict(
+        polygons, resolutions, filename="mesh.msh", default_resolution_max=0.3
+    )
 
     # wmode = 1
     # wsim = 2
@@ -379,13 +476,13 @@ if __name__ == "__main__":
     # offset_core2 = 1
 
     # # Lines can be added, which is useful to define boundary conditions at various simulation edges
-    # left_edge = LineString([Point(-wsim/2, -hcore/2  - hbox), 
+    # left_edge = LineString([Point(-wsim/2, -hcore/2  - hbox),
     #                         Point(-wsim/2, -hcore/2 + hclad)])
-    # right_edge = LineString([Point(wsim/2, -hcore/2  - hbox), 
+    # right_edge = LineString([Point(wsim/2, -hcore/2  - hbox),
     #                         Point(wsim/2, -hcore/2 + hclad)])
-    # top_edge = LineString([Point(-wsim/2, -hcore/2 + hclad), 
+    # top_edge = LineString([Point(-wsim/2, -hcore/2 + hclad),
     #                         Point(wsim/2, -hcore/2 + hclad)])
-    # bottom_edge = LineString([Point(-wsim/2, -hcore/2  - hbox), 
+    # bottom_edge = LineString([Point(-wsim/2, -hcore/2  - hbox),
     #                         Point(wsim/2, -hcore/2  - hbox)])
 
     # # Polygons not only have an edge, but an interior
@@ -421,7 +518,7 @@ if __name__ == "__main__":
     # # shapes["right_edge"] = right_edge
     # # shapes["top_edge"] = top_edge
     # # shapes["bottom_edge"] = bottom_edge
-    # shapes["core"] = core 
+    # shapes["core"] = core
     # shapes["core2"] = core2
     # shapes["clad"] = clad
     # shapes["box"] = box

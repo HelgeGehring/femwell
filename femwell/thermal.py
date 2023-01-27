@@ -2,16 +2,26 @@ from typing import Dict
 
 import numpy as np
 
-from skfem import asm, ElementTriP0, ElementTriP1, BilinearForm, LinearForm, Basis, solve, condense, Mesh
+from skfem import (
+    asm,
+    ElementTriP0,
+    ElementTriP1,
+    BilinearForm,
+    LinearForm,
+    Basis,
+    solve,
+    condense,
+    Mesh,
+)
 from skfem.helpers import dot
 
 
 def solve_thermal(
-        basis0,
-        thermal_conductivity,
-        specific_conductivity: Dict[str, float],
-        current_densities,
-        fixed_boundaries
+    basis0,
+    thermal_conductivity,
+    specific_conductivity: Dict[str, float],
+    current_densities,
+    fixed_boundaries,
 ):
     """Thermal simulation.
 
@@ -36,9 +46,18 @@ def solve_thermal(
         return v
 
     joule_heating_rhs = basis.zeros()
-    for domain, current_density in current_densities.items():  # sum up the sources for the heating
-        core_basis = Basis(basis.mesh, basis.elem, elements=basis.mesh.subdomains[domain])
-        joule_heating_rhs += current_density ** 2 / specific_conductivity[domain] * unit_load.assemble(core_basis)
+    for (
+        domain,
+        current_density,
+    ) in current_densities.items():  # sum up the sources for the heating
+        core_basis = Basis(
+            basis.mesh, basis.elem, elements=basis.mesh.subdomains[domain]
+        )
+        joule_heating_rhs += (
+            current_density**2
+            / specific_conductivity[domain]
+            * unit_load.assemble(core_basis)
+        )
 
     thermal_conductivity_lhs = asm(
         conduction,
@@ -55,14 +74,14 @@ def solve_thermal(
             thermal_conductivity_lhs,
             joule_heating_rhs,
             D=basis.get_dofs(set(fixed_boundaries.keys())),
-            x=x
+            x=x,
         )
     )
 
     return basis, temperature
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from shapely.geometry import Polygon, LineString
     from collections import OrderedDict
     import matplotlib.pyplot as plt
@@ -76,53 +95,62 @@ if __name__ == '__main__':
     w_core = 0.5
     h_core = 0.22
     offset_heater = 2.2
-    h_heater = .14
+    h_heater = 0.14
     w_heater = 2
 
     polygons = OrderedDict(
-        bottom=LineString([
-            (-w_sim / 2, -h_core / 2 - h_box),
-            (w_sim / 2, -h_core / 2 - h_box)
-        ]),
-        core=Polygon([
-            (-w_core / 2, -h_core / 2),
-            (-w_core / 2, h_core / 2),
-            (w_core / 2, h_core / 2),
-            (w_core / 2, -h_core / 2),
-        ]),
-        heater=Polygon([
-            (-w_heater / 2, -h_heater / 2 + offset_heater),
-            (-w_heater / 2, h_heater / 2 + offset_heater),
-            (w_heater / 2, h_heater / 2 + offset_heater),
-            (w_heater / 2, -h_heater / 2 + offset_heater),
-        ]),
-        clad=Polygon([
-            (-w_sim / 2, -h_core / 2),
-            (-w_sim / 2, -h_core / 2 + h_clad),
-            (w_sim / 2, -h_core / 2 + h_clad),
-            (w_sim / 2, -h_core / 2),
-        ]),
-        box=Polygon([
-            (-w_sim / 2, -h_core / 2),
-            (-w_sim / 2, -h_core / 2 - h_box),
-            (w_sim / 2, -h_core / 2 - h_box),
-            (w_sim / 2, -h_core / 2),
-        ])
+        bottom=LineString(
+            [(-w_sim / 2, -h_core / 2 - h_box), (w_sim / 2, -h_core / 2 - h_box)]
+        ),
+        core=Polygon(
+            [
+                (-w_core / 2, -h_core / 2),
+                (-w_core / 2, h_core / 2),
+                (w_core / 2, h_core / 2),
+                (w_core / 2, -h_core / 2),
+            ]
+        ),
+        heater=Polygon(
+            [
+                (-w_heater / 2, -h_heater / 2 + offset_heater),
+                (-w_heater / 2, h_heater / 2 + offset_heater),
+                (w_heater / 2, h_heater / 2 + offset_heater),
+                (w_heater / 2, -h_heater / 2 + offset_heater),
+            ]
+        ),
+        clad=Polygon(
+            [
+                (-w_sim / 2, -h_core / 2),
+                (-w_sim / 2, -h_core / 2 + h_clad),
+                (w_sim / 2, -h_core / 2 + h_clad),
+                (w_sim / 2, -h_core / 2),
+            ]
+        ),
+        box=Polygon(
+            [
+                (-w_sim / 2, -h_core / 2),
+                (-w_sim / 2, -h_core / 2 - h_box),
+                (w_sim / 2, -h_core / 2 - h_box),
+                (w_sim / 2, -h_core / 2),
+            ]
+        ),
     )
 
     resolutions = dict(
         core={"resolution": 0.02, "distance": 1},
         clad={"resolution": 0.4, "distance": 1},
         box={"resolution": 0.4, "distance": 1},
-        heater={"resolution": 0.05, "distance": 1}
+        heater={"resolution": 0.05, "distance": 1},
     )
 
-    mesh_from_OrderedDict(polygons, resolutions, filename='mesh.msh', default_resolution_max=.4)
+    mesh_from_OrderedDict(
+        polygons, resolutions, filename="mesh.msh", default_resolution_max=0.4
+    )
 
-    mesh = Mesh.load('mesh.msh')
+    mesh = Mesh.load("mesh.msh")
     print(mesh.boundaries)
 
-    currents = np.linspace(0.007, 10e-3, 10) / polygons['heater'].area
+    currents = np.linspace(0.007, 10e-3, 10) / polygons["heater"].area
     neffs = []
 
     from tqdm.auto import tqdm
@@ -130,14 +158,22 @@ if __name__ == '__main__':
     for current in tqdm(currents):
         basis0 = Basis(mesh, ElementTriP0(), intorder=4)
         thermal_conductivity_p0 = basis0.zeros()
-        for domain, value in {"core": 148, "box": 1.38, "clad": 1.38, "heater": 28}.items():
+        for domain, value in {
+            "core": 148,
+            "box": 1.38,
+            "clad": 1.38,
+            "heater": 28,
+        }.items():
             thermal_conductivity_p0[basis0.get_dofs(elements=domain)] = value
         thermal_conductivity_p0 *= 1e-12  # 1e-12 -> conversion from 1/m^2 -> 1/um^2
 
-        basis, temperature = solve_thermal(basis0, thermal_conductivity_p0,
-                                           specific_conductivity={"heater": 2.3e6},
-                                           current_densities={"heater": current},
-                                           fixed_boundaries={'bottom': 0})
+        basis, temperature = solve_thermal(
+            basis0,
+            thermal_conductivity_p0,
+            specific_conductivity={"heater": 2.3e6},
+            current_densities={"heater": current},
+            fixed_boundaries={"bottom": 0},
+        )
         # basis.plot(temperature, colorbar=True)
         # plt.show()
 
@@ -145,11 +181,14 @@ if __name__ == '__main__':
 
         temperature0 = basis0.project(basis.interpolate(temperature))
         epsilon = basis0.zeros() + (1.444 + 1.00e-5 * temperature0) ** 2
-        epsilon[basis0.get_dofs(elements='core')] = \
-            (3.4777 + 1.86e-4 * temperature0[basis0.get_dofs(elements='core')]) ** 2
+        epsilon[basis0.get_dofs(elements="core")] = (
+            3.4777 + 1.86e-4 * temperature0[basis0.get_dofs(elements="core")]
+        ) ** 2
         # basis0.plot(epsilon, colorbar=True).show()
 
-        lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=5)
+        lams, basis, xs = compute_modes(
+            basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=5
+        )
 
         print(lams)
 
@@ -158,8 +197,8 @@ if __name__ == '__main__':
 
         neffs.append(np.real(lams[0]))
 
-    print(f'Phase shift: {2 * np.pi / 1.55 * (neffs[-1] - neffs[0]) * 320}')
-    plt.xlabel('Power')
-    plt.ylabel('$n_{eff}$')
+    print(f"Phase shift: {2 * np.pi / 1.55 * (neffs[-1] - neffs[0]) * 320}")
+    plt.xlabel("Power")
+    plt.ylabel("$n_{eff}$")
     plt.plot(currents, neffs)
     plt.show()

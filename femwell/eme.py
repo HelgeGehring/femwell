@@ -4,9 +4,15 @@ and references.
 """
 import numpy as np
 import matplotlib.pyplot as plt
-from femwell.mode_solver import calculate_overlap, calculate_scalar_product, calculate_hfield, plot_mode
+from femwell.mode_solver import (
+    calculate_overlap,
+    calculate_scalar_product,
+    calculate_hfield,
+    plot_mode,
+)
 import sys
-sys.path.insert(0, './mesh')
+
+sys.path.insert(0, "./mesh")
 from femwell.mesh.slice import slice_component_xbounds
 
 import sax
@@ -17,9 +23,8 @@ except ImportError:
     klujax = None
 
 
-
 def compute_interface_s_matrix(
-    mode_a, # lams, basis, xs
+    mode_a,  # lams, basis, xs
     mode_b,
 ):
     lams_a, basis_a, xs_a = mode_a
@@ -33,22 +38,26 @@ def compute_interface_s_matrix(
             E_j = xs_b[j]
             H_i = calculate_hfield(basis_a, E_i, lams_a[i] * (2 * np.pi / 1.55))
             H_j = calculate_hfield(basis_b, E_j, lams_b[j] * (2 * np.pi / 1.55))
-            products_ab[i, j] = np.abs(calculate_scalar_product(basis_a, E_i, basis_b, H_j))
-            products_ba[j, i] = np.abs(calculate_scalar_product(basis_b, E_j, basis_a, H_i))
+            products_ab[i, j] = np.abs(
+                calculate_scalar_product(basis_a, E_i, basis_b, H_j)
+            )
+            products_ba[j, i] = np.abs(
+                calculate_scalar_product(basis_b, E_j, basis_a, H_i)
+            )
 
-    T_ab = 2*np.linalg.inv(products_ab + products_ba.T)
-    R_ab = 0.5*(products_ba.T - products_ab)@T_ab
+    T_ab = 2 * np.linalg.inv(products_ab + products_ba.T)
+    R_ab = 0.5 * (products_ba.T - products_ab) @ T_ab
 
-    T_ba = 2*np.linalg.inv(products_ba + products_ab.T)
-    R_ba = 0.5*(products_ab.T - products_ba)@T_ba
+    T_ba = 2 * np.linalg.inv(products_ba + products_ab.T)
+    R_ba = 0.5 * (products_ab.T - products_ba) @ T_ba
 
     S = np.concatenate(
-            [
-                np.concatenate([R_ab, T_ba], 1),
-                np.concatenate([T_ab, R_ba], 1),
-            ],
-            0,
-        )
+        [
+            np.concatenate([R_ab, T_ba], 1),
+            np.concatenate([T_ab, R_ba], 1),
+        ],
+        0,
+    )
 
     # create port map
     in_ports = [f"left@{i}" for i in range(len(mode_a))]
@@ -59,17 +68,16 @@ def compute_interface_s_matrix(
 
 
 def compute_propagation_s_matrix(modes, length, wavelength):
-    lams, basis, xs = modes # lams is neff
+    lams, basis, xs = modes  # lams is neff
     betas = lams * 2 * np.pi / wavelength
     # S = np.diag(np.exp(-1 * 2j * np.pi * np.abs(betas) * length))
     s_dict = {
-        (f"left@{i}", f"right@{i}"): np.exp(
-            beta * length
-        )
+        (f"left@{i}", f"right@{i}"): np.exp(beta * length)
         for i, beta in enumerate(betas)
     }
     s_dict = {**s_dict, **{(p2, p1): v for (p1, p2), v in s_dict.items()}}
     return s_dict
+
 
 def _get_netlist(propagations, interfaces):
     """get the netlist of a stack of `Modes`"""
@@ -91,6 +99,7 @@ def _get_netlist(propagations, interfaces):
 
     return {"instances": instances, "connections": connections, "ports": ports}
 
+
 def _validate_sax_backend(sax_backend):
     if sax_backend is None:
         sax_backend = "klu" if klujax is not None else "default"
@@ -101,6 +110,7 @@ def _validate_sax_backend(sax_backend):
         )
     return sax_backend
 
+
 def _load_constant_model(value):
     def model():
         return value
@@ -108,7 +118,14 @@ def _load_constant_model(value):
     return model
 
 
-def compute_total_S_matrix(meshnames, mesh_info_dict, lengths, wavelength, num_modes, sax_backend=None,):
+def compute_total_S_matrix(
+    meshnames,
+    mesh_info_dict,
+    lengths,
+    wavelength,
+    num_modes,
+    sax_backend=None,
+):
     """
     Given a list of N meshes corresponding to sections lengths, computes the overall S-matrix of the resulting modes.
     Uses a propagation matrix along each length, and an interface matrix between each segment.
@@ -118,7 +135,7 @@ def compute_total_S_matrix(meshnames, mesh_info_dict, lengths, wavelength, num_m
     |---meshes[0]---|----------meshes[1]-----------|---.....----|----------meshes[N]-----------|
     ^               ^                              ^            ^                              ^
     In              0-1                            1-2        (N-1)-N                          Out
-                  interface                     interface    interface                      
+                  interface                     interface    interface
 
         Args:
             meshes: list of gmsh mesh objects, with physicals named like keys of indices
@@ -136,17 +153,21 @@ def compute_total_S_matrix(meshnames, mesh_info_dict, lengths, wavelength, num_m
         epsilon = basis0.zeros()
         for name, refractive_index in indices_dict.items():
             try:
-                epsilon[basis0.get_dofs(elements=name)] = refractive_index ** 2
+                epsilon[basis0.get_dofs(elements=name)] = refractive_index**2
             except ValueError:
                 pass
-        lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=num_modes)
+        lams, basis, xs = compute_modes(
+            basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=num_modes
+        )
         plot_mode(basis, np.real(xs[0]))
         plt.show()
         plot_mode(basis, np.imag(xs[0]))
         plt.show()
         modes.append((lams, basis, xs))
         # Create SAX model for propagation
-        propagations[f"p_{i}"] = compute_propagation_s_matrix((lams, basis, xs), lengths[i], wavelength)
+        propagations[f"p_{i}"] = compute_propagation_s_matrix(
+            (lams, basis, xs), lengths[i], wavelength
+        )
     interfaces = {
         f"i_{i}_{i + 1}": compute_interface_s_matrix(modes[i], modes[i + 1])
         for i in range(len(meshnames) - 1)
@@ -163,6 +184,7 @@ def compute_total_S_matrix(meshnames, mesh_info_dict, lengths, wavelength, num_m
     sdict = {k: sdict[k] for k in sorted(sdict)}
     return sax.sdense(sdict)
 
+
 if __name__ == "__main__":
 
     import tempfile
@@ -174,12 +196,17 @@ if __name__ == "__main__":
 
     from skfem import Mesh, Basis, ElementTriP0
 
-    from femwell.mode_solver import compute_modes, plot_mode, calculate_overlap, calculate_hfield
+    from femwell.mode_solver import (
+        compute_modes,
+        plot_mode,
+        calculate_overlap,
+        calculate_hfield,
+    )
+
     # from femwell.waveguide import mesh_waveguide
 
     import gdsfactory as gf
     import gdsfactory.simulation.gmsh as gfmesh
-
 
     """
     The below mininmal example shows how to
@@ -203,9 +230,9 @@ if __name__ == "__main__":
     # )
     # straight = c.add_ref(gf.components.straight(10, width = 2, cross_section="rib"))
     # straight.connect("o1", taper.ports["o2"])
-    straight2 = c.add_ref(gf.components.straight(10, width = 2, cross_section="strip"))
+    straight2 = c.add_ref(gf.components.straight(10, width=2, cross_section="strip"))
     # straight2.connect("o1", straight.ports["o2"])
-    straight = c.add_ref(gf.components.straight(10, width = 2, cross_section="rib"))
+    straight = c.add_ref(gf.components.straight(10, width=2, cross_section="rib"))
     straight.connect("o1", straight2.ports["o2"])
     # taper = c.add_ref(
     #     gf.components.taper(length = 10.0,
@@ -222,7 +249,6 @@ if __name__ == "__main__":
     #                             cross_section = "strip",
     #             ).move([12, -5])
     # )
-
 
     """
     (2) Get LayerStack
@@ -243,12 +269,12 @@ if __name__ == "__main__":
     """
     (3) Get x-coordinates
     """
-    nm = 1E-3
+    nm = 1e-3
     # Compute the x-coordinates where the cross-section changes
-    lines_x = slice_component_xbounds(c, filtered_layerstack, mesh_step=1000*nm)
+    lines_x = slice_component_xbounds(c, filtered_layerstack, mesh_step=1000 * nm)
     for x in lines_x:
         P = gf.Path([[x, -20], [x, 20]])
-        X = gf.CrossSection(width=0.001, layer=(99,0))
+        X = gf.CrossSection(width=0.001, layer=(99, 0))
         line = gf.path.extrude(P, X)
         c << line
 
@@ -263,29 +289,38 @@ if __name__ == "__main__":
         "Oxide": {"resolution": 0.3, "distance": 2},
     }
 
-    ymin = -6 # make sure all objects cross the line
-    ymax = 6 # make sure all objects cross the line
+    ymin = -6  # make sure all objects cross the line
+    ymax = 6  # make sure all objects cross the line
 
     meshes = []
     lengths = []
     meshnames = []
     for x1, x2 in zip(lines_x[:-1], lines_x[1:]):
-        x = (x1+x2)/2
-        lengths.append(x2-x1)
-        xsection_bounds = [[x, ymin],[x, ymax]]
-        meshes.append(gf.simulation.gmsh.uz_xsection_mesh(
-        c,
-        xsection_bounds,
-        filtered_layerstack,
-        resolutions=resolutions,
-        background_tag="clad",
-        background_padding=(2.0, 2.0, 2.0, 2.0), # how much of backgorund tag to add to each side of the simulatoin
-        filename=f"mesh_x_{x1}.msh",
-    ))
+        x = (x1 + x2) / 2
+        lengths.append(x2 - x1)
+        xsection_bounds = [[x, ymin], [x, ymax]]
+        meshes.append(
+            gf.simulation.gmsh.uz_xsection_mesh(
+                c,
+                xsection_bounds,
+                filtered_layerstack,
+                resolutions=resolutions,
+                background_tag="clad",
+                background_padding=(
+                    2.0,
+                    2.0,
+                    2.0,
+                    2.0,
+                ),  # how much of backgorund tag to add to each side of the simulatoin
+                filename=f"mesh_x_{x1}.msh",
+            )
+        )
     meshnames.append(f"mesh_x_{x1}.msh")
     num_modes = 16
 
     indices_dict = {"core": 3.45, "slab90": 3.45, "clad": 1.44}
 
-    S = compute_total_S_matrix(meshnames, indices_dict, lengths, wavelength=1.55, num_modes=num_modes)
+    S = compute_total_S_matrix(
+        meshnames, indices_dict, lengths, wavelength=1.55, num_modes=num_modes
+    )
     print(S)
