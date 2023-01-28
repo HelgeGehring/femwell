@@ -77,13 +77,13 @@ def compute_modes(
     if metallic_boundaries:
         lams, xs = solve(
             *condense(-A, -B, D=basis.get_dofs()),
-            solver=solver_eigen_scipy(k=num_modes, sigma=k0**2 * np.max(epsilon_r) ** 2),
+            solver=solver(k=num_modes, sigma=k0**2 * np.max(epsilon_r) ** 2),
         )
     else:
         lams, xs = solve(
             -A,
             -B,
-            solver=solver_eigen_scipy(k=num_modes, sigma=k0**2 * np.max(epsilon_r) ** 2),
+            solver=solver(k=num_modes, sigma=k0**2 * np.max(epsilon_r) ** 2),
         )
 
     idx = np.abs(np.real(lams)).argsort()[::-1]
