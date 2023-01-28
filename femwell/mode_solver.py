@@ -32,7 +32,17 @@ def compute_modes(
     order=1,
     metallic_boundaries=False,
     radius=np.inf,
+    solver="scipy",
 ):
+    if solver == "scipy":
+        solver = solver_eigen_scipy
+    elif solver == "slepc":
+        from femwell.solver import solver_eigen_slepc
+
+        solver = solver_eigen_slepc
+    else:
+        raise ValueError("`solver` must either be `scipy` or `slepc`")
+
     k0 = 2 * np.pi / wavelength
 
     if order == 1:
