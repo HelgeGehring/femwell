@@ -8,6 +8,7 @@ chapters:
   sections:
   - file: math/maxwell
   - file: math/thermal
+  - file: math/dispersion
   - file: math/coupled_mode_theory
 - file: photonics/mode_solver
 - file: photonics/mode_solver_periodic
