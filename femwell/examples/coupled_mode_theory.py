@@ -5,6 +5,9 @@ from collections import OrderedDict
 
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy.constants
+from scipy.constants import epsilon_0, speed_of_light
+from scipy.integrate import RK45
 from shapely.geometry import Polygon
 from skfem import Basis, ElementTriP0, Mesh
 
@@ -80,26 +83,26 @@ epsilon[basis0.get_dofs(elements="core_1")] = 3.4777**2
 epsilon[basis0.get_dofs(elements="core_2")] = 1.444**2
 epsilon[basis0.get_dofs(elements="clad")] = 1.444**2
 epsilon[basis0.get_dofs(elements="box")] = 1.444**2
-basis0.plot(epsilon, colorbar=True).show()
+# basis0.plot(epsilon, colorbar=True).show()
 
 lams_1, basis, xs_1 = compute_modes(basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=1)
 print(lams_1)
 
-plot_mode(basis, np.real(xs_1[0]))
-plt.show()
+# plot_mode(basis, np.real(xs_1[0]))
+# plt.show()
 
 epsilon_2 = basis0.zeros()
 epsilon_2[basis0.get_dofs(elements="core_1")] = 1.444**2
 epsilon_2[basis0.get_dofs(elements="core_2")] = 3.4777**2
 epsilon_2[basis0.get_dofs(elements="clad")] = 1.444**2
 epsilon_2[basis0.get_dofs(elements="box")] = 1.444**2
-basis0.plot(epsilon_2, colorbar=True).show()
+# basis0.plot(epsilon_2, colorbar=True).show()
 
 lams_2, basis, xs_2 = compute_modes(basis0, epsilon_2, wavelength=wavelength, mu_r=1, num_modes=1)
 print(lams_2)
 
-plot_mode(basis, np.real(xs_2[0]))
-plt.show()
+# plot_mode(basis, np.real(xs_2[0]))
+# plt.show()
 
 epsilons = [epsilon, epsilon_2]
 modes = [(lam, x, 0) for lam, x in zip(lams_1, xs_1)] + [
@@ -109,14 +112,24 @@ modes = [(lam, x, 0) for lam, x in zip(lams_1, xs_1)] + [
 overlap_integrals = np.zeros((len(modes), len(modes)), dtype=complex)
 for i, (lam_i, E_i, epsilon_i) in enumerate(modes):
     for j, (lam_j, E_j, epsilon_j) in enumerate(modes):
-        H_i = calculate_hfield(basis, E_i, lam_i * (2 * np.pi / 1.55))
-        H_j = calculate_hfield(basis, E_j, lam_j * (2 * np.pi / 1.55))
+        H_i = calculate_hfield(
+            basis,
+            E_i,
+            lam_i * (2 * np.pi / 1.55),
+            omega=2 * np.pi / wavelength * scipy.constants.speed_of_light,
+        )
+        H_j = calculate_hfield(
+            basis,
+            E_j,
+            lam_j * (2 * np.pi / 1.55),
+            omega=2 * np.pi / wavelength * scipy.constants.speed_of_light,
+        )
         overlap_integrals[i, j] = calculate_overlap(basis, E_i, H_i, basis, E_j, H_j)
 
-print(overlap_integrals)
-plt.imshow(np.abs(overlap_integrals))
-plt.colorbar()
-plt.show()
+print("overlap", overlap_integrals)
+# plt.imshow(np.abs(overlap_integrals))
+# plt.colorbar()
+# plt.show()
 
 coupling_coefficients = np.zeros((len(modes), len(modes)), dtype=complex)
 for i, (lam_i, E_i, epsilon_i) in enumerate(modes):
@@ -125,10 +138,11 @@ for i, (lam_i, E_i, epsilon_i) in enumerate(modes):
             basis0, epsilons[(epsilon_j + 1) % 2] - 1.444**2, basis, E_i, E_j
         )
 
+
 print(coupling_coefficients)
-plt.imshow(np.abs(coupling_coefficients))
-plt.colorbar()
-plt.show()
+# plt.imshow(np.abs(coupling_coefficients))
+# plt.colorbar()
+# plt.show()
 
 kappas = np.array(
     [
@@ -161,3 +175,36 @@ print(np.pi / (2 * beta_c))
 
 eta = np.abs(kappas[1, 0] ** 2 / beta_c**2) * np.sin(beta_c * 1e3)
 print(eta, np.abs(kappas[1, 0] ** 2 / beta_c**2))
+
+# see http://home.iitj.ac.in/~k.r.hiremath/research/thesis.pdf , not yet finished
+
+
+def fun(t, y):
+    phase_matrix = [
+        [np.exp(2j * np.pi / wavelength * (lam_i - lam_j) * t) for lam_j, E_j, epsilon_j in modes]
+        for lam_i, E_i, epsilon_i in modes
+    ]
+    matrix = (
+        np.linalg.inv(overlap_integrals * phase_matrix)
+        @ coupling_coefficients
+        * phase_matrix
+        * -1j
+        * scipy.constants.speed_of_light
+        * epsilon_0
+    )
+    return (matrix @ y.reshape(matrix.shape)).ravel()
+
+
+stepping = RK45(fun, 0, np.eye(len(modes), dtype=complex).ravel(), 300, max_step=3)
+
+ts = []
+ys = []
+
+for i in range(100):
+    stepping.step()
+    ts.append(stepping.t)
+    ys.append(stepping.y)
+
+plt.plot(ts, np.abs(np.array(ys).reshape((-1,) + coupling_coefficients.shape) @ (1, 0)) ** 2, "r")
+# plt.plot(ts, np.array(ys).imag.reshape((-1,)+matrix.shape)@(1,0), 'g')
+plt.show()
