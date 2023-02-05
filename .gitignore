@@ -7,9 +7,11 @@ build/
 docs/_build
 
 *.msh
+*.xdmf
+*.vtk
+
 *.png
 *.h5
-*.xdmf
 *.ipynb
 
 .vscode/
