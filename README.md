@@ -1,6 +1,6 @@
 # Femwell
 
-![logo](https://i.imgur.com/GHjcE7U.png)
+![logo](https://i.imgur.com/LgIwqdf.png)
 
 [![Docs](https://github.com/helgegehring/femwell/actions/workflows/docs.yml/badge.svg)](https://HelgeGehring.github.io/femwell/)
 [![Build](https://github.com/helgegehring/femwell/actions/workflows/build.yml/badge.svg)](https://github.com/HelgeGehring/femwell/actions/workflows/build.yml)
