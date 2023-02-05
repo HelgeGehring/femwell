@@ -1,11 +1,13 @@
 # Femwell
 
+![logo](https://i.imgur.com/FyIZSK8.png)
+
 [![Docs](https://github.com/helgegehring/femwell/actions/workflows/docs.yml/badge.svg)](https://HelgeGehring.github.io/femwell/)
 [![Build](https://github.com/helgegehring/femwell/actions/workflows/build.yml/badge.svg)](https://github.com/HelgeGehring/femwell/actions/workflows/build.yml)
 [![PiPy](https://img.shields.io/pypi/v/femwell)](https://pypi.org/project/femwell/)
 [![Downloads](https://static.pepy.tech/badge/femwell/month)](https://pepy.tech/project/femwell)
 
-Working on a finite element based simulation tool for integrated circuits, electric and photonic!
+Finite element based simulation tool for integrated circuits, electric and photonic!
 The documentation is lagging behind the state of code, so there's several features for which there are only examples in the code.
 
 **You can try out the examples in the browser! Hover the rocket at the top on the example pages and click live code!**
