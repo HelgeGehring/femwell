@@ -32,7 +32,7 @@ def solve_coulomb(basis_epsilon_r, epsilon_r, fixed_boundaries):
 
 
 if __name__ == "__main__":
-    # Reproduce https://doi.org/10.3390/
+    # Reproduce https://doi.org/10.3390/photonics9070500
 
     import tempfile
     from collections import OrderedDict
