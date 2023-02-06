@@ -39,11 +39,12 @@ $$
 This way the field of the wave packet can be written as
 
 $$
-    &E
-    \\ \propto
-    &\mathrm{e}^{\mathrm{i}(k_1 x_3-\omega_1 t)} + \mathrm{e}^{\mathrm{i}(k_2 x_3-\omega_2 t)}
-    \\ \propto
-    &\cos\left(\mathrm{d}k x_3-\mathrm{d}\omega t\right) \mathrm{e}^{\mathrm{i}(k_0 x_3-\omega_0 t)}
+    E
+    &\propto
+    \mathrm{e}^{\mathrm{i}(k_1 x_3-\omega_1 t)} + \mathrm{e}^{\mathrm{i}(k_2 x_3-\omega_2 t)}
+    \\
+    &\propto
+    \cos\left(\mathrm{d}k x_3-\mathrm{d}\omega t\right) \mathrm{e}^{\mathrm{i}(k_0 x_3-\omega_0 t)}
 $$
 
 Thus, the wave has a *carrier* with the frequency $\omega_0$ and the propagation constant $k_0$ and an *envelope* which propagates as $\cos\left(\mathrm{d}k x_3-\mathrm{d}\omega t\right)$.
@@ -58,6 +59,9 @@ This leads to the group velocity
 $$
     v_g = \frac{\mathrm{d}x_3}{\mathrm{d}t} = \frac{\mathrm{d}\omega}{\mathrm{d}k}.
 $$
+
+As the energy of a wave is porportional to its field amplitude squared, the energie is concentrated in areas where the envelope is large.
+Thus, the energy (and therefore also information) travels with the group velocity, while the constant-phase wavefronts travel with the phase velocity.
 
 ## Bibliography
 
