@@ -19,6 +19,13 @@ kernelspec:
 :load: examples/vary_width.py
 ```
 
+## Dispersion
+
+```{code-cell} ipython3
+:tags: [remove-stderr]
+:load: examples/vary_wavelength.py
+```
+
 ## Overlap with the mode of an optical fiber
 
 ```{code-cell} ipython3
