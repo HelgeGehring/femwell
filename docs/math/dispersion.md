@@ -63,6 +63,71 @@ $$
 As the energy of a wave is porportional to its field amplitude squared, the energie is concentrated in areas where the envelope is large.
 Thus, the energy (and therefore also information) travels with the group velocity, while the constant-phase wavefronts travel with the phase velocity.
 
+## Group velocity dispersion
+
+Because the propagation constant $k$ usually has a nonlinear dependency on the frequency $\omega$, i.e. the group velocity dispersion
+
+$$
+    \frac{\mathrm{d}^2k}{\mathrm{d}\omega^2} = \frac{\mathrm{d}}{\mathrm{d}\omega}v_g^{-1} \neq 0
+$$
+
+A dimensionless coefficient for the group velocity dispersion can be defiend as
+
+$$
+    D = c \omega \frac{\mathrm{d}^2k}{\mathrm{d}\omega^2} = \frac{2\pi c^2}{\lambda} \frac{\mathrm{d}^2k}{\mathrm{d}\omega^2} \,.
+$$
+
+The group velocity dispersion describes the behaviour of the pulse envelope during propagation. It can lead to effects such as a broadening of the pulse and a time delay between pulses of different wavelengths.
+For a *positive group-velocity dispersion* ($D>0$) a long-wavelength/low-frequency pulse travels faster than a short-wavelength/high-frequency pulse. Likewise, for a *negative group-velocity dispersion* ($D<0$) a short-wavelength/high-frequency pulse travels faster than a long-wavelength/low-frequency pulse. 
+
+For describing the propagation within an optical fiber usually another definition of the dispersion coefficient is used
+
+$$
+    D_\lambda
+    =
+    - \frac{2\pi c}{\lambda^2} \frac{\mathrm{d}^2k}{\mathrm{d}\omega^2}
+    =
+    - \frac{D}{c\lambda} \,,
+$$
+
+where usually $\mathrm{\frac{ps}{km \cdot nm}}$ is used as the unit. This way, it directly described the chromatic pulse transmission delay within the fiber.
+
+## Definition in terms of refractive index
+
+The dispersion can also be defined in terms of the refractive index. For this the propagation constant is written as
+
+$$
+    k = \frac{\omega}{c} n(\omega)
+$$
+
+This leads to the phase velocity
+
+$$
+    v_p = \frac{c}{n} \,,
+$$
+
+the group velocity
+
+$$
+    v_g
+    =
+    \frac{c}{n+\omega\frac{\mathrm{d}n}{\mathrm{d}\omega}}
+    =
+    \frac{c}{n-\lambda\frac{\mathrm{d}n}{\mathrm{d}\lambda}}
+    \,,
+$$
+
+and the group dispersion coefficient
+
+$$
+    &D(\lambda) = \lambda^2 \frac{\mathrm{d}^2n}{\mathrm{d}\lambda^2}
+    \\
+    &D_\lambda(\lambda) = - \frac{\lambda}{c} \frac{\mathrm{d}^2n}{\mathrm{d}\lambda^2}
+    \,.
+$$
+
+In the case of nanophotonic waveguides, the refractive index are replaced by the effective refractive index of the waveguide.
+
 ## Bibliography
 
 ```{bibliography}
