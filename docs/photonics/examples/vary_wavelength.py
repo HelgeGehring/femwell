@@ -63,7 +63,7 @@ for i, wavelength in enumerate(tqdm(wavelengths)):
 
 all_lams = np.real(all_lams)
 
-fig, axs = plt.subplots(1, 3, figsize=(14, 5))
+fig, axs = plt.subplots(1, 3)
 
 axs[0].set_xlabel("Wavelength [µm]")
 axs[0].set_ylabel("Effective refractive index")
