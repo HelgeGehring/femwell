@@ -89,4 +89,5 @@ for lams, te_fracs in zip(all_lams.T, all_te_fracs.T):
     axs[2].plot(wavelengths, y)
     sc = axs[2].scatter(wavelengths, y, c=te_fracs, cmap="cool", vmin=0, vmax=1)
 fig.colorbar(sc).set_label("TE fraction")
+plt.tight_layout()
 plt.show()
