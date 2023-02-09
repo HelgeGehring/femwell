@@ -34,7 +34,7 @@ flake8 = "*"
 [tool.poetry.group.docs.dependencies]
 tqdm = "*"
 sphinx-book-theme = "*"
-jupytext = ">=1.14.4"
+jupytext = "*"
 myst-parser = "*"
 
 [tool.black]
