@@ -12,12 +12,11 @@
 #     name: python3
 # ---
 
-# # Efficiency of a lithium niobate phase-shifter
+# # Lithium niobate phase-shifter
 
-# Reproducing https://doi.org/10.3390/photonics9070500
+# Reproducing {cite}`Han2022`
 
-# + tags=["remove-stderr"]
-
+# + tags=["hide-input"]
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
@@ -31,6 +30,9 @@ from femwell.culomb import solve_coulomb
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.mode_solver import compute_modes
 
+# -
+
+# + tags=["remove-stderr"]
 core_width = 1.532
 electrode_start_x = core_width / 2 + 2.629
 electrode_width = 4.4
@@ -117,3 +119,12 @@ plt.plot(voltages, np.real(voltages_neffs))
 plt.xlabel("Voltage [V]")
 plt.ylabel("Effective refractive index")
 plt.show()
+# -
+
+
+# ## Bibliography
+#
+# ```{bibliography}
+# :style: unsrt
+# :filter: docname in docnames
+# ```
