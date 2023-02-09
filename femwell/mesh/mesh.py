@@ -162,6 +162,8 @@ def mesh_from_Dict(
         #     model.add_physical(line, f"{meshtracker.xy_segments_main_labels[index]}_{meshtracker.xy_segments_secondary_labels[index]}_{i}")
         #     i += 1
 
+        # For periodicity
+
         mesh = geometry.generate_mesh(dim=2, verbose=verbose)
 
         if filename:
@@ -179,10 +181,13 @@ def mesh_from_OrderedDict(
     gmsh_algorithm: int = 5,
     global_quad: Optional[bool] = False,
     verbose: bool = False,
+    periodic_lines: Optional[Tuple[(str, str)]] = None,
 ):
     """
     Given an ordered dict of shapely Polygons, creates a mesh containing polygon surfaces according to the dict order.
     Returns a gmsh msh with physicals corresponding to the shapes_dict boundaries (which is the minimal number of surfaces for each key)
+
+    periodic_lines: (label1, label1) tuples forcing the mesh of line[label1] to map to the mesh of line[label2]. Currently only works if the lines are not intersected.
     """
 
     with pygmsh.occ.geometry.Geometry() as geometry:
@@ -386,6 +391,28 @@ def mesh_from_OrderedDict(
             if interfaces:
                 model.add_physical(interfaces, f"{surface1}___{surface2}")
 
+        gmsh.model.occ.synchronize()
+
+        # Force periodicity (experimental)
+        def validate_lines(line1, line2):
+            """TODO create a module for validating geometries."""
+
+        if periodic_lines:
+            for label1, label2 in periodic_lines:
+                # if validate_lines(): # TODO
+                line1 = shapes_dict[label1]
+                line2 = shapes_dict[label2]
+                gmsh.model.setCurrent("pygmsh model")
+                translation = np.array(line1.coords[0]) - np.array(line2.coords[0])
+                gmsh.model.mesh.setPeriodic(
+                    1,
+                    meshtracker.get_gmsh_xy_lines_from_label(label1),
+                    meshtracker.get_gmsh_xy_lines_from_label(label2),
+                    [1, 0, 0, translation[0], 0, 1, 0, translation[1], 0, 0, 1, 0, 0, 0, 0, 1],
+                )
+                # else: # TODO
+                #     raise ValueError("Periodic line pairs must be parallel and have the same straight length in the final, intersected geometry.")
+
         mesh = geometry.generate_mesh(dim=2, verbose=verbose)
 
         if filename:
@@ -431,24 +458,50 @@ if __name__ == "__main__":
             (width_wg_1 / 2, -length_wg_1),
         ]
     )
+    print(core)
+
+    box = Polygon(
+        [
+            (-width_wg_2 - 1, -6),
+            (-width_wg_2 - 1, 6),
+            (width_wg_2 - 0.5, 6),
+            (width_wg_2 - 0.5, -6),
+        ]
+    )
+    print(box)
 
     source = LineString([(width_wg_2 / 2, -length_wg_1 / 2), (-width_wg_2 / 2, -length_wg_1 / 2)])
     print(source)
 
+    left_wall_up = LineString([(-width_wg_2 - 1, -2), (-width_wg_2 - 1, 6)])
+    right_wall_up = LineString([(width_wg_2 - 0.5, -2), (width_wg_2 - 0.5, 6)])
+    left_wall_dw = LineString([(-width_wg_2 - 1, -6), (-width_wg_2 - 1, -2)])
+    right_wall_dw = LineString([(width_wg_2 - 0.5, -6), (width_wg_2 - 0.5, -2)])
+
     polygons = OrderedDict(
+        left_wall_up=left_wall_up,
+        right_wall_up=right_wall_up,
+        left_wall_dw=left_wall_dw,
+        right_wall_dw=right_wall_dw,
         source=source,
         core=core,
-        box=core.buffer(1, resolution=4) - core,
-        pml=core.buffer(2, resolution=4) - core.buffer(1, resolution=4),
+        box=box,
+        # pml=core.buffer(2, resolution=4) - core.buffer(1, resolution=4),
     )
 
     resolutions = dict(
         source={"resolution": 0.02, "distance": 1},
         core={"resolution": 0.02, "distance": 1},
+        # left_wall_up={"resolution": 1, "distance": 1},
+        # right_wall_up={"resolution": 0.5, "distance": 1},
     )
 
     mesh = mesh_from_OrderedDict(
-        polygons, resolutions, filename="mesh.msh", default_resolution_max=0.3
+        polygons,
+        resolutions,
+        filename="mesh.msh",
+        default_resolution_max=1,
+        # periodic_lines=[("left_wall_up", "right_wall_up"), ("left_wall_dw", "right_wall_dw")],
     )
 
     # wmode = 1
