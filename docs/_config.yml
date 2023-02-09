@@ -4,7 +4,7 @@
 title: Femwell
 author: Helge Gehring
 copyright: "2023"
-# logo: logo.png
+logo: ../logo_inline.svg
 
 # Force re-execution of notebooks on each build.
 # See https://jupyterbook.org/content/execute.html
