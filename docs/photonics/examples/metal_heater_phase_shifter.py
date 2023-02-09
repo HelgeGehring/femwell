@@ -14,8 +14,7 @@
 
 # # TiN TOPS heater
 
-# + tags=["remove-stderr"]
-
+# + tags=["hide-input"]
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
@@ -29,7 +28,11 @@ from femwell.mesh import mesh_from_OrderedDict
 from femwell.mode_solver import compute_modes
 from femwell.thermal import solve_thermal
 
-# Simulating the TiN TOPS heater in https://doi.org/10.1364/OE.27.010456
+# -
+
+# Simulating the TiN TOPS heater in {cite}`Jacques2019`
+
+# + tags=["remove-stderr"]
 
 w_sim = 8 * 2
 h_clad = 2.8
@@ -126,3 +129,12 @@ plt.xlabel("Current (mA)")
 plt.ylabel("$n_{eff}$")
 plt.plot(currents * 1e3, neffs)
 plt.show()
+# -
+
+
+# ## Bibliography
+#
+# ```{bibliography}
+# :style: unsrt
+# :filter: docname in docnames
+# ```
