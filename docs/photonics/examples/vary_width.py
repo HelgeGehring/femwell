@@ -15,7 +15,7 @@
 
 # # Variation of the width
 
-# + tags=["remove-stderr"]
+# + tags=["hide-input"]
 
 from collections import OrderedDict
 
@@ -30,6 +30,9 @@ from tqdm import tqdm
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.mode_solver import calculate_te_frac, compute_modes
 
+# -
+
+# + tags=["remove-stderr"]
 wavelength = 1.55
 num_modes = 8
 widths = np.linspace(0.5, 3.5, 100)
@@ -58,7 +61,9 @@ for i, width in enumerate(tqdm(widths)):
     )
     all_lams[i] = np.real(lams)
     all_te_fracs[i, :] = [calculate_te_frac(basis, xs[idx]) for idx in range(num_modes)]
+# -
 
+# + tags=["hide-input"]
 all_lams = np.real(all_lams)
 plt.xlabel("Width of waveguide [µm]")
 plt.ylabel("Effective refractive index")
@@ -68,3 +73,4 @@ for lams, te_fracs in zip(all_lams.T, all_te_fracs.T):
     plt.scatter(widths, lams, c=te_fracs, cmap="cool")
 plt.colorbar().set_label("TE fraction")
 plt.show()
+# -
