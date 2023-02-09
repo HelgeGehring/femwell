@@ -66,9 +66,7 @@ structure = shapely.Polygon(
     )
 )
 
-resolutions = {
-    # 'structure': {'resolution':.03, 'distance':.5}
-}
+resolutions = {"structure": {"resolution": 0.05, "distance": 0.5}}
 
 mesh = from_meshio(
     mesh_from_OrderedDict(
@@ -83,6 +81,7 @@ mesh = from_meshio(
         resolutions=resolutions,
         filename="mesh.msh",
         default_resolution_max=0.07,
+        periodic_lines=[("left", "right")],
     )
 )
 
@@ -101,7 +100,7 @@ basis_epsilon_r.plot(np.imag(epsilon_r), ax=mesh.draw(), colorbar=True).show()
 ks, basis_phi, phis = solve_periodic(basis_epsilon_r, epsilon_r, k0)
 
 
-idx = np.abs(np.imag(ks * a)) < 0.1
+idx = (np.abs(np.imag(ks * a)) < 0.1) * (np.abs(np.real(ks * a)) < 7)
 ks = ks[idx]
 phis = phis[:, idx]
 

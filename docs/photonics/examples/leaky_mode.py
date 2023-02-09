@@ -71,6 +71,7 @@ mesh = from_meshio(
         resolutions=resolutions,
         filename="mesh.msh",
         default_resolution_max=0.05,
+        periodic_lines=[("left", "right")],
     )
 )
 
