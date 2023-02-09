@@ -1,4 +1,5 @@
 import numpy as np
+from skfem import Functional
 
 
 def zr(mfr, refractive_index, wavelength):
@@ -29,3 +30,15 @@ def e_field_gaussian(r, z, mfr, refractive_index, wavelength):
         * np.exp(-(r**2) / mfr_at_z**2)
         * np.exp(-1j * (k * z + k * r**2 / (2 * r_at(z, mfr, refractive_index, wavelength))))
     )
+
+
+def overlap(basis, E_i, E_j):
+    @Functional(dtype=np.complex64)
+    def overlap_integral(w):
+        return w["E_i"] * np.conj(w["E_j"])
+
+    integral = overlap_integral.assemble(basis, E_i=E_i, E_j=E_j)
+    norm_i = np.sqrt(overlap_integral.assemble(basis, E_i=E_i, E_j=E_i))
+    norm_j = np.sqrt(overlap_integral.assemble(basis, E_i=E_j, E_j=E_j))
+
+    return np.abs(integral / norm_i / norm_j)
