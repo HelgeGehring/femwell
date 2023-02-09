@@ -11,6 +11,7 @@ from skfem import (
     solve,
 )
 from skfem.helpers import grad, inner
+from skfem.io import from_meshio
 
 from femwell.mesh import mesh_from_OrderedDict
 
@@ -62,15 +63,9 @@ if __name__ == "__main__":
         core={"resolution": 0.1, "distance": 0.1},
     )
 
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        mesh_from_OrderedDict(
-            polygons,
-            resolutions,
-            filename=f"{tmpdirname}/mesh.msh",
-            default_resolution_max=5,
-        )
+    mesh = from_meshio(
         mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=5)
-        mesh = Mesh.load(f"{tmpdirname}/mesh.msh")
+    )
 
     basis = Basis(mesh, ElementTriP1(), intorder=4)
     basis_epsilon_r = basis.with_element(ElementTriP0())
