@@ -9,7 +9,7 @@ copyright: "2023"
 # Force re-execution of notebooks on each build.
 # See https://jupyterbook.org/content/execute.html
 execute:
-  execute_notebooks: force
+  execute_notebooks: cache
   timeout: -1
 
 # Define the name of the latex output file for PDF builds
@@ -51,6 +51,13 @@ parse:
 launch_buttons:
   thebe                  : true
 
+# exclude_patterns: ["photonics/examples/*.md"]
+only_build_toc_files: true
+
 sphinx:
   config:
     execution_show_tb: True
+    nb_custom_formats:
+        .py:
+            - jupytext.reads
+            - fmt: py

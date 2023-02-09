@@ -1,3 +1,21 @@
+# ---
+# jupyter:
+#   jupytext:
+#     formats: py:light,md:myst
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.14.4
+#   kernelspec:
+#     display_name: Python 3
+#     name: python3
+# ---
+
+# # TiN TOPS heater
+
+# + tags=["remove-stderr"]
+
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
@@ -67,6 +85,7 @@ resolutions = dict(
 
 mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=0.6))
 
+# + tags=["remove-stderr"]
 currents = np.linspace(0.0, 10e-3, 10) / polygons["heater"].area
 neffs = []
 

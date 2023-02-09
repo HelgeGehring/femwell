@@ -1,3 +1,22 @@
+# -*- coding: utf-8 -*-
+# ---
+# jupyter:
+#   jupytext:
+#     formats: py:light,md:myst
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.14.4
+#   kernelspec:
+#     display_name: Python 3
+#     name: python3
+# ---
+
+# # Variation of the width
+
+# + tags=["remove-stderr"]
+
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt

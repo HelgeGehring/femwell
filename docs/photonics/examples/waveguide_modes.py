@@ -1,3 +1,20 @@
+# ---
+# jupyter:
+#   jupytext:
+#     formats: py:light,md:myst
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.14.4
+#   kernelspec:
+#     display_name: Python 3
+#     name: python3
+# ---
+
+# # Modes of a rectangular waveguide
+
+# + tags=["remove-stderr", "hide-input"]
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
@@ -11,6 +28,7 @@ from skfem.io.meshio import from_meshio
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.mode_solver import compute_modes, plot_mode
 
+# +
 wg_width = 1
 wg_thickness = 0.3
 core = shapely.geometry.box(-wg_width / 2, -wg_thickness / 2, +wg_width / 2, +wg_thickness / 2)
@@ -26,6 +44,7 @@ resolutions = dict(core={"resolution": 0.03, "distance": 0.1})
 
 mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=10))
 
+# +
 basis0 = Basis(mesh, ElementTriP0())
 epsilon = basis0.zeros(dtype=complex)
 for subdomain, n in {"core": 1.9963, "box": 1.444, "clad": 1}.items():

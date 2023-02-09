@@ -1,3 +1,24 @@
+# ---
+# jupyter:
+#   jupytext:
+#     formats: py:light,md:myst
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.14.4
+#   kernelspec:
+#     display_name: Python 3
+#     name: python3
+# ---
+
+# # Bragg filter
+
+# Reproducing an example of {cite}`Notaros2015`
+
+# + tags=["hide-input"]
+
+
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
@@ -8,6 +29,8 @@ from skfem.io import from_meshio
 
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.mode_solver_2d_periodic import plot_periodic, solve_periodic
+
+# + tags=["remove-stderr"]
 
 height = 1
 a = 0.330
@@ -73,3 +96,12 @@ for i, k in enumerate(ks):
     # axs[0].set_aspect(1)
     plot_periodic(k, a, basis_phi, phis[..., i], 10, axs[1])
     plt.show()
+# -
+
+
+# ## Bibliography
+#
+# ```{bibliography}
+# :style: unsrt
+# :filter: docname in docnames
+# ```

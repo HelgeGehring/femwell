@@ -3,14 +3,23 @@
 
 format: jb-book
 root: intro
-chapters:
-- file: math/index.md
-  sections:
-  - file: math/maxwell
-  - file: math/thermal
-  - file: math/dispersion
-  - file: math/coupled_mode_theory
-- file: photonics/mode_solver
-- file: photonics/mode_solver_periodic
-- file: photonics/thermal_phase_shifter
-- file: photonics/culomb_solver
+parts:
+  - caption: Derivation of the equations
+    chapters:
+      - file: math/maxwell
+      - file: math/thermal
+      - file: math/dispersion
+      - file: math/coupled_mode_theory
+    
+  - caption: Examples
+    chapters:
+    - file: photonics/examples/waveguide_modes.py
+    - file: photonics/examples/vary_width.py
+    - file: photonics/examples/vary_wavelength.py
+    - file: photonics/examples/fiber_overlap.py
+    - file: photonics/examples/metal_heater_phase_shifter.py
+    - file: photonics/examples/metal_heater_phase_shifter_transient.py
+    - file: photonics/examples/culomb.py
+    - file: photonics/examples/leaky_mode.py
+    - file: photonics/examples/bragg_filter.py
+    - file: photonics/examples/grating_coupler.py

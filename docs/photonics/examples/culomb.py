@@ -1,3 +1,23 @@
+# ---
+# jupyter:
+#   jupytext:
+#     formats: py:light,md:myst
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.14.4
+#   kernelspec:
+#     display_name: Python 3
+#     name: python3
+# ---
+
+# # Efficiency of a lithium niobate phase-shifter
+
+# Reproducing https://doi.org/10.3390/photonics9070500
+
+# + tags=["remove-stderr"]
+
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt

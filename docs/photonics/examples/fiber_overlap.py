@@ -1,3 +1,21 @@
+# ---
+# jupyter:
+#   jupytext:
+#     formats: py:light,md:myst
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.14.4
+#   kernelspec:
+#     display_name: Python 3
+#     name: python3
+# ---
+
+# # Overlap with the mode of an optical fiber
+
+# + tags=["remove-stderr"]
+
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
@@ -11,6 +29,7 @@ from femwell.fiber import e_field_gaussian, overlap
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.mode_solver import compute_modes, plot_mode
 
+# + tags=["remove-stderr"]
 core = shapely.geometry.box(-0.1, -0.15, 0.1, 0.15)
 
 polygons = OrderedDict(core=core, clad=core.buffer(15, resolution=4))
@@ -31,6 +50,7 @@ fig, axs = plot_mode(basis, np.real(xs[0]), direction="x")
 plt.tight_layout()
 plt.show()
 
+# + tags=["remove-stderr"]
 mfds = np.linspace(2, 20, 100)
 efficiencies = []
 

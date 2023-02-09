@@ -1,3 +1,23 @@
+# ---
+# jupyter:
+#   jupytext:
+#     formats: py:light,md:myst
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.14.4
+#   kernelspec:
+#     display_name: Python 3
+#     name: python3
+# ---
+
+# # Leaky mode
+
+# Reproducing one example of {cite}`Hu2009`
+
+# + tags=["remove-stderr", "hide-input"]
+
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
@@ -8,6 +28,8 @@ from skfem.io import from_meshio
 
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.mode_solver_2d_periodic import plot_periodic, solve_periodic
+
+# +
 
 height = 5.76 / 2 + 5
 a = 0.010
@@ -52,6 +74,7 @@ mesh = from_meshio(
     )
 )
 
+# +
 basis_vec = Basis(mesh, ElementTriP1() * ElementTriP1())
 basis_epsilon_r = basis_vec.with_element(ElementDG(ElementTriP1()))
 
@@ -74,3 +97,11 @@ for i, k in enumerate(ks):
         plt.title(f"{k}")
         plot_periodic(k, a, basis_phi, phis[..., i], 100, ax)
         plt.show()
+# -
+
+# ## Bibliography
+#
+# ```{bibliography}
+# :style: unsrt
+# :filter: docname in docnames
+# ```

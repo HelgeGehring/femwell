@@ -4,7 +4,8 @@ import numpy as np
 from skfem import (
     Basis,
     BilinearForm,
-    ElementTriP0,
+    ElementTetP0,
+    ElementTetP1,
     ElementTriP1,
     LinearForm,
     Mesh,
@@ -38,7 +39,9 @@ def solve_thermal(
     def conduction(u, v, w):
         return dot(w["thermal_conductivity"] * u.grad, v.grad)
 
-    basis = basis0.with_element(ElementTriP1())
+    element = ElementTriP1() if basis0.mesh.dim() == 2 else ElementTetP1()
+
+    basis = basis0.with_element(element)
 
     @LinearForm
     def unit_load(v, _):
@@ -149,7 +152,7 @@ if __name__ == "__main__":
     from tqdm.auto import tqdm
 
     for current in tqdm(currents):
-        basis0 = Basis(mesh, ElementTriP0(), intorder=4)
+        basis0 = Basis(mesh, ElementTetP0(), intorder=4)
         thermal_conductivity_p0 = basis0.zeros()
         for domain, value in {
             "core": 148,

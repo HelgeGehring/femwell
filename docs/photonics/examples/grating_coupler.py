@@ -1,3 +1,23 @@
+# ---
+# jupyter:
+#   jupytext:
+#     formats: py:light,md:myst
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.14.4
+#   kernelspec:
+#     display_name: Python 3
+#     name: python3
+# ---
+
+# # Grating coupler
+
+# Reproducing an example of {cite}`Notaros2015`
+
+# + tags=["remove-stderr"]
+
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
@@ -100,3 +120,12 @@ for i, k in enumerate(ks):
     # axs[0].set_aspect(1)
     plot_periodic(k, a, basis_phi, phis[..., i], 10, axs[1])
     plt.show()
+# -
+
+
+# ## Bibliography
+#
+# ```{bibliography}
+# :style: unsrt
+# :filter: docname in docnames
+# ```
