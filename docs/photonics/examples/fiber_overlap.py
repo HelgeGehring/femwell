@@ -48,4 +48,5 @@ for mfd in tqdm(mfds):
 plt.plot(mfds, efficiencies)
 plt.xlabel("Mode field diameter (um)")
 plt.ylabel("Coupling efficiency")
+plt.tight_layout()
 plt.show()
