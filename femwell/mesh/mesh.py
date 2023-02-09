@@ -390,10 +390,10 @@ def mesh_from_OrderedDict(
                     interfaces.append(line)
             if interfaces:
                 model.add_physical(interfaces, f"{surface1}___{surface2}")
-        
+
         gmsh.model.occ.synchronize()
 
-        # Force periodicity (experimental)        
+        # Force periodicity (experimental)
         def validate_lines(line1, line2):
             """TODO create a module for validating geometries."""
 
@@ -404,9 +404,12 @@ def mesh_from_OrderedDict(
                 line2 = shapes_dict[label2]
                 gmsh.model.setCurrent("pygmsh model")
                 translation = np.array(line1.coords[0]) - np.array(line2.coords[0])
-                gmsh.model.mesh.setPeriodic(1, meshtracker.get_gmsh_xy_lines_from_label(label1), 
-                                            meshtracker.get_gmsh_xy_lines_from_label(label2), 
-                                            [1,0,0,translation[0], 0,1,0,translation[1], 0,0,1,0, 0,0,0,1])
+                gmsh.model.mesh.setPeriodic(
+                    1,
+                    meshtracker.get_gmsh_xy_lines_from_label(label1),
+                    meshtracker.get_gmsh_xy_lines_from_label(label2),
+                    [1, 0, 0, translation[0], 0, 1, 0, translation[1], 0, 0, 1, 0, 0, 0, 0, 1],
+                )
                 # else: # TODO
                 #     raise ValueError("Periodic line pairs must be parallel and have the same straight length in the final, intersected geometry.")
 
@@ -459,10 +462,10 @@ if __name__ == "__main__":
 
     box = Polygon(
         [
-            (-width_wg_2-1, -6),
-            (-width_wg_2-1, 6),
-            (width_wg_2-0.5, 6),
-            (width_wg_2-0.5, -6),
+            (-width_wg_2 - 1, -6),
+            (-width_wg_2 - 1, 6),
+            (width_wg_2 - 0.5, 6),
+            (width_wg_2 - 0.5, -6),
         ]
     )
     print(box)
@@ -470,10 +473,10 @@ if __name__ == "__main__":
     source = LineString([(width_wg_2 / 2, -length_wg_1 / 2), (-width_wg_2 / 2, -length_wg_1 / 2)])
     print(source)
 
-    left_wall_up = LineString([(-width_wg_2-1, -2),(-width_wg_2-1, 6)])
-    right_wall_up = LineString([(width_wg_2-0.5, -2),(width_wg_2-0.5, 6)])
-    left_wall_dw = LineString([(-width_wg_2-1, -6),(-width_wg_2-1, -2)])
-    right_wall_dw = LineString([(width_wg_2-0.5, -6),(width_wg_2-0.5, -2)])
+    left_wall_up = LineString([(-width_wg_2 - 1, -2), (-width_wg_2 - 1, 6)])
+    right_wall_up = LineString([(width_wg_2 - 0.5, -2), (width_wg_2 - 0.5, 6)])
+    left_wall_dw = LineString([(-width_wg_2 - 1, -6), (-width_wg_2 - 1, -2)])
+    right_wall_dw = LineString([(width_wg_2 - 0.5, -6), (width_wg_2 - 0.5, -2)])
 
     polygons = OrderedDict(
         left_wall_up=left_wall_up,
@@ -494,9 +497,9 @@ if __name__ == "__main__":
     )
 
     mesh = mesh_from_OrderedDict(
-        polygons, 
-        resolutions, 
-        filename="mesh.msh", 
+        polygons,
+        resolutions,
+        filename="mesh.msh",
         default_resolution_max=1,
         # periodic_lines=[("left_wall_up", "right_wall_up"), ("left_wall_dw", "right_wall_dw")],
     )
