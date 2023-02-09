@@ -33,6 +33,7 @@ jobs:
           pip install --upgrade jupytext
           pip uninstall -y scikit-fem
           pip install --upgrade git+https://github.com/HelgeGehring/scikit-fem.git@utils-mpc-generalized
+          pip list
       #- name: Install slepc4py
       #  run: |
       #    source $VENV
