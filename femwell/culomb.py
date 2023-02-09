@@ -6,12 +6,12 @@ from skfem import (
     ElementDG,
     ElementTriP0,
     ElementTriP1,
-    Mesh,
     condense,
     solve,
 )
 from skfem.helpers import grad, inner
 from skfem.io import from_meshio
+from tqdm import tqdm
 
 from femwell.mesh import mesh_from_OrderedDict
 
@@ -35,7 +35,6 @@ def solve_coulomb(basis_epsilon_r, epsilon_r, fixed_boundaries):
 if __name__ == "__main__":
     # Reproduce https://doi.org/10.3390/photonics9070500
 
-    import tempfile
     from collections import OrderedDict
 
     from shapely.geometry import box
@@ -99,7 +98,7 @@ if __name__ == "__main__":
     voltages = np.linspace(0, 1, 10)
     voltages_neffs = []
 
-    for voltage in voltages:
+    for voltage in tqdm(voltages):
         from mode_solver import compute_modes
 
         epsilon = basis_epsilon_r.zeros() + 1.445
