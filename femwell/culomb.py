@@ -94,34 +94,3 @@ if __name__ == "__main__":
     e_x = basis_u.project(-basis_epsilon_r.interpolate(epsilon) * basis_u.interpolate(u).grad[0])
     basis_u.plot(e_x, ax=ax, shading="gouraud", colorbar=True)
     plt.show()
-
-    voltages = np.linspace(0, 1, 10)
-    voltages_neffs = []
-
-    for voltage in tqdm(voltages):
-        from mode_solver import compute_modes
-
-        epsilon = basis_epsilon_r.zeros() + 1.445
-        epsilon[basis_epsilon_r.get_dofs(elements="core")] = 1.989
-        epsilon[basis_epsilon_r.get_dofs(elements="slab")] = (
-            2.211
-            + 0.5
-            * 2.211**3
-            * 31e-6
-            * basis_epsilon_r.project(-basis_u.interpolate(u).grad[0])[
-                basis_epsilon_r.get_dofs(elements="slab")
-            ]
-            * voltage
-        )
-        epsilon **= 2
-        # basis_epsilon_r.plot(epsilon, colorbar=True).show()
-
-        neffs, basis_modes, modes = compute_modes(basis_epsilon_r, epsilon, 1.55, 1, 1, order=1)
-        voltages_neffs.append(neffs[0])
-
-        # from mode_solver import plot_mode
-        # plot_mode(basis_modes, modes[0])
-        # plt.show()
-
-    plt.plot(voltages, np.real(voltages_neffs))
-    plt.show()

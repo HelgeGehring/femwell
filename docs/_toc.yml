@@ -13,3 +13,4 @@ chapters:
 - file: photonics/mode_solver
 - file: photonics/mode_solver_periodic
 - file: photonics/thermal_phase_shifter
+- file: photonics/culomb_solver
