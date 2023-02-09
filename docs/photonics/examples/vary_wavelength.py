@@ -15,8 +15,7 @@
 
 # # Dispersion
 
-# + tags=["remove-stderr"]
-
+# + tags=["hide-input"]
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
@@ -32,10 +31,13 @@ from tqdm import tqdm
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.mode_solver import calculate_te_frac, compute_modes
 
-wavelengths = np.linspace(1.2, 1.9, 20)
-num_modes = 2
+# -
+
+# First we define the dispersion relations of the used materials.
+# Both, the dispersion of silicon nitride and of silicon dioxide are taken from refractiveindex.info
 
 
+# +
 def n_silicon_nitride(wavelength):
     x = wavelength
     return (1 + 3.0249 / (1 - (0.1353406 / x) ** 2) + 40314 / (1 - (1239.842 / x) ** 2)) ** 0.5
@@ -51,6 +53,12 @@ def n_silicon_dioxide(wavelength):
     ) ** 0.5
 
 
+# -
+
+# Low we define the geometry, we use a box for the core with a height of 500nm and a width of 1000nm
+# Everything below the waveguide is defined as the box and the waveguide is surrounded by the clad.
+
+# +
 core = box(0, 0, 1, 0.5)
 polygons = OrderedDict(
     core=core,
@@ -61,6 +69,15 @@ polygons = OrderedDict(
 resolutions = {"core": {"resolution": 0.1, "distance": 1}}
 
 mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=0.6))
+mesh.draw().show()
+# -
+
+# Now we sweep the wavelengths: We do a loop where whe set the epsilon values according to the wavelength and
+# as we don't change the geometry, we can reuse the mesh, yay!
+
+# + tags=["remove-stderr"]
+wavelengths = np.linspace(1.2, 1.9, 20)
+num_modes = 2
 
 all_lams = np.zeros((wavelengths.shape[0], num_modes))
 all_te_fracs = np.zeros((wavelengths.shape[0], num_modes))
@@ -79,7 +96,13 @@ for i, wavelength in enumerate(tqdm(wavelengths)):
     )
     all_lams[i] = np.real(lams)
     all_te_fracs[i, :] = [calculate_te_frac(basis, xs[idx]) for idx in range(num_modes)]
+# -
 
+# Now we only look at the real part of the effective refractive indices and plot all the dispersion relation,
+# the group velocity and the dispersion parameter over the wavelength.
+# So convenient!
+
+# + tags=["hide-input"]
 all_lams = np.real(all_lams)
 
 fig, axs = plt.subplots(1, 3)
@@ -110,3 +133,4 @@ for lams, te_fracs in zip(all_lams.T, all_te_fracs.T):
 fig.colorbar(sc).set_label("TE fraction")
 plt.tight_layout()
 plt.show()
+# -
