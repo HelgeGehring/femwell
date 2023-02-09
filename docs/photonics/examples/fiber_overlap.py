@@ -28,6 +28,7 @@ epsilon[basis0.get_dofs(elements="clad")] = 1.444**2
 lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1)
 
 fig, axs = plot_mode(basis, np.real(xs[0]), direction="x")
+plt.tight_layout()
 plt.show()
 
 mfds = np.linspace(2, 20, 100)
@@ -48,5 +49,4 @@ for mfd in tqdm(mfds):
 plt.plot(mfds, efficiencies)
 plt.xlabel("Mode field diameter (um)")
 plt.ylabel("Coupling efficiency")
-plt.tight_layout()
 plt.show()
