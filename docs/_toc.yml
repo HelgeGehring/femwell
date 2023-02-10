@@ -23,3 +23,6 @@ parts:
     - file: photonics/examples/leaky_mode.py
     - file: photonics/examples/bragg_filter.py
     - file: photonics/examples/grating_coupler.py
+
+  - caption: About Femwell
+    - file: execution_statistics
