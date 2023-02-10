@@ -5,7 +5,6 @@ from collections import OrderedDict
 
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.constants
 from scipy.constants import epsilon_0, speed_of_light
 from scipy.integrate import RK45
 from shapely.geometry import Polygon
@@ -24,8 +23,8 @@ w_sim = 4
 h_clad = 1
 h_box = 1
 w_core_1 = 0.45
-w_core_2 = 0.45
-gap = 0.2
+w_core_2 = 0.5
+gap = 0.4
 h_core = 0.22
 offset_heater = 2.2
 h_heater = 0.14
@@ -130,13 +129,13 @@ for i, (lam_i, E_i, epsilon_i) in enumerate(modes):
             basis,
             E_i,
             lam_i * (2 * np.pi / 1.55),
-            omega=2 * np.pi / wavelength * scipy.constants.speed_of_light,
+            omega=2 * np.pi / wavelength * speed_of_light,
         )
         H_j = calculate_hfield(
             basis,
             E_j,
             lam_j * (2 * np.pi / 1.55),
-            omega=2 * np.pi / wavelength * scipy.constants.speed_of_light,
+            omega=2 * np.pi / wavelength * speed_of_light,
         )
         overlap_integrals[i, j] = calculate_overlap(basis, E_i, H_i, basis, E_j, H_j)
 
@@ -205,24 +204,23 @@ def fun(t, y):
         np.linalg.inv(overlap_integrals * phase_matrix)
         @ (coupling_coefficients * phase_matrix)
         * -1j
-        * scipy.constants.speed_of_light
+        * speed_of_light
         * epsilon_0
     )
     return (matrix @ y).ravel()
 
 
-stepping = RK45(fun, 0, np.array((1, 0), dtype=complex), 200, max_step=1)
+stepping = RK45(fun, 0, np.array((1, 0), dtype=complex), 100, max_step=1)
 
 ts = []
 ys = []
 
-for i in range(200):
+for i in range(100):
     stepping.step()
     ts.append(stepping.t)
     ys.append(stepping.y)
 
 plt.plot(ts, np.abs(np.array(ys)[:, 0]) ** 2, "r")
-plt.plot(ts, np.abs(np.array(ys)[:, 1]) ** 2, "r")
-plt.plot(ts, np.sum(np.abs(np.array(ys)) ** 2, axis=-1), "r")
+plt.plot(ts, 1 - np.abs(np.array(ys)[:, 0]) ** 2, "r")
 # plt.plot(ts, np.array(ys).imag.reshape((-1,)+matrix.shape)@(1,0), 'g')
 plt.show()
