@@ -126,7 +126,7 @@ $$
     \,.
 $$
 
-In the case of nanophotonic waveguides, the refractive index are replaced by the effective refractive index of the waveguide.
+In the case of nanophotonic waveguides, the refractive index is replaced by the effective refractive index of the waveguide.
 
 ## Bibliography
 
