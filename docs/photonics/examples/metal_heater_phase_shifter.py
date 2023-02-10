@@ -25,12 +25,13 @@ from skfem.io import from_meshio
 from tqdm import tqdm
 
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import compute_modes
+from femwell.mode_solver import compute_modes, plot_mode
 from femwell.thermal import solve_thermal
 
 # -
 
-# Simulating the TiN TOPS heater in {cite}`Jacques2019`
+# Simulating the TiN TOPS heater in {cite}`Jacques2019`.
+# First we set up the mesh:
 
 # + tags=["remove-stderr"]
 
@@ -87,6 +88,10 @@ resolutions = dict(
 )
 
 mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=0.6))
+mesh.draw().show()
+# -
+
+# And then we solve it!
 
 # + tags=["remove-stderr"]
 currents = np.linspace(0.0, 10e-3, 10) / polygons["heater"].area
@@ -106,8 +111,10 @@ for current in tqdm(currents):
         current_densities={"heater": current},
         fixed_boundaries={"bottom": 0},
     )
-    # basis.plot(temperature, colorbar=True)
-    # plt.show()
+
+    if current == currents[-1]:
+        basis.plot(temperature, shading="gouraud", colorbar=True)
+        plt.show()
 
     temperature0 = basis0.project(basis.interpolate(temperature))
     epsilon = basis0.zeros() + (1.444 + 1.00e-5 * temperature0) ** 2
@@ -118,15 +125,15 @@ for current in tqdm(currents):
 
     lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1)
 
-    # from femwell.mode_solver import plot_mode
-    # plot_mode(basis, xs[0])
-    # plt.show()
+    if current == currents[-1]:
+        plot_mode(basis, xs[0].real)
+        plt.show()
 
     neffs.append(np.real(lams[0]))
 
 print(f"Phase shift: {2 * np.pi / 1.55 * (neffs[-1] - neffs[0]) * 320}")
 plt.xlabel("Current (mA)")
-plt.ylabel("$n_{eff}$")
+plt.ylabel("Effective refractive index $n_{eff}$")
 plt.plot(currents * 1e3, neffs)
 plt.show()
 # -

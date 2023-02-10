@@ -37,7 +37,7 @@ from femwell.mode_solver import compute_modes, plot_mode
 # For the core we set the resolution to 30nm and let it fall of over 500nm
 
 # +
-wg_width = 1
+wg_width = 2.5
 wg_thickness = 0.3
 core = shapely.geometry.box(-wg_width / 2, 0, +wg_width / 2, wg_thickness)
 env = shapely.affinity.scale(core.buffer(5, resolution=8), xfact=0.5)
@@ -69,6 +69,8 @@ basis0.plot(epsilon, colorbar=True).show()
 # Here we show only the real part of the mode.
 
 # +
-lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1, order=2)
+lams, basis, xs = compute_modes(
+    basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1, order=2, radius=15
+)
 plot_mode(basis, xs[0].real, colorbar=True, direction="x")
 plt.show()

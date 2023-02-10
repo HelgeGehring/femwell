@@ -286,6 +286,7 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title="E", directi
                 cax = divider.append_axes("right", size="5%", pad=0.05)
                 plt.colorbar(ax.collections[-1], cax=cax)
 
+    plt.tight_layout()
     return fig, axs
 
 
