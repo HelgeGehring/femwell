@@ -21,12 +21,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 import shapely
 import shapely.affinity
+from scipy.constants import speed_of_light
 from shapely.ops import clip_by_rect
 from skfem import Basis, ElementTriP0
 from skfem.io.meshio import from_meshio
 
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import compute_modes, plot_mode
+from femwell.mode_solver import (
+    calculate_hfield,
+    calculate_overlap,
+    compute_modes,
+    plot_mode,
+)
 
 # -
 
@@ -69,8 +75,29 @@ basis0.plot(epsilon, colorbar=True).show()
 # Here we show only the real part of the mode.
 
 # +
+wavelength = 1.55
+
 lams, basis, xs = compute_modes(
-    basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1, order=2, radius=15
+    basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=2, order=2, radius=20
 )
-plot_mode(basis, xs[0].real, colorbar=True, direction="x")
-plt.show()
+for i, lam in enumerate(lams):
+    plot_mode(basis, xs[i].real, colorbar=True, direction="x")
+    plt.title(f"Effective refractive index: {lam}")
+    plt.show()
+
+powers_in_waveguide = []
+# -
+
+# Now, let's calculate with the modes:
+# What percentage of the mode is within the core for the calculated modes?
+
+# +
+basis_waveguide = Basis(basis.mesh, basis.elem, elements="core")
+for i, lam in enumerate(lams):
+    H = calculate_hfield(
+        basis, xs[i], 2 * np.pi / wavelength * lam, omega=2 * np.pi / wavelength * speed_of_light
+    )
+    powers_in_waveguide.append(
+        calculate_overlap(basis_waveguide, xs[i], H, basis_waveguide, xs[i], H)
+    )
+print(powers_in_waveguide)
