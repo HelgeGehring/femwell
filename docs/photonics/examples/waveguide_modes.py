@@ -81,8 +81,8 @@ lams, basis, xs = compute_modes(
     basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=2, order=2, radius=20
 )
 for i, lam in enumerate(lams):
+    print(f"Effective refractive index: {lam}")
     plot_mode(basis, xs[i].real, colorbar=True, direction="x")
-    plt.title(f"Effective refractive index: {lam}")
     plt.show()
 
 powers_in_waveguide = []
