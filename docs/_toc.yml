@@ -25,4 +25,5 @@ parts:
     - file: photonics/examples/grating_coupler.py
 
   - caption: About Femwell
+    chapters:
     - file: execution_statistics
