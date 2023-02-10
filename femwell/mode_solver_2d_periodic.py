@@ -3,9 +3,9 @@
 import numpy as np
 from skfem import Basis, BilinearForm, ElementTriP1, FacetBasis, solve
 from skfem.helpers import d, grad
-from skfem.utils import mpc
 
 from femwell.solver import solver_dense, solver_eigen_scipy_invert, solver_eigen_slepc
+from femwell.utils import mpc_symmetric
 
 
 def solve_periodic(basis_epsilon_r, epsilon_r, k0):
@@ -53,7 +53,7 @@ def solve_periodic(basis_epsilon_r, epsilon_r, k0):
     right = np.setdiff1d(right, top + bottom)
 
     ks, xs = solve(
-        *mpc(A, f, M=left, S=np.concatenate((right, top, bottom))),
+        *mpc_symmetric(A, f, M=left, S=np.concatenate((right, top, bottom))),
         solver=solver_eigen_scipy_invert(
             k=20, which="LM", sigma=k0 * np.sqrt(epsilon_r.real.max())
         ),
