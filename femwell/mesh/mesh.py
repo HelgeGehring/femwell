@@ -182,6 +182,7 @@ def mesh_from_OrderedDict(
     global_quad: Optional[bool] = False,
     verbose: bool = False,
     periodic_lines: Optional[Tuple[(str, str)]] = None,
+    mesh_scaling_factor: float = 1.0,
 ):
     """
     Given an ordered dict of shapely Polygons, creates a mesh containing polygon surfaces according to the dict order.
@@ -413,6 +414,7 @@ def mesh_from_OrderedDict(
                 # else: # TODO
                 #     raise ValueError("Periodic line pairs must be parallel and have the same straight length in the final, intersected geometry.")
 
+        gmsh.option.setNumber("Mesh.ScalingFactor", mesh_scaling_factor)
         mesh = geometry.generate_mesh(dim=2, verbose=verbose)
 
         if filename:
@@ -502,6 +504,7 @@ if __name__ == "__main__":
         filename="mesh.msh",
         default_resolution_max=1,
         # periodic_lines=[("left_wall_up", "right_wall_up"), ("left_wall_dw", "right_wall_dw")],
+        mesh_scaling_factor=1E-4,
     )
 
     # wmode = 1
