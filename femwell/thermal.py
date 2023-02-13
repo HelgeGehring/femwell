@@ -4,9 +4,11 @@ import numpy as np
 from skfem import (
     Basis,
     BilinearForm,
-    ElementTetP0,
     ElementTetP1,
+    ElementTetP2,
+    ElementTriP0,
     ElementTriP1,
+    ElementTriP2,
     LinearForm,
     Mesh,
     asm,
@@ -22,6 +24,7 @@ def solve_thermal(
     specific_conductivity: Dict[str, float],
     current_densities,
     fixed_boundaries,
+    order=1,
 ):
     """Thermal simulation.
 
@@ -35,11 +38,14 @@ def solve_thermal(
         basis, temperature profile
     """
 
+    if order == 1:
+        element = ElementTriP1() if basis0.mesh.dim() == 2 else ElementTetP1()
+    elif order == 2:
+        element = ElementTriP2() if basis0.mesh.dim() == 2 else ElementTetP2()
+
     @BilinearForm
     def conduction(u, v, w):
         return dot(w["thermal_conductivity"] * u.grad, v.grad)
-
-    element = ElementTriP1() if basis0.mesh.dim() == 2 else ElementTetP1()
 
     basis = basis0.with_element(element)
 
@@ -152,7 +158,7 @@ if __name__ == "__main__":
     from tqdm.auto import tqdm
 
     for current in tqdm(currents):
-        basis0 = Basis(mesh, ElementTetP0(), intorder=4)
+        basis0 = Basis(mesh, ElementTriP0(), intorder=4)
         thermal_conductivity_p0 = basis0.zeros()
         for domain, value in {
             "core": 148,
