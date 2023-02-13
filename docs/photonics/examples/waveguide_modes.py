@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import shapely
 import shapely.affinity
-from scipy.constants import speed_of_light
+from scipy.constants import epsilon_0, speed_of_light
 from shapely.ops import clip_by_rect
 from skfem import Basis, ElementTriP0
 from skfem.io.meshio import from_meshio
@@ -31,6 +31,7 @@ from femwell.mode_solver import (
     calculate_hfield,
     calculate_overlap,
     compute_modes,
+    confinement_factor,
     plot_mode,
 )
 
@@ -86,6 +87,7 @@ for i, lam in enumerate(lams):
     plt.show()
 
 powers_in_waveguide = []
+confinement_factors_waveguide = []
 # -
 
 # Now, let's calculate with the modes:
@@ -93,6 +95,7 @@ powers_in_waveguide = []
 
 # +
 basis_waveguide = Basis(basis.mesh, basis.elem, elements="core")
+basis0_waveguide = basis_waveguide.with_element(ElementTriP0())
 for i, lam in enumerate(lams):
     H = calculate_hfield(
         basis, xs[i], 2 * np.pi / wavelength * lam, omega=2 * np.pi / wavelength * speed_of_light
@@ -100,4 +103,10 @@ for i, lam in enumerate(lams):
     powers_in_waveguide.append(
         calculate_overlap(basis_waveguide, xs[i], H, basis_waveguide, xs[i], H)
     )
+    confinement_factors_waveguide.append(
+        confinement_factor(basis0_waveguide, epsilon, basis_waveguide, xs[i])
+        * speed_of_light
+        * epsilon_0
+    )
 print(powers_in_waveguide)
+print(confinement_factors_waveguide)

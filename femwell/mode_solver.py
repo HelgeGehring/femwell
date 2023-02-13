@@ -220,6 +220,21 @@ def calculate_coupling_coefficient(basis_epsilon, delta_epsilon, basis, E_i, E_j
     )
 
 
+def confinement_factor(basis_epsilon, epsilon, basis, E):
+    @Functional
+    def factor(w):
+        return (
+            np.sqrt(w["epsilon"]) * dot(np.conj(w["E"][0]), w["E"][0])
+            + np.conj(w["E"][1]) * w["E"][1]
+        )
+
+    return factor.assemble(
+        basis,
+        E=basis.interpolate(E),
+        epsilon=basis_epsilon.interpolate(epsilon),
+    )
+
+
 def calculate_te_frac(basis, x):
     @Functional
     def ex(w):
