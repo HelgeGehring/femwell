@@ -1,22 +1,45 @@
+# ---
+# jupyter:
+#   jupytext:
+#     formats: py:light,md:myst
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.14.4
+#   kernelspec:
+#     display_name: Python 3
+#     name: python3
+# ---
+
+# # Doped silicon heater
+
+# + tags=["hide-input"]
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
 import numpy as np
 from shapely.geometry import LineString, Polygon
 from skfem import Basis, ElementTriP0, Mesh
+from skfem.io import from_meshio
 
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.thermal import solve_thermal
 
-# Simulating the TiN TOPS heater in https://doi.org/10.1364/OE.27.010456
+# -
 
+# Simulating the doped silicon heater in {cite}`Jacques2019`.
+# First we set up the mesh:
+
+# + tags=["remove-stderr"]
 w_sim = 8 * 4
 h_clad = 2.8
 h_box = 2
 w_core = 0.5
 h_core = 0.22
 w_buffer = 0.8
-h_heater = h_buffer = 0.09
+h_buffer = 0.09
+h_heater = h_buffer
 w_heater = 1
 offset_heater = 2.2
 
@@ -33,16 +56,16 @@ polygons = OrderedDict(
     slab_l=Polygon(
         [
             (-w_core / 2 - w_buffer, 0),
-            (-w_core / 2 - w_buffer, h_heater),
-            (-w_core / 2, h_heater),
+            (-w_core / 2 - w_buffer, h_buffer),
+            (-w_core / 2, h_buffer),
             (-w_core / 2, 0),
         ]
     ),
     slab_r=Polygon(
         [
             (+w_core / 2 + w_buffer, 0),
-            (+w_core / 2 + w_buffer, h_heater),
-            (+w_core / 2, h_heater),
+            (+w_core / 2 + w_buffer, h_buffer),
+            (+w_core / 2, h_buffer),
             (+w_core / 2, 0),
         ]
     ),
@@ -88,10 +111,12 @@ resolutions = dict(
     heater_r={"resolution": 0.01, "distance": 1},
 )
 
-mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=0.4)
+mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=0.4))
+# -
 
-mesh = Mesh.load("mesh.msh")
+# And then we solve it!
 
+# + tags=["remove-stderr"]
 basis0 = Basis(mesh, ElementTriP0(), intorder=4)
 thermal_conductivity_p0 = basis0.zeros()
 for domain, value in {
@@ -126,7 +151,7 @@ basis, temperature = solve_thermal(
 fig, ax = plt.subplots(subplot_kw=dict(aspect=1))
 for subdomain in mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
     mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
-basis.plot(temperature, ax=ax)
+basis.plot(temperature, shading="gouraud", ax=ax)
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -134,3 +159,12 @@ divider = make_axes_locatable(ax)
 cax = divider.append_axes("right", size="5%", pad=0.05)
 plt.colorbar(ax.collections[0], cax=cax)
 plt.show()
+# -
+
+
+# ## Bibliography
+#
+# ```{bibliography}
+# :style: unsrt
+# :filter: docname in docnames
+# ```
