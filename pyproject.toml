@@ -19,6 +19,9 @@ classifiers = [
 license = "GPLv3"
 readme = "README.md"
 
+[tool.poetry.urls]
+documentation = "https://HelgeGehring.github.io/femwell/"
+
 [tool.poetry.dependencies]
 python = ">=3.8"
 scikit-fem = ">=8.0.0"
