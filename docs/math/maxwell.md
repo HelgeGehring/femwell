@@ -82,7 +82,8 @@ $$
     = - \varepsilon \frac{\partial^2 \vec{\mathcal{E}}}{\partial t^2}
 $$ (maxwell_telegraph)
 
-If we restrict the problem to a 2D-plane $\Omega \in \mathbb{R}^2$ like done in {cite}`Vardapetyan2003,Vardapetyan2002,Vardapetyan2002_2`,
+If we restrict the problem to a 2D-plane $\Omega \in \mathbb{R}^2$ like done in
+{cite}`Vardapetyan2003,Vardapetyan2002,Vardapetyan2002_2`,
 i.e. a plane with $\vec{x}=(x_1,x_2)$ and
 assuming propagation only in $x_3$-direction with a propagation constant $\beta$,
 the equations simplify for the harmonic case with a frequency of $\omega$ to:
