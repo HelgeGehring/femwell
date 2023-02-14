@@ -3,14 +3,28 @@
 Starting with the maxwell equations:
 
 $$
-    &\nabla\cdot \left(\varepsilon\vec{\mathcal{E}}\right) = \rho
+    :label: maxwell
 
-    &\nabla\cdot \left(\mu\vec{\mathcal{H}}\right) = 0
+    &
+    \nabla\cdot \left(\varepsilon\vec{\mathcal{E}}\right)
+    =
+    \rho
 
-    &\nabla\times\vec{\mathcal{E}} = - \mu \frac{\partial \vec{\mathcal{H}}}{\partial t}
+    &
+    \nabla\cdot \left(\mu\vec{\mathcal{H}}\right)
+    =
+    0
 
-    &\nabla\times\vec{\mathcal{H}} = \varepsilon\frac{\partial \vec{\mathcal{E}}}{\partial t} + \vec{J}
-$$ (maxwell)
+    &
+    \nabla\times\vec{\mathcal{E}}
+    =
+    - \mu \frac{\partial \vec{\mathcal{H}}}{\partial t}
+
+    &
+    \nabla\times\vec{\mathcal{H}}
+    =
+    \varepsilon\frac{\partial \vec{\mathcal{E}}}{\partial t} + \vec{J}
+$$
 
 where $\mu$ and $\epsilon$ are assumed to be element wise constant.
 
@@ -36,30 +50,43 @@ $$
     &k = \frac{2 \pi}{\lambda} = \frac{2 \pi f}{c} = \frac{\omega}{c}
 $$
 
-
 ## Eigenvectors propagating in $x_3$-direction
 
 Assuming no sources and currents present, {eq}`maxwell` simplifies to
 
 $$
+    :label: maxwell_no_sources
+
     &\nabla\cdot \left(\varepsilon\vec{\mathcal{E}}\right) = 0
 
     &\nabla\cdot \left(\mu\vec{\mathcal{H}}\right) = 0
 
-    &\nabla\times\vec{\mathcal{E}} = - \mu \frac{\partial \vec{\mathcal{H}}}{\partial t}
-
-    &\nabla\times\vec{\mathcal{H}} = \varepsilon\frac{\partial \vec{\mathcal{E}}}{\partial t}
-$$ (maxwell_no_sources)
-
-By combining the latter two equations of {eq}`maxwell_no_sources` we get for the $\mathcal{E}$
-
-$$\
-    &\nabla\cdot \left(\varepsilon\vec{\mathcal{E}}\right) = 0
-
-    &\nabla\times \left( \frac{1}{\mu}\nabla\times\vec{\mathcal{E}} \right)
+    &
+    \nabla\times\vec{\mathcal{E}}
     =
-    - \varepsilon \frac{\partial^2 \vec{\mathcal{E}}}{\partial t^2}
-$$ (maxwell_telegraph)
+    - \mu \frac{\partial \vec{\mathcal{H}}}{\partial t}
+
+    &
+    \nabla\times\vec{\mathcal{H}}
+    =
+    \varepsilon\frac{\partial \vec{\mathcal{E}}}{\partial t}
+$$
+
+By combining the latter two equations of {eq}`maxwell_no_sources`
+we get for the $\mathcal{E}$
+
+$$
+    :label: maxwell_telegraph
+
+    &
+    \nabla\cdot \left(\varepsilon\vec{\mathcal{E}}\right)
+    =
+    0
+
+    &
+    \nabla\times \left( \frac{1}{\mu}\nabla\times\vec{\mathcal{E}} \right)
+    = - \varepsilon \frac{\partial^2 \vec{\mathcal{E}}}{\partial t^2}
+$$
 
 If we restrict the problem to a 2D-plane $\Omega \in \mathbb{R}^2$ like done in {cite}`Vardapetyan2003,Vardapetyan2002,Vardapetyan2002_2`,
 i.e. a plane with $\vec{x}=(x_1,x_2)$ and
@@ -67,14 +94,18 @@ assuming propagation only in $x_3$-direction with a propagation constant $\beta$
 the equations simplify for the harmonic case with a frequency of $\omega$ to:
 
 $$
-    \mathcal{E}(\vec{x},x_3,t)=(\vec{E}(\vec{x}),E_3(\vec{x}))\mathrm{e}^{i(\beta x_3 - \omega t)}
+    \mathcal{E}(\vec{x},x_3,t)
+    =
+    (\vec{E}(\vec{x}),E_3(\vec{x}))\mathrm{e}^{i(\beta x_3 - \omega t)}
 
-    \mathcal{H}(\vec{x},x_3,t)=(\vec{H}(\vec{x}),H_3(\vec{x}))\mathrm{e}^{i(\beta x_3 - \omega t)}
+    \mathcal{H}(\vec{x},x_3,t)
+    =
+    (\vec{H}(\vec{x}),H_3(\vec{x}))\mathrm{e}^{i(\beta x_3 - \omega t)}
 $$
 
 Using these, the curl can be written as
 
-$
+$$
     \nabla \times
     =
     \begin{pmatrix}
@@ -88,8 +119,7 @@ and the derivative with respect to time becomes
 
 $$
     \frac{\partial}{\partial t}
-    =
-    - i \omega
+    = - i \omega
 $$
 
 This leads to the equations
@@ -162,18 +192,22 @@ $$
     - \beta^2 \left( \frac{1}{\mu} \vec{E}, \vec{F} \right)
 
     &
-    \left( \epsilon \vec{E}, \nabla q \right) - \left( \epsilon E_3^{\text{new}}, q \right)
-    = 0
+    \left( \epsilon \vec{E}, \nabla q \right)
+    -
+    \left( \epsilon E_3^{\text{new}}, q \right)
+    =
+    0
 $$
-
 
 ## PML
 
-http://www.hade.ch/docs/report_FDFD.pdf
+<http://www.hade.ch/docs/report_FDFD.pdf>
 
 ## Bent Waveguides
 
-The mode profiles of bent waveguides can be calculated using the previously derived math with an transformed effective refractive index defined as {cite}`AzizurRahman2013`
+The mode profiles of bent waveguides can be calculated using the previously
+derived math with an transformed effective refractive index defined as
+{cite}`AzizurRahman2013`
 
 $$
     n_{eq}(x,y)
@@ -184,7 +218,6 @@ $$
 where $R$ is the radius of curvature in $x$-direction.
 
 See discussion on choice of R in {cite}`Masi:10`
-
 
 ## TE/TM Polarization Fraction
 
@@ -242,7 +275,8 @@ $$
 
 ## Confinement coefficient
 
-As defined in {cite}`Robinson2008` (and generalized for varying refractive indices in the active area)
+As defined in {cite}`Robinson2008`
+(and generalized for varying refractive indices in the active area)
 
 $$
     \Gamma
@@ -250,7 +284,10 @@ $$
     \frac{
         c \epsilon_0 \int n(\vec{x}) \left| \vec{\mathcal{E}} \right|^2 \mathrm{d}A
     }{
-        \left( \int \vec{\mathcal{E}}_\nu^* \times \vec{\mathcal{H}}_\mu + \vec{\mathcal{E}}_\nu \times \vec{\mathcal{H}}_\mu^* \mathrm{d}A \right) / 2
+        \left( \int \vec{\mathcal{E}}_\nu^* \times \vec{\mathcal{H}}_\mu
+        +
+        \vec{\mathcal{E}}_\nu \times \vec{\mathcal{H}}_\mu^*
+        \mathrm{d}A \right) / 2
     }
 $$
 
@@ -259,18 +296,27 @@ $$
 $$
     c_{\nu\mu}
     =
-    \int \vec{\mathcal{E}}_\nu^* \times \vec{\mathcal{H}}_\mu + \vec{\mathcal{E}}_\nu \times \vec{\mathcal{H}}_\mu^* \mathrm{d}A
+    \int \vec{\mathcal{E}}_\nu^* \times \vec{\mathcal{H}}_\mu
+    +
+    \vec{\mathcal{E}}_\nu \times \vec{\mathcal{H}}_\mu^* \mathrm{d}A
     =
     c_{\mu\nu}^*
 $$
 
 ## Characteristic impedance
-https://ieeexplore.ieee.org/document/108320
+
+<https://ieeexplore.ieee.org/document/108320>
 
 Power and current:
 
 $$
-    P_k = \delta_{jk} \int \left( \vec{\mathcal{E}}_j^* \times \vec{\mathcal{H}}_k \right) \cdot \hat{x}_3
+    P_k
+    =
+    \delta_{jk}
+    \int
+    \left(
+        \vec{\mathcal{E}}_j^* \times \vec{\mathcal{H}}_k
+    \right) \cdot \hat{x}_3
 
     I_{zik} = \oint_{C_i} \mathcal{H} \ cdot
 $$
@@ -319,7 +365,6 @@ $$
 which is used to calculate the potential for a given structure.
 Using {eq}`EdivPhi` the electric field can be calculated from the potential.
 
-
 ## 2D Periodic
 
 From {eq}`maxwell_telegraph` we get for the transverse electric field $\Psi$ {cite}`Notaros2015`
@@ -337,7 +382,11 @@ $$
 leads to
 
 $$
-    \left( \partial_x^2 + \partial_y^2 + \mathrm{i}2k\partial_x - k^2 + k_0^2 n^2(x,y) \right) \Phi(x,y) = 0
+    \left(
+        \partial_x^2 + \partial_y^2 + \mathrm{i}2k\partial_x - k^2 + k_0^2 n^2(x,y)
+    \right) \Phi(x,y)
+    =
+    0
 $$
 
 ## Bibliography
