@@ -504,7 +504,7 @@ if __name__ == "__main__":
         filename="mesh.msh",
         default_resolution_max=1,
         # periodic_lines=[("left_wall_up", "right_wall_up"), ("left_wall_dw", "right_wall_dw")],
-        mesh_scaling_factor=1E-4,
+        mesh_scaling_factor=1e-4,
     )
 
     # wmode = 1
