@@ -1,7 +1,11 @@
-name: black-action
+name: reviewdog
 on: [pull_request]
 jobs:
   black:
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
     name: runner / black
     runs-on: ubuntu-latest
     steps:
