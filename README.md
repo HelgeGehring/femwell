@@ -15,7 +15,7 @@ so there's several features for which there are only examples in the code.
 **Hover the rocket at the top on the example pages and click live code!**
 (Might take some time to load)
 
-## Working Features
+## Features
 
 - Photonic eigenmode solver
 - Periodic photonic eigenmode solver
@@ -26,6 +26,9 @@ so there's several features for which there are only examples in the code.
 ## Possible Simulations
 
 - Eigenmodes of waveguides and determining their effective refractive index
+- Eigenmodes of bent waveguides
+- Calculation of the group velocity and its dispersion
+- Calculation of overlap-integrals and confinement-factors
 - Bragg grating cells
 - Grating coupler cells
 - Eigenmode of a coaxial cable and its specific impedance
