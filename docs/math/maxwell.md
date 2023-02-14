@@ -3,8 +3,6 @@
 Starting with the maxwell equations:
 
 $$
-    :label: maxwell
-
     &
     \nabla\cdot \left(\varepsilon\vec{\mathcal{E}}\right)
     =
@@ -24,7 +22,7 @@ $$
     \nabla\times\vec{\mathcal{H}}
     =
     \varepsilon\frac{\partial \vec{\mathcal{E}}}{\partial t} + \vec{J}
-$$
+$$ (maxwell)
 
 where $\mu$ and $\epsilon$ are assumed to be element wise constant.
 
@@ -55,8 +53,6 @@ $$
 Assuming no sources and currents present, {eq}`maxwell` simplifies to
 
 $$
-    :label: maxwell_no_sources
-
     &\nabla\cdot \left(\varepsilon\vec{\mathcal{E}}\right) = 0
 
     &\nabla\cdot \left(\mu\vec{\mathcal{H}}\right) = 0
@@ -70,14 +66,12 @@ $$
     \nabla\times\vec{\mathcal{H}}
     =
     \varepsilon\frac{\partial \vec{\mathcal{E}}}{\partial t}
-$$
+$$ (maxwell_no_sources)
 
 By combining the latter two equations of {eq}`maxwell_no_sources`
 we get for the $\mathcal{E}$
 
 $$
-    :label: maxwell_telegraph
-
     &
     \nabla\cdot \left(\varepsilon\vec{\mathcal{E}}\right)
     =
@@ -86,7 +80,7 @@ $$
     &
     \nabla\times \left( \frac{1}{\mu}\nabla\times\vec{\mathcal{E}} \right)
     = - \varepsilon \frac{\partial^2 \vec{\mathcal{E}}}{\partial t^2}
-$$
+$$ (maxwell_telegraph)
 
 If we restrict the problem to a 2D-plane $\Omega \in \mathbb{R}^2$ like done in {cite}`Vardapetyan2003,Vardapetyan2002,Vardapetyan2002_2`,
 i.e. a plane with $\vec{x}=(x_1,x_2)$ and
