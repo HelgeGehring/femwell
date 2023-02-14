@@ -279,9 +279,9 @@ $$
     \frac{
         c \epsilon_0 \int n(\vec{x}) \left| \vec{\mathcal{E}} \right|^2 \mathrm{d}A
     }{
-        \left( \int \vec{\mathcal{E}}_\nu^* \times \vec{\mathcal{H}}_\mu
+        \left( \int \vec{\mathcal{E}}^* \times \vec{\mathcal{H}}
         +
-        \vec{\mathcal{E}}_\nu \times \vec{\mathcal{H}}_\mu^*
+        \vec{\mathcal{E}} \times \vec{\mathcal{H}}^*
         \mathrm{d}A \right) / 2
     }
 $$
