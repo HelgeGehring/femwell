@@ -291,9 +291,18 @@ $$
 $$
     c_{\nu\mu}
     =
-    \int \vec{\mathcal{E}}_\nu^* \times \vec{\mathcal{H}}_\mu
-    +
-    \vec{\mathcal{E}}_\nu \times \vec{\mathcal{H}}_\mu^* \mathrm{d}A
+    \frac{
+        \int \vec{\mathcal{E}}_\nu^* \times \vec{\mathcal{H}}_\mu
+        +
+        \vec{\mathcal{E}}_\nu \times \vec{\mathcal{H}}_\mu^* \mathrm{d}A
+    }{
+        \prod_{i=\{\mu,\nu\}}
+        \sqrt{
+            \int \vec{\mathcal{E}}_i^* \times \vec{\mathcal{H}}_i
+            +
+            \vec{\mathcal{E}}_i \times \vec{\mathcal{H}}_i^* \mathrm{d}A
+        }
+    }
     =
     c_{\mu\nu}^*
 $$
