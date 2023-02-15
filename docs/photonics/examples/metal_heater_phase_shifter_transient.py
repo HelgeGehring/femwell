@@ -219,4 +219,5 @@ ax2.plot(
     "g-o",
     label="Approximation",
 )
+plt.legend()
 plt.show()
