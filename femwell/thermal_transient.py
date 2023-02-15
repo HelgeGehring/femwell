@@ -284,4 +284,5 @@ if __name__ == "__main__":
         "g-o",
         label="Approximation",
     )
+    plt.legend()
     plt.show()
