@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.constants
 import scipy.sparse.linalg
+from scipy.constants import epsilon_0, speed_of_light
 from skfem import (
     Basis,
     BilinearForm,
@@ -224,8 +225,12 @@ def confinement_factor(basis_epsilon, epsilon, basis, E):
     @Functional
     def factor(w):
         return (
-            np.sqrt(w["epsilon"]) * dot(np.conj(w["E"][0]), w["E"][0])
-            + np.conj(w["E"][1]) * w["E"][1]
+            (
+                np.sqrt(w["epsilon"]) * dot(np.conj(w["E"][0]), w["E"][0])
+                + np.conj(w["E"][1]) * w["E"][1]
+            )
+            * speed_of_light
+            * epsilon_0
         )
 
     return factor.assemble(

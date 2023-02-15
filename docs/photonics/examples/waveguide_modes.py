@@ -105,8 +105,6 @@ for i, lam in enumerate(lams):
     )
     confinement_factors_waveguide.append(
         confinement_factor(basis0_waveguide, epsilon, basis_waveguide, xs[i])
-        * speed_of_light
-        * epsilon_0
     )
 print(powers_in_waveguide)
 print(confinement_factors_waveguide)
