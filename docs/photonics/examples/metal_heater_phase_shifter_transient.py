@@ -212,7 +212,7 @@ ax.set_ylabel("Current [mA]")
 ax.plot(times * 1e6, current(times) * 1000, "b-o")
 ax2 = ax.twinx()
 ax2.set_ylabel("Phase shift")
-ax2.plot(times * 1e6, 2 * np.pi / wavelength * (neffs - lams_0[0]) * 320, "r-o")
+ax2.plot(times * 1e6, 2 * np.pi / wavelength * (neffs - lams_0[0]) * 320, "r-o", label="Exact")
 ax2.plot(
     times * 1e6,
     2 * np.pi / wavelength * (neffs_approximated - lams_0[0]) * 320,
