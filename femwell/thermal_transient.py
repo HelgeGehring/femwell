@@ -90,6 +90,7 @@ if __name__ == "__main__":
     from collections import OrderedDict
 
     import matplotlib.pyplot as plt
+    import scipy.constants
     from shapely.geometry import LineString, Polygon
     from skfem.io import from_meshio
 
@@ -106,6 +107,8 @@ if __name__ == "__main__":
     h_heater = 0.14
     w_heater = 2
     h_silicon = 3
+
+    wavelength = 1.55
 
     polygons = OrderedDict(
         bottom=LineString([(-w_sim / 2, -h_box), (w_sim / 2, -h_box)]),
@@ -219,12 +222,23 @@ if __name__ == "__main__":
 
     from tqdm.auto import tqdm
 
+    from femwell.mode_solver import (
+        calculate_coupling_coefficient,
+        compute_modes,
+        plot_mode,
+    )
+
+    epsilon_0 = basis0.zeros() + 1.444**2
+    epsilon_0[basis0.get_dofs(elements="core")] = 3.4777**2
+    lams_0, basis_modes_0, xs_0 = compute_modes(
+        basis0, epsilon_0, wavelength=wavelength, mu_r=1, num_modes=1
+    )
+
     neffs = []
+    neffs_approximated = []
     for i, temperature in enumerate(tqdm(temperatures)):
         # basis.plot(temperature, vmin=0, vmax=np.max(temperatures))
         # plt.show()
-
-        from femwell.mode_solver import compute_modes, plot_mode
 
         temperature0 = basis0.project(basis.interpolate(temperature))
         epsilon = basis0.zeros() + (1.444 + 1.00e-5 * temperature0) ** 2
@@ -233,12 +247,28 @@ if __name__ == "__main__":
         ) ** 2
         # basis0.plot(epsilon, colorbar=True).show()
 
-        lams, basis_modes, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1)
+        lams, basis_modes, xs = compute_modes(
+            basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=1
+        )
 
         # plot_mode(basis_modes, xs[0])
         # plt.show()
 
         neffs.append(np.real(lams[0]))
+        neffs_approximated.append(
+            np.real(
+                lams_0[0]
+                + calculate_coupling_coefficient(
+                    basis0,
+                    (epsilon - epsilon_0) * scipy.constants.epsilon_0,
+                    basis_modes_0,
+                    xs_0[0],
+                    xs_0[0],
+                )
+                * scipy.constants.speed_of_light
+                * 2e-3
+            )
+        )
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -247,5 +277,11 @@ if __name__ == "__main__":
     ax.plot(times * 1e6, current(times), "b-o")
     ax2 = ax.twinx()
     ax2.set_ylabel("Phase shift")
-    ax2.plot(times * 1e6, 2 * np.pi / 1.55 * (neffs - neffs[0]) * 320, "r-o")
+    ax2.plot(times * 1e6, 2 * np.pi / 1.55 * (neffs - lams_0[0]) * 320, "r-o", label="Exact")
+    ax2.plot(
+        times * 1e6,
+        2 * np.pi / 1.55 * (neffs_approximated - lams_0[0]) * 320,
+        "g-o",
+        label="Approximation",
+    )
     plt.show()

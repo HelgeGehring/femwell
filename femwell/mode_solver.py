@@ -226,8 +226,8 @@ def confinement_factor(basis_epsilon, epsilon, basis, E):
     def factor(w):
         return (
             (
-                np.sqrt(w["epsilon"]) * dot(np.conj(w["E"][0]), w["E"][0])
-                + np.conj(w["E"][1]) * w["E"][1]
+                np.sqrt(w["epsilon"])
+                * (dot(np.conj(w["E"][0]), w["E"][0]) + np.conj(w["E"][1]) * w["E"][1])
             )
             * speed_of_light
             * epsilon_0
