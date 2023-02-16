@@ -14,6 +14,7 @@ parts:
   - caption: Examples
     chapters:
     - file: photonics/examples/waveguide_modes.py
+    - file: photonics/examples/bent_waveguide.py
     - file: photonics/examples/vary_width.py
     - file: photonics/examples/vary_wavelength.py
     - file: photonics/examples/fiber_overlap.py
