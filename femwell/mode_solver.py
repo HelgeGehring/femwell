@@ -33,6 +33,7 @@ def compute_modes(
     order=1,
     metallic_boundaries=False,
     radius=np.inf,
+    n_guess=None,
     solver="scipy",
 ):
     if solver == "scipy":
@@ -75,16 +76,20 @@ def compute_modes(
     A = aform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
     B = bform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
 
+    if n_guess:
+        sigma = sigma = k0**2 * n_guess**2
+    else:
+        sigma = sigma = k0**2 * np.max(epsilon_r) ** 2
+
     if metallic_boundaries:
         lams, xs = solve(
-            *condense(-A, -B, D=basis.get_dofs()),
-            solver=solver(k=num_modes, sigma=k0**2 * np.max(epsilon_r) ** 2),
+            *condense(-A, -B, D=basis.get_dofs()), solver=solver(k=num_modes, sigma=sigma)
         )
     else:
         lams, xs = solve(
             -A,
             -B,
-            solver=solver(k=num_modes, sigma=k0**2 * np.max(epsilon_r) ** 2),
+            solver=solver(k=num_modes, sigma=sigma),
         )
 
     idx = np.abs(np.real(lams)).argsort()[::-1]
