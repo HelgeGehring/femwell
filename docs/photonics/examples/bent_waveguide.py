@@ -161,5 +161,5 @@ plt.show()
 # +
 for i, lam in enumerate(lams):
     print(f"Effective refractive index: {lam:.14f}")
-    plot_mode(basis, xs[i].real, colorbar=True, direction="y")
+    plot_mode(basis, xs[i].real, colorbar=True, direction="x")
     plt.show()
