@@ -135,15 +135,15 @@ for radius in tqdm(radiuss):
     )
 
 plt.xlabel("Radius / μm")
-plt.ylabel("Mode overlap loss with straight waveguide mode / dB")
-plt.plot(radiuss, 10 * np.log10(np.abs(overlaps) ** 2))
+plt.ylabel("Mode overlap with straight waveguide mode / dB")
+plt.plot(radiuss, -10 * np.log10(np.abs(overlaps) ** 2))
 plt.show()
 plt.xlabel("Radius / μm")
 plt.ylabel("Logarithm of imaginary part of refractive index")
 plt.plot(radiuss, np.log10(np.abs(np.imag(radiuss_lams))))
 plt.show()
 plt.xlabel("Radius / μm")
-plt.ylabel("90-degree bend loss / dB")
+plt.ylabel("90-degree bend transmission / dB")
 plt.plot(
     radiuss,
     -10
