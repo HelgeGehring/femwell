@@ -58,7 +58,7 @@ def compute_modes(
 
     @BilinearForm(dtype=epsilon_r.dtype)
     def aform(e_t, e_z, v_t, v_z, w):
-        epsilon = w.epsilon * (1 + w.x[0] / radius)
+        epsilon = w.epsilon * (1 + w.x[0] / radius) ** 2
 
         return (
             1 / mu_r * curl(e_t) * curl(v_t)
