@@ -48,24 +48,25 @@ wavelength = 1.55
 
 wg_width = 0.5
 wg_thickness = 0.22
-slab_width = 3
 slab_thickness = 0.11
 core = shapely.geometry.box(-wg_width / 2, 0, +wg_width / 2, wg_thickness)
-# slab = shapely.geometry.box(-slab_width / 2, 0, +slab_width / 2, slab_thickness)
+slab = shapely.geometry.box(-1, 0, 4, slab_thickness)
 # env = shapely.affinity.translate(core.buffer(4.5, resolution=8), 1.5, -1.5)
 env = shapely.geometry.box(-1, -4, 4, wg_thickness + 2)
 
 polygons = OrderedDict(
     core=core,
-    #    slab=slab,
+    slab=slab,
     box=clip_by_rect(env, -np.inf, -np.inf, np.inf, 0),
     clad=clip_by_rect(env, -np.inf, 0, np.inf, np.inf),
 )
 
-resolutions = dict(core={"resolution": 0.03, "distance": 1})
+resolutions = dict(
+    core={"resolution": 0.03, "distance": 1}, slab={"resolution": 0.1, "distance": 0.5}
+)
 
 mesh = from_meshio(
-    mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=0.3, filename="mesh.msh")
+    mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=0.2, filename="mesh.msh")
 )
 mesh.draw().show()
 # -
@@ -76,7 +77,7 @@ mesh.draw().show()
 # +
 basis0 = Basis(mesh, ElementDG(ElementTriP1()))
 epsilon = basis0.zeros(dtype=complex)
-for subdomain, n in {"core": 3.48, "box": 1.48, "clad": 1.0}.items():
+for subdomain, n in {"core": 3.48, "slab": 3.48, "box": 1.48, "clad": 1.0}.items():
     epsilon[basis0.get_dofs(elements=subdomain)] = n**2
 epsilon += basis0.project(
     lambda x: -10j * (np.maximum(0, x[0] - 2.0) ** 2 + np.maximum(0, -x[1] - 2.0) ** 2),
@@ -104,14 +105,23 @@ H_straight = calculate_hfield(
 )
 print(lams_straight[0])
 
-radiuss = np.linspace(5, 3, 3)
+radiuss = np.linspace(25, 5, 21)
 print(radiuss)
 radiuss_lams = []
 overlaps = []
+lam_guess = lams_straight[0]
 for radius in tqdm(radiuss):
     lams, basis, xs = compute_modes(
-        basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=1, order=2, radius=radius
+        basis0,
+        epsilon,
+        wavelength=wavelength,
+        mu_r=1,
+        num_modes=1,
+        order=2,
+        radius=radius,
+        n_guess=lam_guess,
     )
+    lam_guess = lams[0]
     H_bent = calculate_hfield(
         basis_straight,
         xs[0],
@@ -125,7 +135,7 @@ for radius in tqdm(radiuss):
     )
 
 plt.xlabel("Radius / μm")
-plt.ylabel("Overlap with straight waveguide mode")
+plt.ylabel("Mode overlap loss with straight waveguide mode / dB")
 plt.plot(radiuss, 10 * np.log10(np.abs(overlaps) ** 2))
 plt.show()
 plt.xlabel("Radius / μm")
