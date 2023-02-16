@@ -14,7 +14,7 @@
 
 # # Modes of a bent rectangular waveguide (in work)
 
-# + tags=["remove-stderr", "hide-input"]
+# + tags=["hide-input"]
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
@@ -92,7 +92,7 @@ basis0.plot(epsilon.imag, shading="gouraud", colorbar=True).show()
 # Subsequently, we calculate the overlap integrals between the modes to determine the coupling efficiency
 # And determine from the imaginary part the bend loss
 
-# +
+# + tags=["remove-stderr"]
 lams_straight, basis_straight, xs_straight = compute_modes(
     basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=1, order=2, radius=np.inf
 )
