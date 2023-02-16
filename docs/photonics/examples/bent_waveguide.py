@@ -103,10 +103,8 @@ H_straight = calculate_hfield(
     2 * np.pi / wavelength * lams_straight[0],
     omega=2 * np.pi / wavelength * scipy.constants.speed_of_light,
 )
-print(lams_straight[0])
 
 radiuss = np.linspace(25, 5, 21)
-print(radiuss)
 radiuss_lams = []
 overlaps = []
 lam_guess = lams_straight[0]
