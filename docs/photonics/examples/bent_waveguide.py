@@ -54,7 +54,7 @@ pml_thickness = 2
 core = shapely.geometry.box(-wg_width / 2, 0, wg_width / 2, wg_thickness)
 slab = shapely.geometry.box(-1 - wg_width / 2, 0, pml_distance + pml_thickness, slab_thickness)
 # env = shapely.affinity.translate(core.buffer(4.5, resolution=8), 1.5, -1.5)
-env = shapely.geometry.box(-1 - wg_width / 2, -4, pml_distance + pml_thickness, wg_thickness + 2)
+env = shapely.geometry.box(-1 - wg_width / 2, -1, pml_distance + pml_thickness, wg_thickness + 1)
 
 polygons = OrderedDict(
     core=core,
@@ -82,8 +82,7 @@ epsilon = basis0.zeros(dtype=complex)
 for subdomain, n in {"core": 3.48, "slab": 3.48, "box": 1.48, "clad": 1.0}.items():
     epsilon[basis0.get_dofs(elements=subdomain)] = n**2
 epsilon += basis0.project(
-    lambda x: -10j
-    * (np.maximum(0, x[0] - pml_distance) ** 2 + np.maximum(0, -x[1] - pml_distance) ** 2),
+    lambda x: -10j * np.maximum(0, x[0] - pml_distance) ** 2,
     dtype=complex,
 )
 basis0.plot(epsilon.real, shading="gouraud", colorbar=True).show()
@@ -107,7 +106,7 @@ H_straight = calculate_hfield(
     omega=2 * np.pi / wavelength * scipy.constants.speed_of_light,
 )
 
-radiuss = np.linspace(25, 5, 21)
+radiuss = np.linspace(40, 5, 21)
 radiuss_lams = []
 overlaps = []
 lam_guess = lams_straight[0]
