@@ -175,7 +175,7 @@ def mesh_from_Dict(
 def mesh_from_OrderedDict(
     shapes_dict: OrderedDict,
     resolutions: Optional[Dict[str, Dict[str, float]]] = None,
-    default_resolution_min: float = 0.01,
+    default_resolution_min: float = 1e-12,
     default_resolution_max: float = 0.5,
     filename: Optional[str] = None,
     gmsh_algorithm: int = 5,

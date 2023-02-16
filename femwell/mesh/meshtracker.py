@@ -17,7 +17,7 @@ from shapely.ops import linemerge, split
 
 
 class MeshTracker:
-    def __init__(self, model, atol=1e-3):
+    def __init__(self, model, atol=1e-6):
         """
         Map between shapely and gmsh
         Shapely is useful for built-in geometry equivalencies and extracting orientation, instead of doing it manually
