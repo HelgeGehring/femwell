@@ -135,7 +135,7 @@ for radius in tqdm(radiuss):
     )
 
 plt.xlabel("Radius / μm")
-plt.ylabel("Mode overlap with straight waveguide mode / dB")
+plt.ylabel("Mode overlap loss with straight waveguide mode / dB")
 plt.yscale("log")
 plt.plot(radiuss, -10 * np.log10(np.abs(overlaps) ** 2))
 plt.show()
