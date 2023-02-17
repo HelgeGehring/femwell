@@ -127,7 +127,7 @@ print("Refractive index of symmetric and assymetric mode:", lams_both)
 # https://www.fiberoptics4sale.com/blogs/wave-optics/directional-couplers
 print(
     "Maximum power transfer after:",
-    (np.pi / 2) / (2 * np.pi / wavelength * np.real(lams_both[0] - lams_both[1])),
+    np.pi / (2 * np.pi / wavelength * np.real(lams_both[0] - lams_both[1])),
 )
 # -
 
