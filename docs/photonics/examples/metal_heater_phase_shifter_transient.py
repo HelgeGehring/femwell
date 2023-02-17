@@ -181,9 +181,7 @@ for temperature in tqdm(temperatures):
     ) ** 2
     # basis0.plot(epsilon, colorbar=True).show()
 
-    lams, basis_modes, xs = compute_modes(
-        basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=1
-    )
+    lams, basis_modes, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=1)
 
     # from femwell.mode_solver import plot_mode
     # plot_mode(basis_modes, xs[0])

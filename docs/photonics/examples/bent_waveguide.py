@@ -96,7 +96,7 @@ basis0.plot(epsilon.imag, shading="gouraud", colorbar=True).show()
 
 # + tags=["remove-stderr"]
 lams_straight, basis_straight, xs_straight = compute_modes(
-    basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=1, order=2, radius=np.inf
+    basis0, epsilon, wavelength=wavelength, num_modes=1, order=2, radius=np.inf
 )
 H_straight = calculate_hfield(
     basis_straight,
@@ -120,7 +120,6 @@ for radius in tqdm(radiuss):
         basis0,
         epsilon,
         wavelength=wavelength,
-        mu_r=1,
         num_modes=1,
         order=2,
         radius=radius,

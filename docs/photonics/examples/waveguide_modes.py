@@ -78,9 +78,7 @@ basis0.plot(epsilon, colorbar=True).show()
 # +
 wavelength = 1.55
 
-lams, basis, xs = compute_modes(
-    basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=2, order=2
-)
+lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=2, order=2)
 for i, lam in enumerate(lams):
     print(f"Effective refractive index: {lam:.4f}")
     plot_mode(basis, xs[i].real, colorbar=True, direction="x")

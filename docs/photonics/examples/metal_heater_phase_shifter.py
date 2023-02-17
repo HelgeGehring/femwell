@@ -123,7 +123,7 @@ for current in tqdm(currents):
     ) ** 2
     # basis0.plot(epsilon, colorbar=True).show()
 
-    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1)
+    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, num_modes=1)
 
     if current == currents[-1]:
         plot_mode(basis, xs[0].real)
