@@ -114,8 +114,7 @@ mesh.draw().show()
 basis0 = Basis(mesh, ElementTriP0(), intorder=4)
 
 epsilon = basis0.zeros() + 1.444**2
-epsilon[basis0.get_dofs(elements="core_1")] = 3.4777**2
-epsilon[basis0.get_dofs(elements="core_2")] = 3.4777**2
+epsilon[basis0.get_dofs(elements=("core_1", "core_2"))] = 3.4777**2
 # basis0.plot(epsilon, colorbar=True).show()
 lams_both, basis, xs_both = compute_modes(
     basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=2
