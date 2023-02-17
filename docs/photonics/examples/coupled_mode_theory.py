@@ -8,12 +8,16 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.10.3
 #   kernelspec:
-#     display_name: gdsfactory_3.11
+#     display_name: Python 3
 #     language: python
 #     name: python3
 # ---
 
 # # Coupled mode theory (in work)
+
+# ```{caution}
+# **This example is under construction, results are not yet all correct**
+# ```
 
 # https://www.fiberoptics4sale.com/blogs/wave-optics/coupled-mode-theory
 # https://www.fiberoptics4sale.com/blogs/wave-optics/two-mode-coupling
