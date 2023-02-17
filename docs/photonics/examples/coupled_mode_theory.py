@@ -52,8 +52,8 @@ w_sim = 4
 h_clad = 1
 h_box = 1
 w_core_1 = 0.45
-w_core_2 = 0.45
-gap = 0.4
+w_core_2 = 0.46
+gap = 0.2
 h_core = 0.22
 offset_heater = 2.2
 h_heater = 0.14
@@ -181,8 +181,12 @@ print("overlap", overlap_integrals)
 coupling_coefficients = np.zeros((len(modes), len(modes)), dtype=complex)
 for i, (lam_i, E_i, epsilon_i) in enumerate(modes):
     for j, (lam_j, E_j, epsilon_j) in enumerate(modes):
-        coupling_coefficients[i, j] = k0 * calculate_coupling_coefficient(
-            basis0, epsilons[(epsilon_j + 1) % 2] - 1.444**2, basis, E_i, E_j
+        coupling_coefficients[i, j] = (
+            k0
+            * calculate_coupling_coefficient(
+                basis0, epsilons[(epsilon_j + 1) % 2] - 1.444**2, basis, E_i, E_j
+            )
+            * 0.5
         )
 
 
@@ -211,6 +215,7 @@ kappas = np.array(
         for j in range(2)
     ]
 )
+kappas *= speed_of_light * epsilon_0
 print(kappas)
 
 delta = 0.5 * (np.real(lams_1[0]) * k0 + kappas[1, 1] - (np.real(lams_2[0]) * k0 + kappas[0, 0]))
