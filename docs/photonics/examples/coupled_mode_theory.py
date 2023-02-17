@@ -154,6 +154,10 @@ plot_mode(basis, np.real(xs_2[0]), direction="x")
 plt.show()
 
 # %%
+length = 200
+ts = np.linspace(0, length)
+
+# %%
 epsilons = [epsilon, epsilon_2]
 modes = [(lam, x, 0) for lam, x in zip(lams_1, xs_1)] + [
     (lam, x, 1) for lam, x in zip(lams_2, xs_2)
@@ -232,9 +236,8 @@ print(np.pi / (2 * beta_c))
 eta = np.abs(kappas[1, 0] ** 2 / beta_c**2) * np.sin(beta_c * 1e3)
 print("eta", eta, np.abs(kappas[1, 0] ** 2 / beta_c**2))
 
-t = np.linspace(0, 200, 1000)
-plt.plot(t, 1 - np.abs(kappas[1, 0] ** 2 / beta_c**2 * np.sin(beta_c * t) ** 2))
-plt.plot(t, np.abs(kappas[1, 0] ** 2 / beta_c**2 * np.sin(beta_c * t) ** 2))
+plt.plot(ts, 1 - np.abs(kappas[1, 0] ** 2 / beta_c**2 * np.sin(beta_c * ts) ** 2))
+plt.plot(ts, np.abs(kappas[1, 0] ** 2 / beta_c**2 * np.sin(beta_c * ts) ** 2))
 plt.show()
 
 # %% [markdown]
@@ -255,10 +258,8 @@ def fun(t, y):
     return (matrix @ y).ravel()
 
 
-length = 200
-
-result = solve_ivp(fun, [0, length], np.array((1, 0), dtype=complex), t_eval=np.linspace(0, length))
-ts, ys = result.t, result.y.T
+result = solve_ivp(fun, [0, length], np.array((1, 0), dtype=complex), t_eval=ts)
+ys = result.y.T
 
 plt.plot(ts, np.abs(np.array(ys)[:, 0]) ** 2, "r")
 plt.plot(ts, 1 - np.abs(np.array(ys)[:, 0]) ** 2, "r")
@@ -289,20 +290,19 @@ for lam_j, E_j in zip(lams_both, xs_both):
     )
     R.append(calculate_overlap(basis, E_i, H_i, basis, E_j, H_j) ** 2)
 
-x = np.linspace(0, length, length)
 P = (
     R[0] ** 2
     + R[1] ** 2
-    + 2 * R[0] * R[1] * np.cos(2 * np.pi / wavelength * (lams_both[0] - lams_both[1]) * x)
+    + 2 * R[0] * R[1] * np.cos(2 * np.pi / wavelength * (lams_both[0] - lams_both[1]) * ts)
 )
 
-plt.plot(x, P)
+plt.plot(ts, P)
 plt.show()
 # %%
-plt.plot(x, P)
+plt.plot(ts, P)
 
 
-plt.plot(t, 1 - np.abs(kappas[1, 0] ** 2 / beta_c**2) * np.sin(beta_c * t) ** 2)
+plt.plot(ts, 1 - np.abs(kappas[1, 0] ** 2 / beta_c**2) * np.sin(beta_c * ts) ** 2)
 
 plt.plot(ts, np.abs(np.array(ys)[:, 0]) ** 2, "r")
 plt.plot(ts, 1 - np.abs(np.array(ys)[:, 0]) ** 2, "r")
