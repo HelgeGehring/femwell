@@ -90,10 +90,9 @@ basis0.plot(epsilon.imag, shading="gouraud", colorbar=True).show()
 # -
 
 # We calculate now the modes for the geometry we just set up.
-# We do it for the case, where the bend-radius is infinite, i.e. a straight waveguide
-# and for waveguides with a smaller radius.
-# Subsequently, we calculate the overlap integrals between the modes to determine the coupling efficiency
-# And determine from the imaginary part the bend loss
+# We do it first for the case, where the bend-radius is infinite, i.e. a straight waveguide.
+# This is done to have a reference effectie refractive index for starting
+# and for mode overlap calculations between straight and bent waveguides.
 
 # + tags=["remove-stderr"]
 lams_straight, basis_straight, xs_straight = compute_modes(
@@ -105,7 +104,13 @@ H_straight = calculate_hfield(
     2 * np.pi / wavelength * lams_straight[0],
     omega=2 * np.pi / wavelength * scipy.constants.speed_of_light,
 )
+# -
 
+# Now we calculate the modes of bent waveguides with different radii.
+# Subsequently, we calculate the overlap integrals between the modes to determine the coupling efficiency
+# And determine from the imaginary part the bend loss.
+
+# +
 radiuss = np.linspace(40, 5, 21)
 radiuss_lams = []
 overlaps = []
@@ -133,15 +138,15 @@ for radius in tqdm(radiuss):
     overlaps.append(
         calculate_overlap(basis_straight, xs[0], H_bent, basis_straight, xs_straight[0], H_straight)
     )
+# -
 
+# And now we plot it!
+
+# + tags=["hide-input"]
 plt.xlabel("Radius / μm")
 plt.ylabel("Mode overlap loss with straight waveguide mode / dB")
 plt.yscale("log")
 plt.plot(radiuss, -10 * np.log10(np.abs(overlaps) ** 2))
-plt.show()
-plt.xlabel("Radius / μm")
-plt.ylabel("Logarithm of imaginary part of refractive index")
-plt.plot(radiuss, np.log10(np.abs(np.imag(radiuss_lams))))
 plt.show()
 plt.xlabel("Radius / μm")
 plt.ylabel("90-degree bend transmission / dB")
@@ -160,7 +165,7 @@ plt.show()
 # As modes can have complex fields as soon as the epsilon gets complex, so we get a complex field for each mode.
 # Here we show only the real part of the mode.
 
-# +
+# + tags=["hide-input"]
 for i, lam in enumerate(lams):
     print(f"Effective refractive index: {lam:.14f}")
     plot_mode(basis, xs[i].real, colorbar=True, direction="x")
