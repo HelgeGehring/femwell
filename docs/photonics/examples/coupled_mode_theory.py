@@ -8,7 +8,7 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.10.3
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: env_3.11
 #     language: python
 #     name: python3
 # ---
@@ -52,7 +52,7 @@ w_sim = 4
 h_clad = 1
 h_box = 1
 w_core_1 = 0.45
-w_core_2 = 0.5
+w_core_2 = 0.45
 gap = 0.4
 h_core = 0.22
 offset_heater = 2.2
@@ -105,6 +105,9 @@ resolutions = dict(
 mesh = from_meshio(
     mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=0.2)
 )
+# -
+
+# First we plot the symmetric and teh asymmetric modes of the geometry with both waveguides:
 
 # +
 basis0 = Basis(mesh, ElementTriP0(), intorder=4)
@@ -116,24 +119,32 @@ epsilon[basis0.get_dofs(elements="core_2")] = 3.4777**2
 lams_both, basis, xs_both = compute_modes(
     basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=2
 )
+plot_mode(basis, np.real(xs_both[0]), direction="x")
+plt.show()
+plot_mode(basis, np.real(xs_both[1]), direction="x")
+plt.show()
 print("Refractive index of symmetric and assymetric mode:", lams_both)
 print("coupling_length", 1 / (2 * np.pi / wavelength * (lams_both[0] - lams_both[1])) * np.pi)
+# -
 
+# And then we plot the modes of each waveguide while setting the shape of the other one to oxide
+
+# +
 epsilon = basis0.zeros() + 1.444**2
 epsilon[basis0.get_dofs(elements="core_1")] = 3.4777**2
 # basis0.plot(epsilon, colorbar=True).show()
 lams_1, basis, xs_1 = compute_modes(basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=1)
 print("Effective refractive index of the mode of the first waveguide", lams_1)
-# plot_mode(basis, np.real(xs_1[0]))
-# plt.show()
+plot_mode(basis, np.real(xs_1[0]), direction="x")
+plt.show()
 
 epsilon_2 = basis0.zeros() + 1.444**2
 epsilon_2[basis0.get_dofs(elements="core_2")] = 3.4777**2
 # basis0.plot(epsilon_2, colorbar=True).show()
 lams_2, basis, xs_2 = compute_modes(basis0, epsilon_2, wavelength=wavelength, mu_r=1, num_modes=1)
 print("Effective refractive index of the mode of the second waveguide", lams_2)
-# plot_mode(basis, np.real(xs_2[0]))
-# plt.show()
+plot_mode(basis, np.real(xs_2[0]), direction="x")
+plt.show()
 
 # +
 epsilons = [epsilon, epsilon_2]
@@ -280,3 +291,4 @@ P = (
 
 plt.plot(x, P)
 plt.show()
+# -
