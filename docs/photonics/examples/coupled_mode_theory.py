@@ -1,6 +1,24 @@
+# ---
+# jupyter:
+#   jupytext:
+#     formats: py:light,ipynb
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.10.3
+#   kernelspec:
+#     display_name: gdsfactory_3.11
+#     language: python
+#     name: python3
+# ---
+
+# # Coupled mode theory (in work)
+
 # https://www.fiberoptics4sale.com/blogs/wave-optics/coupled-mode-theory
 # https://www.fiberoptics4sale.com/blogs/wave-optics/two-mode-coupling
 
+# + tags=["hide-input"]
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
@@ -9,6 +27,7 @@ from scipy.constants import epsilon_0, speed_of_light
 from scipy.integrate import RK45
 from shapely.geometry import Polygon
 from skfem import Basis, ElementTriP0, Mesh
+from skfem.io import from_meshio
 
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.mode_solver import (
@@ -19,6 +38,12 @@ from femwell.mode_solver import (
     plot_mode,
 )
 
+# -
+
+# Let's set up the geometry!
+# It's the cross-section of two parallel waveguides with different widths:
+
+# + tags=["remove-stderr"]
 w_sim = 4
 h_clad = 1
 h_box = 1
@@ -73,50 +98,40 @@ resolutions = dict(
     core_2={"resolution": 0.03, "distance": 1},
 )
 
-mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=0.2)
+mesh = from_meshio(
+    mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=0.2)
+)
 
-mesh = Mesh.load("mesh.msh")
+# +
 basis0 = Basis(mesh, ElementTriP0(), intorder=4)
 
-epsilon = basis0.zeros()
+epsilon = basis0.zeros() + 1.444**2
 epsilon[basis0.get_dofs(elements="core_1")] = 3.4777**2
 epsilon[basis0.get_dofs(elements="core_2")] = 3.4777**2
-epsilon[basis0.get_dofs(elements="clad")] = 1.444**2
-epsilon[basis0.get_dofs(elements="box")] = 1.444**2
 # basis0.plot(epsilon, colorbar=True).show()
-
 lams_both, basis, xs_both = compute_modes(
     basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=2
 )
-print(lams_both)
+print("Refractive index of symmetric and assymetric mode:", lams_both)
 print("coupling_length", 1 / (2 * np.pi / wavelength * (lams_both[0] - lams_both[1])) * np.pi)
 
-epsilon = basis0.zeros()
+epsilon = basis0.zeros() + 1.444**2
 epsilon[basis0.get_dofs(elements="core_1")] = 3.4777**2
-epsilon[basis0.get_dofs(elements="core_2")] = 1.444**2
-epsilon[basis0.get_dofs(elements="clad")] = 1.444**2
-epsilon[basis0.get_dofs(elements="box")] = 1.444**2
 # basis0.plot(epsilon, colorbar=True).show()
-
 lams_1, basis, xs_1 = compute_modes(basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=1)
-print(lams_1)
-
+print("Effective refractive index of the mode of the first waveguide", lams_1)
 # plot_mode(basis, np.real(xs_1[0]))
 # plt.show()
 
-epsilon_2 = basis0.zeros()
-epsilon_2[basis0.get_dofs(elements="core_1")] = 1.444**2
+epsilon_2 = basis0.zeros() + 1.444**2
 epsilon_2[basis0.get_dofs(elements="core_2")] = 3.4777**2
-epsilon_2[basis0.get_dofs(elements="clad")] = 1.444**2
-epsilon_2[basis0.get_dofs(elements="box")] = 1.444**2
 # basis0.plot(epsilon_2, colorbar=True).show()
-
 lams_2, basis, xs_2 = compute_modes(basis0, epsilon_2, wavelength=wavelength, mu_r=1, num_modes=1)
-print(lams_2)
-
+print("Effective refractive index of the mode of the second waveguide", lams_2)
 # plot_mode(basis, np.real(xs_2[0]))
 # plt.show()
 
+# +
 epsilons = [epsilon, epsilon_2]
 modes = [(lam, x, 0) for lam, x in zip(lams_1, xs_1)] + [
     (lam, x, 1) for lam, x in zip(lams_2, xs_2)
@@ -188,10 +203,12 @@ print(np.pi / (2 * beta_c))
 
 eta = np.abs(kappas[1, 0] ** 2 / beta_c**2) * np.sin(beta_c * 1e3)
 print("eta", eta, np.abs(kappas[1, 0] ** 2 / beta_c**2))
+# -
 
 # see http://home.iitj.ac.in/~k.r.hiremath/research/thesis.pdf , not yet finished
 
 
+# +
 def fun(t, y):
     phase_matrix = [
         [
