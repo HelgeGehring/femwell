@@ -26,7 +26,9 @@ so there's several features for which there are only examples in the code.
 ## Possible Simulations
 
 - Eigenmodes of waveguides and determining their effective refractive index
+- Coupling between neighboring waveguides
 - Eigenmodes of bent waveguides
+- Propagation loss of circular bends and mode mismatch loss with straight waveguides
 - Calculation of the group velocity and its dispersion
 - Calculation of overlap-integrals and confinement-factors
 - Bragg grating cells
@@ -42,6 +44,8 @@ so there's several features for which there are only examples in the code.
 - Coupled mode theory - coupling between adjacent waveguides
 - Heat based photonic phase shifters
 - Pockels based photonic phase shifters
+
+Something missing? Feel free to open an [issue](https://github.com/HelgeGehring/femwell/issues) :)
 
 ## Contributors
 
