@@ -234,8 +234,8 @@ def fun(t, y):
         for lam_i, E_i, epsilon_i in modes
     ]
     matrix = (
-        np.linalg.inv(overlap_integrals)
-        @ (coupling_coefficients)
+        np.linalg.inv(overlap_integrals * phase_matrix)
+        @ (coupling_coefficients * phase_matrix)
         * -1j
         * speed_of_light
         * epsilon_0
@@ -292,5 +292,12 @@ P = (
 )
 
 plt.plot(x, P)
+plt.show()
+# +
+plt.plot(x, P)
+
+plt.plot(ts, np.abs(np.array(ys)[:, 0]) ** 2, "r")
+plt.plot(ts, 1 - np.abs(np.array(ys)[:, 0]) ** 2, "r")
+# plt.plot(ts, np.array(ys).imag.reshape((-1,)+matrix.shape)@(1,0), 'g')
 plt.show()
 # -
