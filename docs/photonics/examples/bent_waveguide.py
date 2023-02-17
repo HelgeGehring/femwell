@@ -94,7 +94,7 @@ basis0.plot(epsilon.imag, shading="gouraud", colorbar=True).show()
 # This is done to have a reference effectie refractive index for starting
 # and for mode overlap calculations between straight and bent waveguides.
 
-# + tags=["remove-stderr"]
+# +
 lams_straight, basis_straight, xs_straight = compute_modes(
     basis0, epsilon, wavelength=wavelength, num_modes=1, order=2, radius=np.inf
 )
@@ -110,7 +110,7 @@ H_straight = calculate_hfield(
 # Subsequently, we calculate the overlap integrals between the modes to determine the coupling efficiency
 # And determine from the imaginary part the bend loss.
 
-# +
+# + tags=["remove-stderr"]
 radiuss = np.linspace(40, 5, 21)
 radiuss_lams = []
 overlaps = []
