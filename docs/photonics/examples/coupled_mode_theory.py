@@ -105,6 +105,7 @@ resolutions = dict(
 mesh = from_meshio(
     mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=0.2)
 )
+mesh.draw().show()
 # -
 
 # First we plot the symmetric and teh asymmetric modes of the geometry with both waveguides:
