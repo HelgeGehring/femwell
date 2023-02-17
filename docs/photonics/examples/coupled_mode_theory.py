@@ -50,7 +50,7 @@ from femwell.mode_solver import (
 # Let's set up the geometry!
 # It's the cross-section of two parallel waveguides with different widths:
 
-# %% tags=["remove-stderr"]
+# %% tags=["remove-stderr", "hide-input"]
 w_sim = 4
 h_clad = 1
 h_box = 1
@@ -111,7 +111,7 @@ mesh = from_meshio(
 mesh.draw().show()
 
 # %% [markdown]
-# First we plot the symmetric and teh asymmetric modes of the geometry with both waveguides:
+# First we plot the symmetric and the asymmetric modes of the geometry with both waveguides:
 
 # %%
 basis0 = Basis(mesh, ElementTriP0(), intorder=4)
