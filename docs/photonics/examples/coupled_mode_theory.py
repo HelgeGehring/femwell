@@ -1,34 +1,38 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: py:light,ipynb
+#     custom_cell_magics: kql
+#     formats: py:percent,ipynb
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.10.3
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.11.2
 #   kernelspec:
 #     display_name: env_3.11
 #     language: python
 #     name: python3
 # ---
 
+# %% [markdown]
 # # Coupled mode theory (in work)
 
+# %% [markdown]
 # ```{caution}
 # **This example is under construction, results are not yet all correct**
 # ```
 
+# %% [markdown]
 # https://www.fiberoptics4sale.com/blogs/wave-optics/coupled-mode-theory
 # https://www.fiberoptics4sale.com/blogs/wave-optics/two-mode-coupling
 
-# + tags=["hide-input"]
+# %% tags=["hide-input"]
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.constants import epsilon_0, speed_of_light
-from scipy.integrate import RK45
+from scipy.integrate import solve_ivp
 from shapely.geometry import Polygon
 from skfem import Basis, ElementTriP0, Mesh
 from skfem.io import from_meshio
@@ -42,12 +46,11 @@ from femwell.mode_solver import (
     plot_mode,
 )
 
-# -
-
+# %% [markdown]
 # Let's set up the geometry!
 # It's the cross-section of two parallel waveguides with different widths:
 
-# + tags=["remove-stderr"]
+# %% tags=["remove-stderr"]
 w_sim = 4
 h_clad = 1
 h_box = 1
@@ -106,11 +109,11 @@ mesh = from_meshio(
     mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=0.2)
 )
 mesh.draw().show()
-# -
 
+# %% [markdown]
 # First we plot the symmetric and teh asymmetric modes of the geometry with both waveguides:
 
-# +
+# %%
 basis0 = Basis(mesh, ElementTriP0(), intorder=4)
 
 epsilon = basis0.zeros() + 1.444**2
@@ -129,11 +132,11 @@ print(
     "Maximum power transfer after:",
     np.pi / (2 * np.pi / wavelength * np.real(lams_both[0] - lams_both[1])),
 )
-# -
 
+# %% [markdown]
 # And then we plot the modes of each waveguide while setting the shape of the other one to oxide
 
-# +
+# %%
 epsilon = basis0.zeros() + 1.444**2
 epsilon[basis0.get_dofs(elements="core_1")] = 3.4777**2
 # basis0.plot(epsilon, colorbar=True).show()
@@ -150,7 +153,7 @@ print("Effective refractive index of the mode of the second waveguide", lams_2)
 plot_mode(basis, np.real(xs_2[0]), direction="x")
 plt.show()
 
-# +
+# %%
 epsilons = [epsilon, epsilon_2]
 modes = [(lam, x, 0) for lam, x in zip(lams_1, xs_1)] + [
     (lam, x, 1) for lam, x in zip(lams_2, xs_2)
@@ -233,12 +236,12 @@ t = np.linspace(0, 200, 1000)
 plt.plot(t, 1 - np.abs(kappas[1, 0] ** 2 / beta_c**2 * np.sin(beta_c * t) ** 2))
 plt.plot(t, np.abs(kappas[1, 0] ** 2 / beta_c**2 * np.sin(beta_c * t) ** 2))
 plt.show()
-# -
 
+# %% [markdown]
 # see http://home.iitj.ac.in/~k.r.hiremath/research/thesis.pdf , not yet finished
 
 
-# +
+# %%
 def fun(t, y):
     phase_matrix = [
         [np.exp(2j * np.pi / wavelength * (lam_i - lam_j) * t) for lam_j, E_j, epsilon_j in modes]
@@ -254,25 +257,18 @@ def fun(t, y):
 
 length = 200
 
-stepping = RK45(fun, 0, np.array((1, 0), dtype=complex), length, max_step=1)
-
-ts = []
-ys = []
-
-for i in range(length):
-    stepping.step()
-    ts.append(stepping.t)
-    ys.append(stepping.y)
+result = solve_ivp(fun, [0, length], np.array((1, 0), dtype=complex), t_eval=np.linspace(0, length))
+ts, ys = result.t, result.y.T
 
 plt.plot(ts, np.abs(np.array(ys)[:, 0]) ** 2, "r")
 plt.plot(ts, 1 - np.abs(np.array(ys)[:, 0]) ** 2, "r")
 # plt.plot(ts, np.array(ys).imag.reshape((-1,)+matrix.shape)@(1,0), 'g')
 plt.show()
-# -
 
+# %% [markdown]
 # ## two modes
 
-# +
+# %%
 R = []
 
 lam_i = lams_1[0]
@@ -302,7 +298,7 @@ P = (
 
 plt.plot(x, P)
 plt.show()
-# +
+# %%
 plt.plot(x, P)
 
 
@@ -312,4 +308,5 @@ plt.plot(ts, np.abs(np.array(ys)[:, 0]) ** 2, "r")
 plt.plot(ts, 1 - np.abs(np.array(ys)[:, 0]) ** 2, "r")
 # plt.plot(ts, np.array(ys).imag.reshape((-1,)+matrix.shape)@(1,0), 'g')
 plt.show()
-# -
+
+# %%
