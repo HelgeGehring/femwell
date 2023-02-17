@@ -230,15 +230,12 @@ print("eta", eta, np.abs(kappas[1, 0] ** 2 / beta_c**2))
 # +
 def fun(t, y):
     phase_matrix = [
-        [
-            np.exp(2j * np.pi / wavelength * (lam_i - lam_j) * t / 5)
-            for lam_j, E_j, epsilon_j in modes
-        ]
+        [np.exp(2j * np.pi / wavelength * (lam_i - lam_j) * t) for lam_j, E_j, epsilon_j in modes]
         for lam_i, E_i, epsilon_i in modes
     ]
     matrix = (
-        np.linalg.inv(overlap_integrals * phase_matrix)
-        @ (coupling_coefficients * phase_matrix)
+        np.linalg.inv(overlap_integrals)
+        @ (coupling_coefficients)
         * -1j
         * speed_of_light
         * epsilon_0
@@ -246,7 +243,7 @@ def fun(t, y):
     return (matrix @ y).ravel()
 
 
-length = 100
+length = 200
 
 stepping = RK45(fun, 0, np.array((1, 0), dtype=complex), length, max_step=1)
 
@@ -262,10 +259,11 @@ plt.plot(ts, np.abs(np.array(ys)[:, 0]) ** 2, "r")
 plt.plot(ts, 1 - np.abs(np.array(ys)[:, 0]) ** 2, "r")
 # plt.plot(ts, np.array(ys).imag.reshape((-1,)+matrix.shape)@(1,0), 'g')
 plt.show()
+# -
 
+# ## two modes
 
-## two modes
-
+# +
 R = []
 
 lam_i = lams_1[0]
