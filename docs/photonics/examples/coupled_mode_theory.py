@@ -155,7 +155,7 @@ plt.show()
 
 # %%
 length = 200
-ts = np.linspace(0, length)
+ts = np.linspace(0, length, 1000)
 
 # %%
 epsilons = [epsilon, epsilon_2]
@@ -308,5 +308,3 @@ plt.plot(ts, np.abs(np.array(ys)[:, 0]) ** 2, "r")
 plt.plot(ts, 1 - np.abs(np.array(ys)[:, 0]) ** 2, "r")
 # plt.plot(ts, np.array(ys).imag.reshape((-1,)+matrix.shape)@(1,0), 'g')
 plt.show()
-
-# %%
