@@ -12,7 +12,7 @@
 #     name: python3
 # ---
 
-# # Modes of a bent rectangular waveguide (in work)
+# # Bent waveguide losses
 
 # + tags=["hide-input"]
 from collections import OrderedDict
