@@ -227,6 +227,10 @@ print(np.pi / (2 * beta_c))
 
 eta = np.abs(kappas[1, 0] ** 2 / beta_c**2) * np.sin(beta_c * 1e3)
 print("eta", eta, np.abs(kappas[1, 0] ** 2 / beta_c**2))
+
+t = np.linspace(0, 200, 1000)
+plt.plot(t, np.abs(kappas[1, 0] ** 2 / beta_c**2) * np.sin(beta_c * t) ** 2)
+plt.show()
 # -
 
 # see http://home.iitj.ac.in/~k.r.hiremath/research/thesis.pdf , not yet finished
@@ -300,6 +304,9 @@ plt.plot(x, P)
 plt.show()
 # +
 plt.plot(x, P)
+
+
+plt.plot(t, np.abs(kappas[1, 0] ** 2 / beta_c**2) * np.sin(beta_c * t) ** 2)
 
 plt.plot(ts, np.abs(np.array(ys)[:, 0]) ** 2, "r")
 plt.plot(ts, 1 - np.abs(np.array(ys)[:, 0]) ** 2, "r")
