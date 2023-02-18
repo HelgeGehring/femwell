@@ -15,7 +15,7 @@
 # ---
 
 # %% [markdown]
-# # Coupled mode theory (in work)
+# # Coupled mode theory
 
 # %% [markdown]
 # ```{caution}
