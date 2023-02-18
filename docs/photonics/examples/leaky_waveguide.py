@@ -15,7 +15,7 @@
 # ---
 
 # %% [markdown]
-# # Loss due to coupling to the continuum
+# # Coupling to the continuum
 
 # %% tags=["remove-stderr", "hide-input"]
 from collections import OrderedDict
