@@ -85,8 +85,14 @@ epsilon += basis0.project(
     lambda x: -1j * np.maximum(0, x[0] - (wg_width / 2 + gap_width + pml_offset)) ** 2,
     dtype=complex,
 )
-basis0.plot(epsilon.real, colorbar=True).show()
-basis0.plot(epsilon.imag, shading="gouraud", colorbar=True).show()
+fig, axs = plt.subplots(1, 2)
+for ax in axs:
+    ax.set_aspect(1)
+axs[0].set_title("$\Re\epsilon$")
+basis0.plot(epsilon.real, colorbar=True, ax=axs[0])
+axs[1].set_title("$\Im\epsilon$")
+basis0.plot(epsilon.imag, shading="gouraud", colorbar=True, ax=axs[1])
+plt.show()
 
 # %% [markdown]
 # Now let's calculate the mode of the wavegudie!
@@ -98,7 +104,7 @@ wavelength = 1.55
 lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=1, order=1)
 for i, lam in enumerate(lams):
     print(
-        f"Effective refractive index: {lam:.12f}, Loss: {-20/np.log(10)*2*np.pi/wavelength*np.imag(lam)} / dB/um"
+        f"Effective refractive index: {lam:.12f}, Loss: {-20/np.log(10)*2*np.pi/wavelength*np.imag(lam):4f} / dB/um"
     )
     plot_mode(basis, xs[i].real, colorbar=True, direction="x")
     plt.show()
