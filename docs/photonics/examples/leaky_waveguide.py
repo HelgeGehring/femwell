@@ -104,7 +104,8 @@ wavelength = 1.55
 lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=1, order=1)
 for i, lam in enumerate(lams):
     print(
-        f"Effective refractive index: {lam:.12f}, Loss: {-20/np.log(10)*2*np.pi/wavelength*np.imag(lam):4f} / dB/um"
+        f"Effective refractive index: {lam:.12f}, "
+        f"Loss: {-20/np.log(10)*2*np.pi/wavelength*np.imag(lam):4f} / dB/um"
     )
     plot_mode(basis, xs[i].real, colorbar=True, direction="x")
     plt.show()
