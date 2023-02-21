@@ -23,7 +23,7 @@ from collections import OrderedDict
 
 import matplotlib.pyplot as plt
 import numpy as np
-import shapely
+from shapely import LineString, box
 from skfem import Basis, ElementTriP0
 from skfem.io import from_meshio
 
@@ -39,14 +39,14 @@ c = 0.2
 
 k0 = 0.7 / a  # 1.05/a
 
-left = shapely.LineString([(0, y) for y in np.linspace(-height, height, 20)])
-right = shapely.LineString([(a, y) for y in np.linspace(-height, height, 20)])
-top = shapely.LineString([(x, height) for x in np.linspace(0, a, 2)])
-bottom = shapely.LineString([(x, -height) for x in np.linspace(0, a, 2)])
+left = LineString([(0, y) for y in np.linspace(-height, height, 20)])
+right = LineString([(a, y) for y in np.linspace(-height, height, 20)])
+top = LineString([(x, height) for x in np.linspace(0, a, 2)])
+bottom = LineString([(x, -height) for x in np.linspace(0, a, 2)])
 
-box = shapely.box(0, -height, a, height)
-structure = shapely.box(0, -b / 2, a, b / 2)
-hole = shapely.box(a / 4, -c / 2, a / 4 * 3, c / 2)
+box = box(0, -height, a, height)
+structure = box(0, -b / 2, a, b / 2)
+hole = box(a / 4, -c / 2, a / 4 * 3, c / 2)
 
 resolutions = {"hole": {"resolution": 0.1, "distance": 1}}
 
