@@ -83,7 +83,8 @@ def compute_modes(
 
     if metallic_boundaries:
         lams, xs = solve(
-            *condense(-A, -B, D=basis.get_dofs()), solver=solver(k=num_modes, sigma=sigma)
+            *condense(-A, -B, D=basis.get_dofs(), x=basis.zeros(dtype=complex)),
+            solver=solver(k=num_modes, sigma=sigma),
         )
     else:
         lams, xs = solve(
