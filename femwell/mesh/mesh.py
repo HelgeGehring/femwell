@@ -18,6 +18,8 @@ from shapely.ops import linemerge, polygonize, split, unary_union
 
 from femwell.mesh.meshtracker import MeshTracker
 
+np.seterr(invalid="ignore")  # remove when shapely updated to more recent geos
+
 
 def break_line_(line, other_line):
     intersections = line.intersection(other_line)
