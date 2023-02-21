@@ -14,7 +14,7 @@
 
 # # PN junction depletion modulator
 
-# + tags=["remove-stderr", "hide-input"]
+# + tags=["hide-input"]
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
@@ -70,7 +70,7 @@ mesh.draw().show()
 
 # To define the epsilon, we proceed as for a regular waveguide, but we superimpose a voltage-dependent index of refraction based on the Soref Equations {cite}`Soref1987Jan`, {cite}`Nedeljkovic2011Oct`. These phenomenologically relate the change in complex index of refraction of silicon as a function of the concentration of free carriers. We model the spatial distribution of carriers according to the physics of a 1D PN junction in the depletion approximation. For more accurate results, full modeling of the silicon processing and physics through TCAD must be performed.
 
-# # +
+# +
 xpn = 0
 NA = 1e17
 ND = 1e17
@@ -95,10 +95,11 @@ def define_index(mesh, V, xpn, NA, ND, wavelength):
 basis0, epsilon = define_index(mesh, V, xpn, NA, ND, wavelength)
 basis0.plot(epsilon.real, colorbar=True).show()
 basis0.plot(epsilon.imag, colorbar=True).show()
-
 # -
+
 # The index change is weak compared to the contrast between silicon and silicon dioxide, but it is accompanied by a change in absorption which is easier to observe. As voltage is increased, the region without charge widens, which is the mechanism behind depletion modulation:
 
+# +
 V = -4
 basis0, epsilon = define_index(mesh, V, xpn, NA, ND, wavelength)
 basis0.plot(epsilon.imag, colorbar=True).show()
@@ -113,7 +114,9 @@ for V in voltages:
     basis0, epsilon = define_index(mesh, V, xpn, NA, ND, wavelength)
     lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=1, order=2)
     neff_vs_V.append(lams)
+# -
 
+# + tags=["hide-input"]
 plt.plot(voltages, np.real(neff_vs_V))
 plt.title(f"NA = {NA}, ND = {ND}, xpn = {xpn}, wavelength = {wavelength}")
 plt.xlabel("Voltage (V)")
@@ -121,7 +124,7 @@ plt.ylabel("neff0")
 plt.show()
 # -
 
-# +
+# + tags=["hide-input"]
 plt.plot(voltages, k_to_alpha_dB(np.imag(neff_vs_V), wavelength))
 plt.title(f"NA = {NA}, ND = {ND}, xpn = {xpn}, wavelength = {wavelength}")
 plt.xlabel("Voltage (V)")
