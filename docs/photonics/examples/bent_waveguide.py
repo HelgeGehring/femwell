@@ -20,8 +20,7 @@ from collections import OrderedDict
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.constants
-import shapely
-import shapely.affinity
+from shapely import box
 from shapely.ops import clip_by_rect
 from skfem import Basis, ElementDG, ElementTriP1
 from skfem.io.meshio import from_meshio
@@ -51,10 +50,9 @@ wg_thickness = 0.22
 slab_thickness = 0.11
 pml_distance = wg_width / 2 + 2  # distance from center
 pml_thickness = 2
-core = shapely.geometry.box(-wg_width / 2, 0, wg_width / 2, wg_thickness)
-slab = shapely.geometry.box(-1 - wg_width / 2, 0, pml_distance + pml_thickness, slab_thickness)
-# env = shapely.affinity.translate(core.buffer(4.5, resolution=8), 1.5, -1.5)
-env = shapely.geometry.box(-1 - wg_width / 2, -1, pml_distance + pml_thickness, wg_thickness + 1)
+core = box(-wg_width / 2, 0, wg_width / 2, wg_thickness)
+slab = box(-1 - wg_width / 2, 0, pml_distance + pml_thickness, slab_thickness)
+env = box(-1 - wg_width / 2, -1, pml_distance + pml_thickness, wg_thickness + 1)
 
 polygons = OrderedDict(
     core=core,
