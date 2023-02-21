@@ -65,8 +65,8 @@ mesh.draw().show()
 
 # +
 xpn = 0
-NA = 1e17
-ND = 1e17
+NA = 1e18
+ND = 1e18
 V = 0
 wavelength = 1.55
 
@@ -75,13 +75,14 @@ def define_index(mesh, V, xpn, NA, ND, wavelength):
     basis0 = Basis(mesh, ElementTriP0())
     epsilon = basis0.zeros(dtype=complex)
     for subdomain, n in {"core": 3.45, "slab": 3.45}.items():
-        epsilon[basis0.get_dofs(elements=subdomain)] = n**2
+        epsilon[basis0.get_dofs(elements=subdomain)] = n
     epsilon += basis0.project(
-        lambda x: index_pn_junction(x[0], xpn, NA, ND, V, wavelength) ** 2,
+        lambda x: index_pn_junction(x[0], xpn, NA, ND, V, wavelength),
         dtype=complex,
     )
     for subdomain, n in {"clad": 1.444}.items():
-        epsilon[basis0.get_dofs(elements=subdomain)] = n**2
+        epsilon[basis0.get_dofs(elements=subdomain)] = n
+    epsilon *= epsilon  # square now
     return basis0, epsilon
 
 
@@ -110,10 +111,10 @@ for V in voltages:
 # -
 
 # + tags=["hide-input"]
-plt.plot(voltages, np.real(neff_vs_V))
+plt.plot(voltages, np.real(neff_vs_V) - np.real(neff_vs_V[0]))
 plt.title(f"NA = {NA}, ND = {ND}, xpn = {xpn}, wavelength = {wavelength}")
 plt.xlabel("Voltage (V)")
-plt.ylabel("neff0")
+plt.ylabel("Change in neff")
 plt.show()
 # -
 
