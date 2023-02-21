@@ -38,7 +38,7 @@ from femwell.pn_analytical import *
 # -
 
 # We can study the propagation constant in waveguides as a function of arbitrary physics.
-# Here, we consider the depletion approximation to pn junctions to study how doping level and junction placement affect modulation in a doped silicon waveguide.
+# Here, we consider the depletion approximation to pn junctions to study how doping level and junction placement affect modulation in a doped silicon waveguide. This is a simple, yet common, approximation {cite}`Chrostowski2015Mar`.
 
 # +
 clad_thickness = 2
@@ -68,7 +68,7 @@ mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resoluti
 mesh.draw().show()
 # -
 
-# To define the epsilon, we proceed as for a regular waveguide, but we superimpose a voltage-dependent index of refraction based on the Soref Equations. These phenomenologically relate the change in complex index of refraction of silicon as a function of the concentration of free carriers. We model the spatial distribution of carriers according to the physics of a 1D PN junction in the depletion approximation. For more accurate results, full modeling of the silicon processing and physics through TCAD must be performed.
+# To define the epsilon, we proceed as for a regular waveguide, but we superimpose a voltage-dependent index of refraction based on the Soref Equations {cite}`Soref1987Jan`, {cite}`Nedeljkovic2011Oct`. These phenomenologically relate the change in complex index of refraction of silicon as a function of the concentration of free carriers. We model the spatial distribution of carriers according to the physics of a 1D PN junction in the depletion approximation. For more accurate results, full modeling of the silicon processing and physics through TCAD must be performed.
 
 # # +
 xpn = 0
@@ -124,12 +124,9 @@ plt.title(f"NA = {NA}, ND = {ND}, xpn = {xpn}, wavelength = {wavelength}")
 plt.xlabel("Voltage (V)")
 plt.ylabel("absorption (dB/cm)")
 
-# -
-
-# References:
-
-# From Chrostowski, L., & Hochberg, M. (2015). Silicon Photonics Design: From Devices to Systems. Cambridge University Press. doi: 10.1017/CBO9781316084168
-#     Citing:
-#     (1) R. Soref and B. Bennett, "Electrooptical effects in silicon," in IEEE Journal of Quantum Electronics, vol. 23, no. 1, pp. 123-129, January 1987, doi: 10.1109/JQE.1987.1073206.
-#     (2) Reed, G. T., Mashanovich, G., Gardes, F. Y., & Thomson, D. J. (2010). Silicon optical modulators. Nature Photonics, 4(8), 518–526. doi: 10.1038/nphoton.2010.179
-#     (3) M. Nedeljkovic, R. Soref and G. Z. Mashanovich, "Free-Carrier Electrorefraction and Electroabsorption Modulation Predictions for Silicon Over the 1–14- $\mu\hbox{m}$ Infrared Wavelength Range," in IEEE Photonics Journal, vol. 3, no. 6, pp. 1171-1180, Dec. 2011, doi: 10.1109/JPHOT.2011.2171930.
+# ## Bibliography
+#
+# ```{bibliography}
+# :style: unsrt
+# :filter: docname in docnames
+# ```
