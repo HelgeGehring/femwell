@@ -77,7 +77,7 @@ def k_to_alpha_dB(k, wavelength):
     """Converts extinction coefficient (unitless) to absorption coefficient (dB/cm), given wavelength (um)."""
     wavelength = wavelength * 1e-6  # convert to m
     alpha = 4 * np.pi * k / wavelength
-    return 10 * np.log10(np.edepletion_width_p_side(1)) * alpha * 1e-2  # convert to /cm
+    return 10 * np.log10(np.exp(1)) * alpha * 1e-2  # convert to /cm
 
 
 # Physical constants (in cm)
@@ -137,48 +137,48 @@ def depletion_width_p_side(NA, ND, V):
     return depletion_width(NA, ND, V) / (1 + NA / ND)
 
 
-def hole_concentration_depletion_approx(x, V, depletion_width_p_siden, NA, ND):
+def hole_concentration_depletion_approx(x, V, xpn, NA, ND):
     """Hole concentration (depletion approximation).
 
     Arguments:
         x: position (x, um)
-        depletion_width_p_siden: junction position (x, um)
+        xpn: junction position (x, um)
         NA: acceptor concentration (cm-3)
         ND: donor concentration (cm-3)
         V: voltage (V)
     """
     # Acceptors on the p-side left (majority, fully ionized)
-    p = np.where(x < depletion_width_p_siden - depletion_width_p_side(NA, ND, V), NA, 0)
+    p = np.where(x < xpn - depletion_width_p_side(NA, ND, V), NA, 0)
     # Donors on n-side right (simplest approximation to minority carriers)
-    n = np.where(x > depletion_width_p_siden + depletion_width_n_side(NA, ND, V), ni**2 / ND, 0)
+    n = np.where(x > xpn + depletion_width_n_side(NA, ND, V), ni**2 / ND, 0)
     # 0 elsewhere (depletion)
     return p + n
 
 
-def electron_concentration_depletion_approx(x, V, depletion_width_p_siden, NA, ND):
+def electron_concentration_depletion_approx(x, V, xpn, NA, ND):
     """Electron concentration (depletion approximation).
 
     Arguments:
         x: position (x, um)
-        depletion_width_p_siden: junction position (x, um)
+        xpn: junction position (x, um)
         NA: acceptor concentration (cm-3)
         ND: donor concentration (cm-3)
         V: voltage (V)
     """
     # Acceptors on the p-side left (simplest approximation to minority carriers)
-    p = np.where(x < depletion_width_p_siden - depletion_width_p_side(NA, ND, V), ni**2 / NA, 0)
+    p = np.where(x < xpn - depletion_width_p_side(NA, ND, V), ni**2 / NA, 0)
     # Donors on n-side right (majority, fully ionized)
-    n = np.where(x > depletion_width_p_siden + depletion_width_n_side(NA, ND, V), ND, 0)
+    n = np.where(x > xpn + depletion_width_n_side(NA, ND, V), ND, 0)
     # 0 elsewhere (depletion)
     return p + n
 
 
-def index_pn_junction(x, depletion_width_p_siden, NA, ND, V, wavelength):
+def index_pn_junction(x, xpn, NA, ND, V, wavelength):
     """Refractive index of silicon around a pn junction.
 
     Arguments:
         x: position (um)
-        depletion_width_p_siden: junction position (um)
+        xpn: junction position (um)
         NA: acceptor concentration (cm-3)
         ND: donor concentration (cm-3)
         V: voltage (V)
@@ -187,14 +187,14 @@ def index_pn_junction(x, depletion_width_p_siden, NA, ND, V, wavelength):
     x_cm = x * um / cm
     n = dn_carriers(
         wavelength,
-        electron_concentration_depletion_approx(x_cm, V, depletion_width_p_siden * um / cm, NA, ND),
-        hole_concentration_depletion_approx(x_cm, V, depletion_width_p_siden * um / cm, NA, ND),
+        electron_concentration_depletion_approx(x_cm, V, xpn * um / cm, NA, ND),
+        hole_concentration_depletion_approx(x_cm, V, xpn * um / cm, NA, ND),
     )
     k = alpha_to_k(
         dalpha_carriers(
             wavelength,
-            electron_concentration_depletion_approx(x_cm, V, depletion_width_p_siden / cm, NA, ND),
-            hole_concentration_depletion_approx(x_cm, V, depletion_width_p_siden / cm, NA, ND),
+            electron_concentration_depletion_approx(x_cm, V, xpn / cm, NA, ND),
+            hole_concentration_depletion_approx(x_cm, V, xpn / cm, NA, ND),
         ),
         wavelength,
     )
