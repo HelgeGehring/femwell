@@ -22,7 +22,7 @@ from collections import OrderedDict
 
 import matplotlib.pyplot as plt
 import numpy as np
-import shapely
+from shapely import LineString, box
 from skfem import Basis, ElementDG, ElementTriP1
 from skfem.io import from_meshio
 
@@ -43,13 +43,13 @@ pml = 2
 
 k0 = 1.9 / a  # 1.05/a
 
-left = shapely.LineString([(0, y) for y in np.linspace(-height, height, 2)])
-right = shapely.LineString([(a, y) for y in np.linspace(-height, height, 2)])
-top = shapely.LineString([(x, height) for x in np.linspace(0, a, 2)])
-bottom = shapely.LineString([(x, -height) for x in np.linspace(0, a, 2)])
+left = LineString([(0, y) for y in np.linspace(-height, height, 2)])
+right = LineString([(a, y) for y in np.linspace(-height, height, 2)])
+top = LineString([(x, height) for x in np.linspace(0, a, 2)])
+bottom = LineString([(x, -height) for x in np.linspace(0, a, 2)])
 
-box = shapely.box(0, -height, a, height)
-structure = shapely.Polygon(
+background = box(0, -height, a, height)
+structure = Polygon(
     (
         (0, 0),
         (0, h3),
@@ -76,7 +76,7 @@ mesh = from_meshio(
             top=top,
             bottom=bottom,
             structure=structure,
-            box=box,
+            background=background,
         ),
         resolutions=resolutions,
         filename="mesh.msh",
