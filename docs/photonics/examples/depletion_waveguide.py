@@ -123,6 +123,7 @@ plt.plot(voltages, k_to_alpha_dB(neff_vs_V.imag, wavelength))
 plt.title(f"NA = {NA}, ND = {ND}, xpn = {xpn}, wavelength = {wavelength}")
 plt.xlabel("Voltage (V)")
 plt.ylabel("absorption (dB/cm)")
+# -
 
 # ## Bibliography
 #
