@@ -17,13 +17,12 @@
 # %% [markdown]
 # # Coupling to the continuum
 
-# %% tags=["remove-stderr", "hide-input"]
+# %% tags=["hide-input"]
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
 import numpy as np
-import shapely
-import shapely.affinity
+from shapely import box
 from shapely.ops import clip_by_rect
 from skfem import Basis, ElementDG, ElementTriP1
 from skfem.io.meshio import from_meshio
@@ -38,15 +37,15 @@ from femwell.mode_solver import compute_modes, plot_mode
 # As we later add a PML to the simulation, this slab approximates an
 # infinite wide wavegudie.
 
-# %%
+# %% tags=["remove-stderr"]
 wg_width = 1.3
 wg_thickness = 0.33
 gap_width = 0.3
 buffer = 5
 pml_offset = 0.5
-core = shapely.geometry.box(-wg_width / 2, 0, +wg_width / 2, wg_thickness)
-gap = shapely.geometry.box(wg_width / 2, 0, +wg_width / 2 + gap_width, wg_thickness)
-continuum = shapely.geometry.box(wg_width / 2 + gap_width, 0, +wg_width / 2 + buffer, wg_thickness)
+core = box(-wg_width / 2, 0, +wg_width / 2, wg_thickness)
+gap = box(wg_width / 2, 0, +wg_width / 2 + gap_width, wg_thickness)
+continuum = box(wg_width / 2 + gap_width, 0, +wg_width / 2 + buffer, wg_thickness)
 env = core.buffer(5, resolution=8)
 
 polygons = OrderedDict(
