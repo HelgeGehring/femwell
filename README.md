@@ -44,14 +44,16 @@ so there's several features for which there are only examples in the code.
 - Coupled mode theory - coupling between adjacent waveguides
 - Heat based photonic phase shifters
 - Pockels based photonic phase shifters
+- PN junction depletion modulator (analytical)
 
 Something missing? Feel free to open an [issue](https://github.com/HelgeGehring/femwell/issues) :)
 
 ## Contributors
 
 - Helge Gehring (Google): Maintainer
-- Simon Bilodeau (Google): Meshes everything
+- Simon Bilodeau (Google): Meshes everything, Analytical PN model
 - Joaquin Matres (Google): Code simplifications
+- Marc de Cea Falco (Google): Documentation improvements
 
 Happy about every form of contribution -
 pull requests, feature requests, issues, questions, ... :)
