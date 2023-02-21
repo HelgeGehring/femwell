@@ -20,20 +20,12 @@ from collections import OrderedDict
 import matplotlib.pyplot as plt
 import numpy as np
 import shapely
-import shapely.affinity
-from scipy.constants import epsilon_0, speed_of_light
-from shapely.ops import clip_by_rect
 from skfem import Basis, ElementTriP0
 from skfem.io.meshio import from_meshio
 
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import (
-    calculate_hfield,
-    calculate_overlap,
-    compute_modes,
-    plot_mode,
-)
-from femwell.pn_analytical import *
+from femwell.mode_solver import compute_modes
+from femwell.pn_analytical import index_pn_junction, k_to_alpha_dB
 
 # -
 
@@ -46,6 +38,7 @@ slab_width = 3
 wg_width = 0.5
 wg_thickness = 0.22
 slab_thickness = 0.09
+
 core = shapely.geometry.box(-wg_width / 2, -wg_thickness / 2, wg_width / 2, wg_thickness / 2)
 slab = shapely.geometry.box(
     -slab_width / 2, -wg_thickness / 2, slab_width / 2, -wg_thickness / 2 + slab_thickness
