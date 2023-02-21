@@ -203,25 +203,28 @@ def index_pn_junction(x, xpn, NA, ND, V, wavelength):
     return n + 1j * k
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
-    dNs = np.logspace(15,20,100)
+    dNs = np.logspace(15, 20, 100)
 
     for wavelength in [1.31, 1.55]:
         dns_electrons = dn_carriers(wavelength, dNs, 0)
         dns_holes = dn_carriers(wavelength, 0, dNs)
-        plt.loglog(dNs, -1*dns_electrons, label=f"electrons, {wavelength} um")
-        plt.loglog(dNs, -1*dns_holes, label=f"holes, {wavelength} um")
+        plt.loglog(dNs, -1 * dns_electrons, label=f"electrons, {wavelength} um")
+        plt.loglog(dNs, -1 * dns_holes, label=f"holes, {wavelength} um")
     plt.xlabel("free carrier concentration (cm-3)")
     plt.ylabel("- real n")
     plt.legend()
     plt.show()
 
     for wavelength in [1.31, 1.55]:
-        dns_electrons = k_to_alpha_dB(alpha_to_k(dalpha_carriers(wavelength, dNs, 0), wavelength), wavelength)
-        dns_holes = k_to_alpha_dB(alpha_to_k(dalpha_carriers(wavelength, 0, dNs), wavelength), wavelength)
+        dns_electrons = k_to_alpha_dB(
+            alpha_to_k(dalpha_carriers(wavelength, dNs, 0), wavelength), wavelength
+        )
+        dns_holes = k_to_alpha_dB(
+            alpha_to_k(dalpha_carriers(wavelength, 0, dNs), wavelength), wavelength
+        )
         plt.loglog(dNs, dns_electrons, label=f"electrons, {wavelength} um")
         plt.loglog(dNs, dns_holes, label=f"holes, {wavelength} um")
     plt.xlabel("free carrier concentration (cm-3)")
