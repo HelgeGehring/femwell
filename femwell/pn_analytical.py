@@ -186,17 +186,81 @@ def index_pn_junction(x, xpn, NA, ND, V, wavelength):
         wavelength: of light (um)
     """
     x_cm = x * um / cm
+    xpn_cm = xpn * um / cm
     n = dn_carriers(
         wavelength,
-        electron_concentration_depletion_approx(x_cm, V, xpn * um / cm, NA, ND),
-        hole_concentration_depletion_approx(x_cm, V, xpn * um / cm, NA, ND),
+        electron_concentration_depletion_approx(x_cm, V, xpn_cm, NA, ND),
+        hole_concentration_depletion_approx(x_cm, V, xpn_cm, NA, ND),
     )
     k = alpha_to_k(
         dalpha_carriers(
             wavelength,
-            electron_concentration_depletion_approx(x_cm, V, xpn / cm, NA, ND),
-            hole_concentration_depletion_approx(x_cm, V, xpn / cm, NA, ND),
+            electron_concentration_depletion_approx(x_cm, V, xpn_cm, NA, ND),
+            hole_concentration_depletion_approx(x_cm, V, xpn_cm, NA, ND),
         ),
         wavelength,
     )
     return n + 1j * k
+
+
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+
+    dNs = np.logspace(15, 20, 100)
+
+    for wavelength in [1.31, 1.55]:
+        dns_electrons = dn_carriers(wavelength, dNs, 0)
+        dns_holes = dn_carriers(wavelength, 0, dNs)
+        plt.loglog(dNs, -1 * dns_electrons, label=f"electrons, {wavelength} um")
+        plt.loglog(dNs, -1 * dns_holes, label=f"holes, {wavelength} um")
+    plt.xlabel("free carrier concentration (cm-3)")
+    plt.ylabel("- real n")
+    plt.legend()
+    plt.show()
+
+    for wavelength in [1.31, 1.55]:
+        dns_electrons = k_to_alpha_dB(
+            alpha_to_k(dalpha_carriers(wavelength, dNs, 0), wavelength), wavelength
+        )
+        dns_holes = k_to_alpha_dB(
+            alpha_to_k(dalpha_carriers(wavelength, 0, dNs), wavelength), wavelength
+        )
+        plt.loglog(dNs, dns_electrons, label=f"electrons, {wavelength} um")
+        plt.loglog(dNs, dns_holes, label=f"holes, {wavelength} um")
+    plt.xlabel("free carrier concentration (cm-3)")
+    plt.ylabel("absorption coeff (dB/cm)")
+    plt.legend()
+    plt.show()
+
+    fig = plt.figure()
+
+    xs = np.linspace(-1e-6, 1e-6, 1000) * 1e2  # cm
+
+    cns = []
+    cps = []
+
+    xpn = 0  # 250E-9 * 1E2
+    NA = 2e17
+    ND = 2e17
+
+    voltages = [0, -5, -10, -15]
+    colors = ["tab:blue", "tab:orange", "tab:green", "tab:red"]
+
+    for voltage, color in zip(voltages, colors):
+        cns = []
+        cps = []
+        for x in xs:
+            cns.append(electron_concentration_depletion_approx(x, voltage, xpn, NA, ND))
+            cps.append(hole_concentration_depletion_approx(x, voltage, xpn, NA, ND))
+
+        plt.semilogy(xs * 1e4, cns, color=color, label=f"{voltage} V")
+        plt.semilogy(xs * 1e4, cps, color=color, linestyle="--")
+
+    plt.legend(loc="best")
+
+    plt.ylim([1e1, 1e19])
+    plt.title("Dashed: holes, solid: electrons")
+    plt.ylabel("Conc (cm$^{-3}$)")
+    plt.xlabel("x (um)")
+
+    plt.show()
