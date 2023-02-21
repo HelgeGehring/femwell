@@ -18,8 +18,7 @@ from shapely.ops import linemerge, polygonize, split, unary_union
 
 from femwell.mesh.meshtracker import MeshTracker
 
-np.seterr(invalid="ignore")  # remove when shapely updated to more recent geos
-initial_settings = np.seterr()
+initial_settings = np.seterr()  # remove when shapely updated to more recent geos
 
 
 def break_line_(line, other_line):
