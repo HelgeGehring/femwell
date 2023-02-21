@@ -118,11 +118,15 @@ plt.plot(voltages, np.real(neff_vs_V))
 plt.title(f"NA = {NA}, ND = {ND}, xpn = {xpn}, wavelength = {wavelength}")
 plt.xlabel("Voltage (V)")
 plt.ylabel("neff0")
+plt.show()
+# -
 
+# +
 plt.plot(voltages, k_to_alpha_dB(np.imag(neff_vs_V), wavelength))
 plt.title(f"NA = {NA}, ND = {ND}, xpn = {xpn}, wavelength = {wavelength}")
 plt.xlabel("Voltage (V)")
 plt.ylabel("absorption (dB/cm)")
+plt.show()
 # -
 
 # ## Bibliography
