@@ -231,3 +231,36 @@ if __name__ == "__main__":
     plt.ylabel("absorption coeff (dB/cm)")
     plt.legend()
     plt.show()
+
+    fig = plt.figure()
+
+    xs = np.linspace(-1e-6, 1e-6, 1000) * 1e2  # cm
+
+    cns = []
+    cps = []
+
+    xpn = 0  # 250E-9 * 1E2
+    NA = 2e17
+    ND = 2e17
+
+    voltages = [0, -5, -10, -15]
+    colors = ["tab:blue", "tab:orange", "tab:green", "tab:red"]
+
+    for voltage, color in zip(voltages, colors):
+        cns = []
+        cps = []
+        for x in xs:
+            cns.append(electron_concentration_depletion_approx(x, voltage, xpn, NA, ND))
+            cps.append(hole_concentration_depletion_approx(x, voltage, xpn, NA, ND))
+
+        plt.semilogy(xs * 1e4, cns, color=color, label=f"{voltage} V")
+        plt.semilogy(xs * 1e4, cps, color=color, linestyle="--")
+
+    plt.legend(loc="best")
+
+    plt.ylim([1e1, 1e19])
+    plt.title("Dashed: holes, solid: electrons")
+    plt.ylabel("Conc (cm$^{-3}$)")
+    plt.xlabel("x (um)")
+
+    plt.show()
