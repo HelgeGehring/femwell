@@ -114,12 +114,12 @@ for V in voltages:
     lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=1, order=2)
     neff_vs_V.append(lams)
 
-plt.plot(voltages, neff_vs_V.real)
+plt.plot(voltages, np.real(neff_vs_V))
 plt.title(f"NA = {NA}, ND = {ND}, xpn = {xpn}, wavelength = {wavelength}")
 plt.xlabel("Voltage (V)")
 plt.ylabel("neff0")
 
-plt.plot(voltages, k_to_alpha_dB(neff_vs_V.imag, wavelength))
+plt.plot(voltages, k_to_alpha_dB(np.imag(neff_vs_V), wavelength))
 plt.title(f"NA = {NA}, ND = {ND}, xpn = {xpn}, wavelength = {wavelength}")
 plt.xlabel("Voltage (V)")
 plt.ylabel("absorption (dB/cm)")
