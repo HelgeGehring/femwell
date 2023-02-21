@@ -12,7 +12,7 @@
 #     name: python3
 # ---
 
-# # PN junction modulator
+# # PN junction depletion modulator
 
 # + tags=["remove-stderr", "hide-input"]
 from collections import OrderedDict
