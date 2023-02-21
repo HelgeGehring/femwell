@@ -11,6 +11,7 @@ From Chrostowski, L., & Hochberg, M. (2015). Silicon Photonics Design: From Devi
 import pickle
 
 import numpy as np
+from scipy.constants import e, epsilon_0, k
 
 
 def dn_carriers(wavelength: float, dN: float, dP: float) -> float:
@@ -81,9 +82,9 @@ def k_to_alpha_dB(k, wavelength):
 
 
 # Physical constants (in cm)
-q = 1.60217663e-19  # elementary charge (C)
-eps = 11.68 * 8.854e-12 / 100  # relative permittivity of silicon (CV−1m−1 * 1m / 100 cm)
-kB = 1.380649e-23  # Boltzmann constant (J/K)
+q = e  # elementary charge (C)
+eps = 11.68 * epsilon_0 / 100  # relative permittivity of silicon (CV−1m−1 * 1m / 100 cm)
+kB = k  # Boltzmann constant (J/K)
 ni = 1e10  # intrinsic carriers (cm-3)
 T = 325  # Temperature (K)
 
