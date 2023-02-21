@@ -19,7 +19,7 @@ from collections import OrderedDict
 
 import matplotlib.pyplot as plt
 import numpy as np
-import shapely.geometry
+from shapely import box
 from skfem import Basis, ElementTriP0, ElementTriP1
 from skfem.io import from_meshio
 from tqdm import tqdm
@@ -36,7 +36,7 @@ from femwell.mode_solver import compute_modes, plot_mode
 # We don't need to simulate the whole fiber, just the are in which the field is non-zero.
 
 # +
-core = shapely.geometry.box(-0.1, -0.15, 0.1, 0.15)
+core = box(-0.1, -0.15, 0.1, 0.15)
 polygons = OrderedDict(core=core, clad=core.buffer(15, resolution=4))
 
 resolutions = dict(core={"resolution": 0.01, "distance": 0.1})
