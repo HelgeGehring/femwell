@@ -34,6 +34,7 @@ from femwell.mode_solver import (
     confinement_factor,
     plot_mode,
 )
+from femwell.visualization import plot_domains
 
 # -
 
@@ -59,6 +60,13 @@ resolutions = dict(core={"resolution": 0.03, "distance": 0.5})
 
 mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=10))
 mesh.draw().show()
+# -
+
+# Let's also plot the domains
+
+# +
+plot_domains(mesh)
+plt.show()
 # -
 
 # On this mesh, we define the epsilon. We do this by setting domainwise the epsilon to the squared refractive index.
