@@ -18,9 +18,13 @@ from shapely.ops import linemerge, polygonize, split, unary_union
 
 from femwell.mesh.meshtracker import MeshTracker
 
+initial_settings = np.seterr()  # remove when shapely updated to more recent geos
+
 
 def break_line_(line, other_line):
+    np.seterr(invalid="ignore")
     intersections = line.intersection(other_line)
+    np.seterr(**initial_settings)
     if not intersections.is_empty:
         for intersection in (
             intersections.geoms if hasattr(intersections, "geoms") else [intersections]
@@ -63,7 +67,9 @@ def mesh_from_Dict(
         all_polygons = [total, *list(shapes_dict.values())]
         # Break up all shapes so that plane is tiled with non-overlapping layers, get the maximal number of fragments
         # Equivalent to BooleanFragments
+        np.seterr(invalid="ignore")
         listpoly = [a.intersection(b) for a, b in combinations(all_polygons, 2)]
+        np.seterr(**initial_settings)
         rings = [
             LineString(list(object.exterior.coords))
             for object in listpoly
@@ -289,9 +295,11 @@ def mesh_from_OrderedDict(
                                         else []
                                     ):
                                         second_interior_line = LineString(second_interior_line)
+                                        np.seterr(invalid="ignore")
                                         intersections = first_interior_line.intersection(
                                             second_interior_line
                                         )
+                                        np.seterr(**initial_settings)
                                         first_interior_line = break_line_(
                                             first_interior_line, second_interior_line
                                         )
