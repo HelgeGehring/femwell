@@ -94,10 +94,11 @@ mesh.draw().show()
 # And then we solve it!
 
 # + tags=["remove-stderr"]
-currents = np.linspace(0.0, 10e-3, 10) / polygons["heater"].area
+currents = np.linspace(0.0, 10e-3, 10)
+current_densities = currents / polygons["heater"].area
 neffs = []
 
-for current in tqdm(currents):
+for current_density in tqdm(current_densities):
     basis0 = Basis(mesh, ElementTriP0(), intorder=4)
     thermal_conductivity_p0 = basis0.zeros()
     for domain, value in {"core": 148, "box": 1.38, "clad": 1.38, "heater": 28}.items():
@@ -108,11 +109,11 @@ for current in tqdm(currents):
         basis0,
         thermal_conductivity_p0,
         specific_conductivity={"heater": 2.3e6},
-        current_densities={"heater": current},
+        current_densities={"heater": current_density},
         fixed_boundaries={"bottom": 0},
     )
 
-    if current == currents[-1]:
+    if current_density == current_densities[-1]:
         basis.plot(temperature, shading="gouraud", colorbar=True)
         plt.show()
 
