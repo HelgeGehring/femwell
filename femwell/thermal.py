@@ -9,6 +9,7 @@ from skfem import (
     ElementTriP0,
     ElementTriP1,
     ElementTriP2,
+    ElementTriP3,
     LinearForm,
     Mesh,
     asm,
@@ -42,6 +43,11 @@ def solve_thermal(
         element = ElementTriP1() if basis0.mesh.dim() == 2 else ElementTetP1()
     elif order == 2:
         element = ElementTriP2() if basis0.mesh.dim() == 2 else ElementTetP2()
+    elif order == 3:
+        if basis0.mesh.dim() == 2:
+            element = ElementTriP3()
+        else:
+            raise NotImplementedError()
 
     @BilinearForm
     def conduction(u, v, w):
