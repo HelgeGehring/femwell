@@ -4,6 +4,16 @@ import numpy as np
 from skfem import Basis, ElementTriP0
 
 
+def plot_subdomain_boundaries(mesh, ax=None):
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    mesh.draw(ax=ax, boundaries=True, boundaries_only=True)
+    for subdomain in mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
+        mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
+    return ax
+
+
 def plot_domains(mesh):
     basis0 = Basis(mesh, ElementTriP0())
 
