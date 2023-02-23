@@ -126,7 +126,7 @@ for current_density in tqdm(current_densities):
 
     lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, num_modes=1)
 
-    if current == currents[-1]:
+    if current_density == current_densities[-1]:
         plot_mode(basis, xs[0].real)
         plt.show()
 
