@@ -17,6 +17,7 @@ def solve_thermal_transient(
     thermal_conductivity_p0,
     thermal_diffusivity_p0,
     specific_conductivity: Dict[str, float],
+    current_densities_0,
     current_densities,
     fixed_boundaries,
     dt,
@@ -26,7 +27,7 @@ def solve_thermal_transient(
         basis0,
         thermal_conductivity_p0,
         specific_conductivity,
-        {domain: current(0) for domain, current in current_densities.items()},
+        {domain: current for domain, current in current_densities_0.items()},
         fixed_boundaries=fixed_boundaries,
     )
 
@@ -194,6 +195,7 @@ if __name__ == "__main__":
         thermal_conductivity_p0,
         thermal_diffusivity_p0,
         specific_conductivity={"heater": 2.3e6},
+        current_densities_0={"heater": current(0)},
         current_densities={"heater": current},
         fixed_boundaries={"bottom": 0},
         dt=dt,

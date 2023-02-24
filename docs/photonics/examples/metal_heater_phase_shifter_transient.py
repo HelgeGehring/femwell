@@ -131,6 +131,7 @@ basis, temperatures = solve_thermal_transient(
     thermal_conductivity_p0,
     thermal_diffusivity_p0,
     specific_conductivity={"heater": 2.3e6},
+    current_densities_0={"heater": current(0)},
     current_densities={"heater": current},
     fixed_boundaries={"bottom": 0},
     dt=dt,
