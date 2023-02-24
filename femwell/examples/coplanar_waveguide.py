@@ -18,10 +18,10 @@ def mesh_waveguide(filename, wsim, hclad, hsi, wcore, hcore):
     clad = box(-wsim / 2, -hcore / 2, wsim / 2, -hcore / 2 + hclad)
     silicon = box(-wsim / 2, -hcore / 2, wsim / 2, -hcore / 2 - hsi)
 
-    all = shapely.ops.unary_union([core, clad, silicon])
+    combined = shapely.ops.unary_union([core, clad, silicon])
 
     polygons = OrderedDict(
-        boundary=LineString(all.exterior),
+        boundary=LineString(combined.exterior),
         interface=LineString(
             [
                 (-wsim / 2, -hcore / 2),
@@ -47,10 +47,10 @@ def mesh_waveguide_1(filename, wsim, hclad, hsi, wcore, hcore, gap):
     clad = box(-wsim / 2, -hcore / 2, wsim / 2, -hcore / 2 + hclad)
     silicon = box(-wsim / 2, -hcore / 2, wsim / 2, -hcore / 2 - hsi)
 
-    all = shapely.ops.unary_union([core_l, core_r, clad, silicon])
+    combined = shapely.ops.unary_union([core_l, core_r, clad, silicon])
 
     polygons = OrderedDict(
-        boundary=LineString(all.exterior),
+        boundary=LineString(combined.exterior),
         interface=LineString(
             [
                 (-wsim / 2, -hcore / 2),
@@ -144,9 +144,7 @@ if __name__ == "__main__":
 
         (ht, ht_basis), (hz, hz_basis) = basis.split(xbs)
         for conductors_i, conductor in enumerate(conductors):
-            facet_basis = FacetBasis(
-                ht_basis.mesh, ht_basis.elem, facets=mesh.boundaries[conductor]
-            )
+            facet_basis = ht_basis.boundary(facets=mesh.boundaries[conductor])
             current = abs(current_form.assemble(facet_basis, H=facet_basis.interpolate(ht)))
             currents[conductors_i, mode_i] = current
 
