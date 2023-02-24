@@ -164,7 +164,7 @@ plt.show()
 epsilon_0 = basis0.zeros() + 1.444**2
 epsilon_0[basis0.get_dofs(elements="core")] = 3.4777**2
 lams_0, basis_modes_0, xs_0 = compute_modes(
-    basis0, epsilon_0, wavelength=wavelength, mu_r=1, num_modes=1
+    basis0, epsilon_0, wavelength=wavelength, mu_r=1, num_modes=1, solver="slepc"
 )
 
 neffs = []
@@ -200,7 +200,7 @@ for temperature in tqdm(temperatures):
                 xs_0[0],
             )
             * scipy.constants.speed_of_light
-            * 2e-3
+            * 0.5
         )
     )
 
