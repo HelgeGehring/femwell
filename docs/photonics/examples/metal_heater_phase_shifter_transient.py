@@ -144,7 +144,7 @@ def unit_load(v, w):
     return v
 
 
-M = unit_load.assemble(basis)
+M = unit_load.assemble(basis.with_elements("core"))
 
 times = np.array([dt * i for i in range(steps + 1)])
 plt.xlabel("Time [us]")
