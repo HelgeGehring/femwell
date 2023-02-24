@@ -152,7 +152,7 @@ def calculate_energy_current_density(basis, xs):
 
 
 def calculate_overlap(basis_i, E_i, H_i, basis_j, E_j, H_j):
-    @Functional
+    @Functional(dtype=np.complex64)
     def overlap(w):
         return cross(np.conj(w["E_i"][0]), w["H_j"][0]) + cross(w["E_j"][0], np.conj(w["H_i"][0]))
 
@@ -213,7 +213,7 @@ def calculate_scalar_product(basis_i, E_i, basis_j, H_j):
 
 
 def calculate_coupling_coefficient(basis_epsilon, delta_epsilon, basis, E_i, E_j):
-    @Functional
+    @Functional(dtype=complex)
     def overlap(w):
         return w["delta_epsilon"] * (
             dot(np.conj(w["E_i"][0]), w["E_j"][0]) + np.conj(w["E_i"][1]) * w["E_j"][1]
