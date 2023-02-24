@@ -247,9 +247,7 @@ if __name__ == "__main__":
         ) ** 2
         # basis0.plot(epsilon, colorbar=True).show()
 
-        lams, basis_modes, xs = compute_modes(
-            basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=1
-        )
+        lams, basis_modes, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=1)
 
         # plot_mode(basis_modes, xs[0])
         # plt.show()
