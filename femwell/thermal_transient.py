@@ -54,11 +54,11 @@ def solve_thermal_transient(
     x = basis.zeros()
     for key, value in fixed_boundaries.items():
         x[basis.get_dofs(key)] = value
-    L0, M0 = enforce(L, M, D=basis.get_dofs(set(fixed_boundaries.keys())), x=x)
+    M0, L0 = enforce(M, L, D=basis.get_dofs(set(fixed_boundaries.keys())))
     A = M0 + theta * L0 * dt
     B = M0 - (1 - theta) * L0 * dt
 
-    backsolve = splu(A.T).solve  # .T as splu prefers CSC
+    backsolve = splu(A).solve  # .T as splu prefers CSC
 
     t = 0
     temperatures = [temperature]
