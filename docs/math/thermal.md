@@ -7,13 +7,13 @@ $$
 $$
 
 where
-$C_p$ [J/kg · K] is the specific heat capacity of the material,
-$\rho$ [kg/m3] is the material density,
-$\frac{\mathrm{d}T}{\mathrm{d}t}$ [K/s]
+$C_p \mathrm{[J/kg \cdot K]}$ is the specific heat capacity of the material,
+$\rho \mathrm{[kg/m^3]}$ is the material density,
+$\frac{\mathrm{d}T}{\mathrm{d}t} \mathrm{[K/s]}$
 is the temperature change rate of the material over time,
-$k$ [W/m · K] is the thermal conductivity,
-$T$ [K/m] is the temperature and
-$Q$ [W/m3] is the heat per area from the source.
+$k \mathrm{[W/m \cdot K]}$ is the thermal conductivity,
+$T \mathrm{[K/m]}$ is the temperature and
+$Q \mathrm{[W/m^3]}$ is the heat per area from the source.
 
 By introducing the thermal diffusivity
 
