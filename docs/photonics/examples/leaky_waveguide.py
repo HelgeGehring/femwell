@@ -30,6 +30,7 @@ from skfem.io.meshio import from_meshio
 
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.mode_solver import compute_modes, plot_mode
+from femwell.visualization import plot_domains
 
 # %% [markdown]
 # Let's do a simple rectangular waveguide.
@@ -65,6 +66,9 @@ resolutions = dict(
 
 mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=0.5))
 mesh.draw().show()
+
+plot_domains(mesh)
+plt.show()
 
 # %% [markdown]
 # Low we define the epsilon!
