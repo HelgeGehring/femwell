@@ -34,7 +34,7 @@ def compute_modes(
     metallic_boundaries=False,
     radius=np.inf,
     n_guess=None,
-    solver="scipy",
+    solver="slepc",
 ):
     if solver == "scipy":
         solver = solver_eigen_scipy
@@ -376,10 +376,11 @@ if __name__ == "__main__":
     lams, basis, xs = compute_modes(
         basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=6, order=2, radius=3
     )
-
     print(lams)
 
     plot_mode(basis, np.real(xs[0]))
+    plt.show()
+    plot_mode(basis, np.real(xs[1]))
     plt.show()
     plot_mode(basis, np.imag(xs[0]))
     plt.show()
@@ -396,8 +397,18 @@ if __name__ == "__main__":
         for j in range(len(lams)):
             E_i = xs[i]
             E_j = xs[j]
-            H_i = calculate_hfield(basis, E_i, lams[i] * (2 * np.pi / 1.55))
-            H_j = calculate_hfield(basis, E_j, lams[j] * (2 * np.pi / 1.55))
+            H_i = calculate_hfield(
+                basis,
+                E_i,
+                lams[i] * (2 * np.pi / 1.55),
+                omega=2 * np.pi / 1.55 * scipy.constants.speed_of_light,
+            )
+            H_j = calculate_hfield(
+                basis,
+                E_j,
+                lams[j] * (2 * np.pi / 1.55),
+                omega=2 * np.pi / 1.55 * scipy.constants.speed_of_light,
+            )
             integrals[i, j] = calculate_overlap(basis, E_i, H_i, basis, E_j, H_j)
 
     plt.imshow(np.real(integrals))
