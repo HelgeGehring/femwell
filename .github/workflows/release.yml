@@ -27,3 +27,8 @@ jobs:
         poetry build
         poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
         poetry publish
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        fail_on_unmatched_files: false
+        files: dist/*
