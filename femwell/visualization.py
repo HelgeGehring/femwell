@@ -7,6 +7,7 @@ from skfem import Basis, ElementTriP0
 def plot_subdomain_boundaries(mesh, ax=None):
     if ax is None:
         fig, ax = plt.subplots()
+        ax.set_aspect(1)
 
     mesh.draw(ax=ax, boundaries=True, boundaries_only=True)
     for subdomain in mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
@@ -17,6 +18,7 @@ def plot_subdomain_boundaries(mesh, ax=None):
 def plot_domains(mesh, ax=None):
     if ax is None:
         fig, ax = plt.subplots()
+        ax.set_aspect(1)
     basis0 = Basis(mesh, ElementTriP0())
 
     subdomains = list(mesh.subdomains.keys() - {"gmsh:bounding_entities"})
