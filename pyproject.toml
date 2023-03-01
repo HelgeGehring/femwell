@@ -36,9 +36,9 @@ flake8 = "*"
 
 [tool.poetry.group.docs.dependencies]
 tqdm = "*"
-sphinx-book-theme = "*"
+# sphinx-book-theme = "*"
 jupytext = "*"
-myst-parser = "*"
+# myst-parser = "*"
 
 [tool.black]
 line-length = 100
