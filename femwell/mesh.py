@@ -371,9 +371,9 @@ def mesh_from_polygons(
         gmsh.model.mesh.MeshSizeExtendFromBoundary = 0
 
         # Fuse edges (bandaid)
-        # gmsh.model.occ.synchronize()
-        # gmsh.model.occ.removeAllDuplicates()
-        # gmsh.model.occ.synchronize()
+        gmsh.model.occ.synchronize()
+        gmsh.model.occ.removeAllDuplicates()
+        gmsh.model.occ.synchronize()
 
         # Extract all unique lines (TODO: identify interfaces in label)
         i = 0
@@ -421,10 +421,10 @@ if __name__ == "__main__":
     # Polygons not only have an edge, but an interior
     core = Polygon(
         [
-            Point(-wcore / 2, -hcore / 2 + offset_core),
+            Point(-wcore / 2 - 0.5, -hcore / 2 + offset_core),
             Point(-wcore / 2, hcore / 2 + offset_core),
             Point(wcore / 2, hcore / 2 + offset_core),
-            Point(wcore / 2, -hcore / 2 + offset_core),
+            Point(wcore / 2 - 0.5, -hcore / 2 + offset_core),
         ]
     )
     core2 = Polygon(
@@ -482,7 +482,6 @@ if __name__ == "__main__":
         resolutions,
         filename="mesh.msh",
         default_resolution_max=0.3,
-        global_quad=quad,
     )
 
     # gmsh.write("mesh.msh")
