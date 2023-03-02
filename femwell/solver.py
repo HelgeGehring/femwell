@@ -137,6 +137,51 @@ def solver_eigen_slepc(**kwargs):
     return solver
 
 
+def solver_cached(solver_orig, cache_path):
+    import hashlib
+    import json
+    import os
+
+    import scipy
+
+    def solver_generator(**kwargs):
+        def solver(*matrices):
+            hashkey = hashlib.md5(
+                matrices[0].data.tobytes()
+                + matrices[1].data.tobytes()
+                + bytes(str(kwargs), encoding="utf-8")
+            ).digest()
+            cachepath = f"{cache_path}/{hashkey}"
+            os.makedirs(f"{cachepath}", exist_ok=True)
+            folders = os.listdir(cachepath)
+
+            for folder in folders:
+                try:
+                    for i, matrix in enumerate(matrices):
+                        if (scipy.sparse.load_npz(f"{cachepath}/{folder}/{i}.npz") != matrix).nnz:
+                            break
+                    else:
+                        if np.load(f"{cachepath}/{folder}/params.npz") != kwargs:
+                            continue
+                        result = np.load(f"{cachepath}/{folder}/result.npz")
+                        return result.values()
+                except:
+                    pass
+
+            cachepath = f"{cachepath}/{len(folders)}"
+            os.makedirs(cachepath, exist_ok=True)
+            result = solver_orig(**kwargs)(*matrices)
+            for i, matrix in enumerate(matrices):
+                scipy.sparse.save_npz(f"{cachepath}/{i}.npz", matrix)
+            np.savez_compressed(f"{cachepath}/params.npz", **kwargs)
+            np.savez_compressed(f"{cachepath}/result.npz", *result)
+            return result
+
+        return solver
+
+    return solver_generator
+
+
 if __name__ == "__main__":
     import scipy.sparse
     from petsc4py import PETSc

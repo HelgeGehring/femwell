@@ -11,6 +11,7 @@ docs/_build
 *.vtk
 
 *.png
+*.gif
 *.h5
 *.ipynb
 

@@ -91,7 +91,9 @@ for i, wavelength in enumerate(tqdm(wavelengths)):
     }.items():
         epsilon[basis0.get_dofs(elements=subdomain)] = n**2
 
-    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=num_modes)
+    lams, basis, xs = compute_modes(
+        basis0, epsilon, wavelength=wavelength, num_modes=num_modes, normalize=False
+    )
     all_lams[i] = np.real(lams)
     all_te_fracs[i, :] = [calculate_te_frac(basis, xs[idx]) for idx in range(num_modes)]
 # -
