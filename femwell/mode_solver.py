@@ -35,6 +35,8 @@ def compute_modes(
     radius=np.inf,
     n_guess=None,
     solver="slepc",
+    normalize=True,
+    cache_path=None,
 ):
     if solver == "scipy":
         solver = solver_eigen_scipy
@@ -44,6 +46,11 @@ def compute_modes(
         solver = solver_eigen_slepc
     else:
         raise ValueError("`solver` must either be `scipy` or `slepc`")
+
+    if cache_path:
+        from femwell.solver import solver_cached
+
+        solver = solver_cached(solver, cache_path)
 
     k0 = 2 * np.pi / wavelength
 
@@ -102,9 +109,12 @@ def compute_modes(
         lams[:, np.newaxis]
     )  # undo the scaling E_3,new = beta * E_3
 
-    for i, lam in enumerate(lams):
-        H = calculate_hfield(basis, xs[i], np.sqrt(lam), omega=k0 * scipy.constants.speed_of_light)
-        xs[i] /= np.sqrt(calculate_overlap(basis, xs[i], H, basis, xs[i], H))
+    if normalize:
+        for i, lam in enumerate(lams):
+            H = calculate_hfield(
+                basis, xs[i], np.sqrt(lam), omega=k0 * scipy.constants.speed_of_light
+            )
+            xs[i] /= np.sqrt(calculate_overlap(basis, xs[i], H, basis, xs[i], H))
 
     return np.sqrt(lams)[:num_modes] / k0, basis, xs[:num_modes]
 
