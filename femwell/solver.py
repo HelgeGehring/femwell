@@ -146,7 +146,6 @@ def solver_cached(solver_orig, cache_path):
 
     def solver_generator(**kwargs):
         def solver(*matrices):
-            print(kwargs)
             hashkey = hashlib.md5(
                 matrices[0].data.tobytes()
                 + matrices[1].data.tobytes()
