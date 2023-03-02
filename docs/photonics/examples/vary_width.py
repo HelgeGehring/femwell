@@ -56,7 +56,9 @@ for i, width in enumerate(tqdm(widths)):
     for subdomain, n in {"core": 1.9963, "box": 1.444, "clad": 1}.items():
         epsilon[basis0.get_dofs(elements=subdomain)] = n**2
 
-    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=num_modes)
+    lams, basis, xs = compute_modes(
+        basis0, epsilon, wavelength=wavelength, num_modes=num_modes, normalize=False
+    )
     all_lams[i] = np.real(lams)
     all_te_fracs[i, :] = [calculate_te_frac(basis, xs[idx]) for idx in range(num_modes)]
 # -
