@@ -137,41 +137,39 @@ def solver_eigen_slepc(**kwargs):
     return solver
 
 
-def solver_cached(solver_orig):
+def solver_cached(solver_orig, cache_path):
     import hashlib
+    import json
+    import os
+
+    import scipy
 
     def solver(*matrices, **kwargs):
         hashkey = hashlib.md5(
             matrices[0].data.tobytes() + matrices[1].data.tobytes() + bytes(kwargs)
         ).digest()
-        cachepath = f"cache/{hashkey}"
+        cachepath = f"{cache_path}/{hashkey}"
+        os.makedirs(f"{cachepath}", exist_ok=True)
+        folders = os.listdir(cachepath)
 
-        import json
-        import os
-
-        import scipy
-
-        num = 0
-        os.makedirs(f"{cachepath}/{num}", exist_ok=True)
-        print(os.listdir(cachepath))
-        if not os.listdir(f"{cachepath}/{num}"):
-            result = solver_orig(*matrices, **kwargs)
+        for folder in folders:
             for i, matrix in enumerate(matrices):
-                scipy.sparse.save_npz(f"{cachepath}/{num}/{i}.npz", matrix)
-            print(result)
-            np.savez_compressed(f"{cachepath}/{num}/params.npz", **kwargs)
-            np.savez_compressed(f"{cachepath}/{num}/result.npz", lams=result[0], xs=result[1])
-            return result
-        else:
-            for i, matrix in enumerate(matrices):
-                if (scipy.sparse.load_npz(f"{cachepath}/{num}/{i}.npz") != matrix).nnz:
-                    raise RuntimeError("Need more checking")
-                if np.load(f"{cachepath}/{num}/params.npz") != kwargs:
-                    raise RuntimeError("Need more checking")
-            result = np.load(f"{cachepath}/{num}/result.npz")
-            return result["lams"], result["xs"]
+                if (scipy.sparse.load_npz(f"{cachepath}/{folder}/{i}.npz") != matrix).nnz:
+                    break
+            else:
+                if np.load(f"{cachepath}/{folder}/params.npz") != kwargs:
+                    continue
+                result = np.load(f"{cachepath}/{folder}/result.npz")
+                return result.values()
 
-        return
+        cachepath = f"{cachepath}/{len(folders)}"
+        os.makedirs(cachepath, exist_ok=True)
+        result = solver_orig(*matrices, **kwargs)
+        for i, matrix in enumerate(matrices):
+            scipy.sparse.save_npz(f"{cachepath}/{i}.npz", matrix)
+        np.savez_compressed(f"{cachepath}/params.npz", **kwargs)
+        np.savez_compressed(f"{cachepath}/result.npz", *result)
+        return result
 
     return solver
 
