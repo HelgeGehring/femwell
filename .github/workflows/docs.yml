@@ -29,7 +29,7 @@ jobs:
           sudo apt-get install -y libglu1-mesa
           poetry install --no-interaction
           source $VENV
-          pip install git+https://github.com/executablebooks/jupyter-book.git
+          pip install jupyter-book
           pip install --upgrade pydata-sphinx-theme
           pip install --upgrade sphinx-book-theme --pre
           pip install --upgrade jupytext
