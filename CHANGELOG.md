@@ -6,5 +6,6 @@
 - Add cache to compute_modes
 - Add automatic changelog generation
 - Add changelog to docs
+- Fixed meshing
 
 ## start of changelog
