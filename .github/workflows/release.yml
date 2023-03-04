@@ -17,7 +17,7 @@ jobs:
       with:
         python-version: '3.x'
     - name: Generate Changelog
-      run: grep -B 9999 "##" -m2 CHANGELOG.md | head -n -1 > ${{ github.workspace }}-CHANGELOG.txt
+      run: grep -B 9999 "##" -m2 CHANGELOG.md | head -n -1 | tail -n +4 > ${{ github.workspace }}-CHANGELOG.txt
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
