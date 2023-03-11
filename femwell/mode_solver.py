@@ -326,6 +326,50 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title="E", directi
     return fig, axs
 
 
+def select_mode_by_overlap(mode_basis, E_modes, H_modes,
+                           bbox = None,
+                           elements_list = None,
+                           selection_basis = None):
+    """
+    Selects the mode in the "modes" list that has the highest power contained
+    within the given bounding box, element or basis. 
+
+    If bbox is not None, we select the overlap with the given bounding box
+    [x_min, x_max, y_min, y_max]
+
+    If elements_list is not None, then the overlap is calculated between the
+    given modes and the elements in the list
+
+    If elements_list is None, then we calculate the overlap with the given
+    selection_basis.
+    """
+
+    overlaps = list()
+
+    if bbox is not None:
+
+        def sel_fun(x):
+            return (x[0] < bbox[1]) * (x[0] > bbox[0]) * (x[1] > bbox[2]) * (x[1] < bbox[3])
+        
+        selection_basis = Basis(mode_basis.mesh, mode_basis.elem,
+                                elements = lambda x: sel_fun(x)
+                                )
+            
+    elif elements_list is not None:
+        
+        selection_basis = Basis(mode_basis.mesh, mode_basis.elem, elements=elements_list)
+
+    for E_f, H_f in zip(E_modes, H_modes):
+        overlaps.append(calculate_overlap(selection_basis, E_f, H_f, selection_basis, E_f, H_f))
+    
+    ind_max = np.argmax(np.abs(overlaps))
+
+    print(overlaps)
+
+    return ind_max
+    
+    
+
 if __name__ == "__main__":
     from collections import OrderedDict
 
@@ -384,7 +428,8 @@ if __name__ == "__main__":
     # basis0.plot(epsilon, colorbar=True).show()
 
     lams, basis, xs = compute_modes(
-        basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=6, order=2, radius=3
+        basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=6, order=2, radius=3,
+        solver='scipy'
     )
     print(lams)
 
@@ -403,6 +448,8 @@ if __name__ == "__main__":
     plt.show()
 
     integrals = np.zeros((len(lams),) * 2, dtype=complex)
+    H_modes = list()
+
     for i in range(len(lams)):
         for j in range(len(lams)):
             E_i = xs[i]
@@ -420,7 +467,30 @@ if __name__ == "__main__":
                 omega=2 * np.pi / 1.55 * scipy.constants.speed_of_light,
             )
             integrals[i, j] = calculate_overlap(basis, E_i, H_i, basis, E_j, H_j)
+        H_modes.append(H_i)
 
     plt.imshow(np.real(integrals))
     plt.colorbar()
     plt.show()
+    
+    # Create basis to select a certain simulation extent
+    def sel_fun(x):
+        print(x)
+        return (x[0] < 0) * (x[0] > -1) * (x[1] > 0) * (x[1] < 0.5)
+    selection_basis = Basis(basis.mesh, basis.elem,
+                            #elements = lambda x: x[0] < 0 and x[0] > -1 and x[1] > 0 and x[1] < 0.5 
+                            elements = lambda x: sel_fun(x)
+                            )
+
+    print(select_mode_by_overlap(mode_basis = basis,
+                                 E_modes = xs, 
+                                 H_modes = H_modes,
+                                 elements_list = ["core"],
+                                 selection_basis = None))
+    
+    print(select_mode_by_overlap(mode_basis = basis,
+                                 E_modes = xs, 
+                                 H_modes = H_modes,
+                                 elements_list = None,
+                                 selection_basis = selection_basis))
+
