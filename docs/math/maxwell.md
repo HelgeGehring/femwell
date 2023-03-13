@@ -395,6 +395,8 @@ $$
 
 ## Bibliography
 
+<http://fotonica.intec.ugent.be/download/ocs131.pdf>
+
 ```{bibliography}
 :style: unsrt
 :filter: docname in docnames
