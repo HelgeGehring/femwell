@@ -11,6 +11,7 @@ else:
     from scipy.sparse import spmatrix
 
 from skfem.utils import CondensedSystem, bmat
+from skfem import Basis
 
 
 def mpc_symmetric(
@@ -92,3 +93,22 @@ def mpc_symmetric(
             lambda x: np.concatenate((x, T @ x[len(U) :] + g)),
         ),
     )
+
+def create_bbox_basis(basis, bbox):
+    """
+    Creates a basis that only contains elements in the
+    given bounding box
+
+    Args:
+        basis: original basis with all the elements
+        bbox: 4 element list with [x_min, x_max, y_min, y_max]
+    """
+
+    def sel_fun(x):
+            return (x[0] < bbox[1]) * (x[0] > bbox[0]) * (x[1] > bbox[2]) * (x[1] < bbox[3])
+        
+    selection_basis = Basis(basis.mesh, basis.elem,
+                            elements = lambda x: sel_fun(x)
+                            )
+    
+    return selection_basis

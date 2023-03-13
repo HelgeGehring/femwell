@@ -22,6 +22,7 @@ from skfem import (
 )
 from skfem.helpers import cross, curl, dot, grad, inner
 from skfem.utils import solver_eigen_scipy
+from utils import create_bbox_basis
 
 
 def compute_modes(
@@ -347,13 +348,7 @@ def select_mode_by_overlap(mode_basis, E_modes, H_modes,
     overlaps = list()
 
     if bbox is not None:
-
-        def sel_fun(x):
-            return (x[0] < bbox[1]) * (x[0] > bbox[0]) * (x[1] > bbox[2]) * (x[1] < bbox[3])
-        
-        selection_basis = Basis(mode_basis.mesh, mode_basis.elem,
-                                elements = lambda x: sel_fun(x)
-                                )
+        selection_basis = create_bbox_basis(mode_basis, bbox)
             
     elif elements_list is not None:
         

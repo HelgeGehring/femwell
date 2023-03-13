@@ -271,5 +271,3 @@ ind_mode = select_mode_by_overlap(basis, xs, H_modes,
 
 plot_mode(basis, np.real(xs[ind_mode]), direction="x")
 plt.show()
-
-# %%
