@@ -364,7 +364,7 @@ def select_mode_by_overlap(mode_basis, E_modes, H_modes,
     
     ind_max = np.argmax(np.abs(overlaps))
 
-    print(overlaps)
+    #print(overlaps)
 
     return ind_max
     
