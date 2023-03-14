@@ -396,6 +396,7 @@ $$
 ## Bibliography
 
 <http://fotonica.intec.ugent.be/download/ocs131.pdf>
+<https://doi.org/10.1088/0034-4885/62/3/001>
 
 ```{bibliography}
 :style: unsrt
