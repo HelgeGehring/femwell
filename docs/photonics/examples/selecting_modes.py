@@ -128,7 +128,7 @@ epsilon[basis0.get_dofs(elements=("sin"))] = 1.973**2
 # %%
 
 # basis0.plot(epsilon, colorbar=True).show()
-lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=4, solver="scipy")
+lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=4)
 
 
 plot_mode(basis, np.real(xs[0]), direction="x")
