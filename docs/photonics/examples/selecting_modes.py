@@ -17,8 +17,8 @@
 # %% [markdown]
 # # Selecting modes in the mode solver
 
-# Sometimes we have structures where the mode of interest is 
-# not the mode with the highest effective index. There are a few 
+# Sometimes we have structures where the mode of interest is
+# not the mode with the highest effective index. There are a few
 # ways to select modes of interest in femwell
 
 # %% tags=["hide-input"]
@@ -26,22 +26,23 @@ from collections import OrderedDict
 
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy.constants
 from scipy.constants import epsilon_0, speed_of_light
 from scipy.integrate import solve_ivp
 from shapely.geometry import Polygon
 from skfem import Basis, ElementTriP0, Mesh
 from skfem.io import from_meshio
-import scipy.constants
 
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.mode_solver import (
+    argsort_modes_by_power_in_elements,
     calculate_coupling_coefficient,
     calculate_hfield,
     calculate_overlap,
     compute_modes,
     plot_mode,
-    select_mode_by_overlap
 )
+from femwell.utils import inside_bbox
 
 # %% [markdown]
 
@@ -68,7 +69,7 @@ polygons = OrderedDict(
     sin=Polygon(
         [
             (-w_sin - gap / 2, 0),
-            (-w_sin  - gap / 2, h_sin),
+            (-w_sin - gap / 2, h_sin),
             (-gap / 2, h_sin),
             (-gap / 2, 0),
         ]
@@ -124,12 +125,10 @@ epsilon[basis0.get_dofs(elements=("sin"))] = 1.973**2
 
 # If we use `find_modes`, these are the modes we get:
 
-# %% 
+# %%
 
 # basis0.plot(epsilon, colorbar=True).show()
-lams, basis, xs = compute_modes(
-    basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=4
-)
+lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=4, solver="scipy")
 
 
 plot_mode(basis, np.real(xs[0]), direction="x")
@@ -141,7 +140,7 @@ plt.show()
 plot_mode(basis, np.real(xs[3]), direction="x")
 plt.show()
 
-print(f'The effective index of the SiN mode is {np.real(lams[2])}')
+print(f"The effective index of the SiN mode is {np.real(lams[2])}")
 
 # %% [markdown]
 
@@ -164,15 +163,13 @@ print(f'The effective index of the SiN mode is {np.real(lams[2])}')
 # thi smight not be an issue in this example but there's many
 # examples where this is not an acceptable option.
 
-# %% 
+# %%
 
 epsilon = basis0.zeros() + 1.444**2
 epsilon[basis0.get_dofs(elements=("si"))] = 1.444**2
 epsilon[basis0.get_dofs(elements=("sin"))] = 1.973**2
 
-lams, basis, xs = compute_modes(
-    basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=2
-)
+lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=2)
 
 
 plot_mode(basis, np.real(xs[0]), direction="x")
@@ -180,27 +177,24 @@ plt.show()
 plot_mode(basis, np.real(xs[1]), direction="x")
 plt.show()
 
-print(f'The effective index of the SiN mode is {np.real(lams[0])}')
+print(f"The effective index of the SiN mode is {np.real(lams[0])}")
 
 # %% [markdown]
 # ## 2. Giving a guess effective index
 
 # We can use the `n_guess` parameter to `compute_modes` to
-# select modes close to that effective index. 
+# select modes close to that effective index.
 
 # This is great, but of course we need to know what's that guess
 # effective index. The way to do that would be to use option 1 above
 # and then use that as the n_guess.
 
-# %% 
+# %%
 epsilon = basis0.zeros() + 1.444**2
 epsilon[basis0.get_dofs(elements=("si"))] = 3.4777**2
 epsilon[basis0.get_dofs(elements=("sin"))] = 1.973**2
 
-lams, basis, xs = compute_modes(
-    basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=2,
-    n_guess = 1.62
-)
+lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=2, n_guess=1.62)
 
 
 plot_mode(basis, np.real(xs[0]), direction="x")
@@ -208,7 +202,7 @@ plt.show()
 plot_mode(basis, np.real(xs[1]), direction="x")
 plt.show()
 
-print(f'The effective index of the SiN mode is {np.real(lams[1])}')
+print(f"The effective index of the SiN mode is {np.real(lams[1])}")
 
 # %% [markdown]
 
@@ -216,9 +210,9 @@ print(f'The effective index of the SiN mode is {np.real(lams[1])}')
 
 # %% [markdown]
 
-# ## 3. Using `select_mode_by_overlap`
+# ## 3. Using `argsort_modes_by_power_in_elements`
 
-# This allows to choose a mode that has the biggest overlap with 
+# This allows to choose a mode that has the biggest overlap with
 # a given structure.
 
 # There are two main ways to specify the structure:
@@ -228,14 +222,12 @@ print(f'The effective index of the SiN mode is {np.real(lams[1])}')
 # You can also give it directly the selection_basis of the
 # are of interest.
 
-# A requirement for using `select_mode_by_overlap` is to
-# calculate the H field of the found modes. 
+# A requirement for using `argsort_modes_by_power_in_elements` is to
+# calculate the H field of the found modes.
 
-# %% 
+# %%
 
-lams, basis, xs = compute_modes(
-    basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=4
-)
+lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=4)
 
 # Calculate H field
 H_modes = list()
@@ -245,29 +237,26 @@ for i, E in enumerate(xs):
             basis,
             E,
             lams[i] * (2 * np.pi / wavelength),
-            omega=2 * np.pi / 1.55 * 
-            scipy.constants.speed_of_light,
-                ))
+            omega=2 * np.pi / 1.55 * scipy.constants.speed_of_light,
+        )
+    )
 
 # Option 1: using an element name
 
-ind_mode = select_mode_by_overlap(basis, xs, H_modes,
-                           bbox = None,
-                           elements_list = "sin",
-                           selection_basis = None)
+ind_mode = argsort_modes_by_power_in_elements(basis, xs, H_modes, elements="sin")[0]
 
 plot_mode(basis, np.real(xs[ind_mode]), direction="x")
 plt.show()
 
-# Option 1: using bounding box
+# Option 2: using bounding box
 
-# Format: [xmin, xmax, ymin, ymax]
+# Format: [xmin, ymin, xmax, ymax]
 bbox = [-2, 0, 0, 0.4]
 
-ind_mode = select_mode_by_overlap(basis, xs, H_modes,
-                           bbox = bbox,
-                           elements_list = None,
-                           selection_basis = None)
+elements = inside_bbox(bbox)
+ind_mode = argsort_modes_by_power_in_elements(basis, xs, H_modes, elements)[0]
 
 plot_mode(basis, np.real(xs[ind_mode]), direction="x")
 plt.show()
+
+# %%

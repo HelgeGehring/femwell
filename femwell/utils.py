@@ -10,8 +10,8 @@ if "pyodide" in sys.modules:
 else:
     from scipy.sparse import spmatrix
 
-from skfem.utils import CondensedSystem, bmat
 from skfem import Basis
+from skfem.utils import CondensedSystem, bmat
 
 
 def mpc_symmetric(
@@ -94,21 +94,17 @@ def mpc_symmetric(
         ),
     )
 
-def create_bbox_basis(basis, bbox):
+
+def inside_bbox(bbox):
     """
-    Creates a basis that only contains elements in the
-    given bounding box
+    Creates a selection function that is True for elements in the
+    given bounding box coordinates.
 
     Args:
-        basis: original basis with all the elements
-        bbox: 4 element list with [x_min, x_max, y_min, y_max]
+        bbox: 4 element list with [xmin, ymin, xmax, ymax]
     """
 
     def sel_fun(x):
-            return (x[0] < bbox[1]) * (x[0] > bbox[0]) * (x[1] > bbox[2]) * (x[1] < bbox[3])
-        
-    selection_basis = Basis(basis.mesh, basis.elem,
-                            elements = lambda x: sel_fun(x)
-                            )
-    
-    return selection_basis
+        return (x[0] < bbox[2]) * (x[0] > bbox[0]) * (x[1] > bbox[1]) * (x[1] < bbox[3])
+
+    return sel_fun
