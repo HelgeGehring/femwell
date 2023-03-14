@@ -10,6 +10,7 @@ if "pyodide" in sys.modules:
 else:
     from scipy.sparse import spmatrix
 
+from skfem import Basis
 from skfem.utils import CondensedSystem, bmat
 
 
@@ -92,3 +93,18 @@ def mpc_symmetric(
             lambda x: np.concatenate((x, T @ x[len(U) :] + g)),
         ),
     )
+
+
+def inside_bbox(bbox):
+    """
+    Creates a selection function that is True for elements in the
+    given bounding box coordinates.
+
+    Args:
+        bbox: 4 element list with [xmin, ymin, xmax, ymax]
+    """
+
+    def sel_fun(x):
+        return (x[0] < bbox[2]) * (x[0] > bbox[0]) * (x[1] > bbox[1]) * (x[1] < bbox[3])
+
+    return sel_fun
