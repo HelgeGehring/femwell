@@ -1,0 +1,23 @@
+.avatar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.avatar a{
+  width: 30%;
+}
+
+.avatar img{
+  border-radius: 50% !important;
+}
+
+.avatar figcaption {
+  width: 70%;
+  margin-left: 1em;
+}
+
+
+.avatar .caption-number {
+  display: none;
+}

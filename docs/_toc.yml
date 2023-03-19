@@ -32,5 +32,6 @@ parts:
 
   - caption: About Femwell
     chapters:
+    - file: contributors/contributors
     - file: changelog
     - file: execution_statistics
