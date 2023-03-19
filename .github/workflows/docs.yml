@@ -34,7 +34,6 @@ jobs:
           pip list
       - name: Make docs
         run: |
-          source $VENV
           jupyter-book build docs/
 
       - name: Upload artifact
