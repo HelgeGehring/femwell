@@ -107,7 +107,7 @@ all_lams = np.real(all_lams)
 
 fig, axs = plt.subplots(1, 3)
 
-axs[0].set_xlabel("Wavelength [µm]")
+axs[0].set_xlabel("Wavelength / µm")
 axs[0].set_ylabel("Effective refractive index")
 axs[0].set_ylim(1.444, np.max(all_lams) + 0.1 * (np.max(all_lams) - 1.444))
 for lams, te_fracs in zip(all_lams.T, all_te_fracs.T):
@@ -115,7 +115,7 @@ for lams, te_fracs in zip(all_lams.T, all_te_fracs.T):
     sc = axs[0].scatter(wavelengths, lams, c=te_fracs, cmap="cool", vmin=0, vmax=1)
 
 
-axs[1].set_xlabel("Wavelength [µm]")
+axs[1].set_xlabel("Wavelength / µm")
 axs[1].set_ylabel("Group velocity $v_g$")
 for lams, te_fracs in zip(all_lams.T, all_te_fracs.T):
     fit = Polynomial.fit(wavelengths, lams, deg=4)
@@ -123,7 +123,7 @@ for lams, te_fracs in zip(all_lams.T, all_te_fracs.T):
     axs[1].plot(wavelengths, y)
     sc = axs[1].scatter(wavelengths, y, c=te_fracs, cmap="cool", vmin=0, vmax=1)
 
-axs[2].set_xlabel("Wavelength [µm]")
+axs[2].set_xlabel("Wavelength / µm")
 axs[2].set_ylabel("Group velocity dispersion coefficient $D$")
 for lams, te_fracs in zip(all_lams.T, all_te_fracs.T):
     fit = Polynomial.fit(wavelengths, lams, deg=4)

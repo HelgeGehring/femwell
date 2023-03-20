@@ -65,7 +65,7 @@ for i, width in enumerate(tqdm(widths)):
 
 # + tags=["hide-input"]
 all_lams = np.real(all_lams)
-plt.xlabel("Width of waveguide [µm]")
+plt.xlabel("Width of waveguide / µm")
 plt.ylabel("Effective refractive index")
 plt.ylim(1.444, np.max(all_lams) + 0.1 * (np.max(all_lams) - 1.444))
 for lams, te_fracs in zip(all_lams.T, all_te_fracs.T):

@@ -113,7 +113,7 @@ for V in voltages:
 # + tags=["hide-input"]
 plt.plot(voltages, np.real(neff_vs_V) - np.real(neff_vs_V[0]))
 plt.title(f"NA = {NA}, ND = {ND}, xpn = {xpn}, wavelength = {wavelength}")
-plt.xlabel("Voltage (V)")
+plt.xlabel("Voltage / V")
 plt.ylabel("Change in neff")
 plt.show()
 # -
@@ -121,8 +121,8 @@ plt.show()
 # + tags=["hide-input"]
 plt.plot(voltages, k_to_alpha_dB(np.imag(neff_vs_V), wavelength))
 plt.title(f"NA = {NA}, ND = {ND}, xpn = {xpn}, wavelength = {wavelength}")
-plt.xlabel("Voltage (V)")
-plt.ylabel("absorption (dB/cm)")
+plt.xlabel("Voltage / V")
+plt.ylabel("absorption / dB/cm")
 plt.show()
 # -
 

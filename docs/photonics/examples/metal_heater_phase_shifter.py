@@ -153,7 +153,7 @@ for current_density in tqdm(current_densities):
     neffs.append(np.real(lams[0]))
 
 print(f"Phase shift: {2 * np.pi / 1.55 * (neffs[-1] - neffs[0]) * 320}")
-plt.xlabel("Current (mA)")
+plt.xlabel("Current / mA")
 plt.ylabel("Effective refractive index $n_{eff}$")
 plt.plot(currents * 1e3, neffs)
 plt.show()

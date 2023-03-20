@@ -147,8 +147,8 @@ def unit_load(v, w):
 M = unit_load.assemble(basis.with_elements("core"))
 
 times = np.array([dt * i for i in range(steps + 1)])
-plt.xlabel("Time [us]")
-plt.ylabel("Average temperature")
+plt.xlabel("Time / us")
+plt.ylabel("Average temperature offset / K")
 plt.plot(times * 1e6, M @ np.array(temperatures).T / np.sum(M))
 plt.show()
 
@@ -206,8 +206,8 @@ for temperature in tqdm(temperatures):
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
-ax.set_xlabel("Time [us]")
-ax.set_ylabel("Current [mA]")
+ax.set_xlabel("Time / us")
+ax.set_ylabel("Current / mA")
 ax.plot(times * 1e6, current(times) * 1000, "b-o")
 ax2 = ax.twinx()
 ax2.set_ylabel("Phase shift")

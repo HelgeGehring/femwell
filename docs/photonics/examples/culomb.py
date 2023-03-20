@@ -116,7 +116,7 @@ for voltage in tqdm(voltages):
     # plt.show()
 
 plt.plot(voltages, np.real(voltages_neffs))
-plt.xlabel("Voltage [V]")
+plt.xlabel("Voltage / V")
 plt.ylabel("Effective refractive index")
 plt.show()
 # -

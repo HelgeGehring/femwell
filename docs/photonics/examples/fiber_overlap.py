@@ -89,6 +89,6 @@ for mfd in tqdm(mfds):
     efficiencies.append(efficiency)
 
 plt.plot(mfds, efficiencies)
-plt.xlabel("Mode field diameter (um)")
+plt.xlabel("Mode field diameter / um")
 plt.ylabel("Coupling efficiency")
 plt.show()
