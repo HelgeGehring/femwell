@@ -26,8 +26,7 @@ align: left
 figclass: avatar
 target: https://github.com/simbilod
 ---
-Simon received the B.Sc. and M.Sc. degrees in physics from McGill University, Montreal, QC, Canada. He is currently working toward the Ph.D. degree in electrical and computer engineering with Lightwave Communications Research Lab, Princeton University, Princeton, NJ, USA. He conducted nanoelectronics research at ultralow temperatures with McGill University. His research interests include nanophotonics, optoelectronics, integrated photonic systems, and neuromorphic computing.
-Simon is currently a resident at [X, the moonshot factory](https://x.company) (formerly known as Google X).
+Simon received the B.Sc. and M.Sc. degrees in physics from McGill University, Montreal, QC, Canada, where he conducted nanoelectronics research at ultralow temperatures. He is currently working toward the Ph.D. degree in electrical and computer engineering in the Lightwave Communications Research Lab, Princeton University, Princeton, NJ, USA. His research interests include nanophotonics, optoelectronics, integrated photonic systems, and neuromorphic computing. He is the recipient of Canada's NSERC and Québec's FRQNT Doctoral scholarships. Simon is currently a resident at [X, the moonshot factory](https://x.company) (formerly known as Google X).
 ```
 
 ## Joaquin Matres
