@@ -56,7 +56,7 @@ only_build_toc_files: true
 
 sphinx:
   config:
-    execution_show_tb: True
+    nb_execution_show_tb: True
     nb_custom_formats:
         .py:
             - jupytext.reads
