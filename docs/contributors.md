@@ -13,7 +13,7 @@ Helge received the B.Sc. and M.Sc. degrees in physics from the University of Mü
 He worked during his bachelor's studies as a software engineer at [DEOS](https://www.deos-ag.com/).
 For his bachelor's thesis he investigated the quantum dynamics of quantum dots via large-scale simulations on supercomputers.
 Subsequently, he switched to applied physics and worked on integrated photonics for his master's thesis, during which he had a research stay at the University of Oxford, UK.
-Afterwards he started his doctoral studies at the University of Münster where he combined photonic circuits with 3D micro-structures to enable low-loss ultra-broadband fiber-to-chip interfacing.
+Afterwards, he started his doctoral studies at the University of Münster where he combined photonic circuits with 3D micro-structures to enable low-loss ultra-broadband fiber-to-chip interfacing.
 He received a scholarship for his B.Sc. and M.Sc. degrees and a fellowship for his doctoral studies from the Studienstiftung des deutschen Volkes.
 Helge is currently a resident at [X, the moonshot factory](https://x.company) (formerly known as Google X).
 ```
