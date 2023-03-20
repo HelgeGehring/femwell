@@ -122,6 +122,7 @@ for radius in tqdm(radiuss):
         order=2,
         radius=radius,
         n_guess=lam_guess,
+        solver="scipy",
     )
     lam_guess = lams[0]
     H_bent = calculate_hfield(
