@@ -20,6 +20,9 @@ jobs:
             miniforge-version: latest
             activate-environment: env
             use-mamba: true
+      - name: Add conda to system path
+        run: |
+          echo $CONDA/bin >> $GITHUB_PATH
       - name: Install dependencies
         run: |
           sudo apt-get purge python3-setuptools
