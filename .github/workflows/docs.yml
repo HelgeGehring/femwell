@@ -22,6 +22,7 @@ jobs:
             use-mamba: true
       - name: Install dependencies
         run: |
+          sudo apt purge python3-setuptools
           sudo apt-get install -y libglu1-mesa
           pip install .
           mamba install slepc4py=*=complex* -y
