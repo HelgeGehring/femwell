@@ -38,7 +38,7 @@ align: left
 figclass: avatar
 target: https://github.com/joamatab
 ---
-Joaquin Matres received his Engineering (2009), M.Sc. (2010) and PhD (2014) degree in Telecommunications from the Universidad Politecnica de Valencia, Spain. For his PhD he built CMOS-compatible all-optical switches and logic gates at IMEC and CEA-LETI foundries. During his 6 month internship in Intel Corporation and 2.5 years in Hewlett Packard Labs, he worked on hybrid tunable lasers, wavelength selective switches and microring based optical transceivers. Then as the first engineer that joined PsiQuantum he worked on design, layout and validation of large scale Quantum computing circuits, where he was involved in most tapeouts during 3 years. For the last 3 years he has been working at [X, the moonshot factory](https://x.company) (formerly known as Google X) developing Free Space Optical Transceivers to bring affordable internet to developing countries.
+Joaquin received his Engineering (2009), M.Sc. (2010) and PhD (2014) degree in Telecommunications from the Universidad Politecnica de Valencia, Spain. For his PhD he built CMOS-compatible all-optical switches and logic gates at IMEC and CEA-LETI foundries. During his 6 month internship in Intel Corporation and 2.5 years in Hewlett Packard Labs, he worked on hybrid tunable lasers, wavelength selective switches and microring based optical transceivers. Then as the first engineer that joined PsiQuantum he worked on design, layout and validation of large scale Quantum computing circuits, where he was involved in most tapeouts during 3 years. For the last 3 years he has been working at [X, the moonshot factory](https://x.company) (formerly known as Google X) developing Free Space Optical Transceivers to bring affordable internet to developing countries.
 ```
 
 ## Marc de Cea Falco
@@ -49,6 +49,6 @@ align: left
 figclass: avatar
 target: https://github.com/mdecea
 ---
-Marc de Cea Falco is a graduate student at MIT working in CMOS photonics with a high emphasis in communications applications. The research ranges from low power applications in the data center and high performance computing space to satellite and free space optical communications. He received his B.S. degree in Physics Engineering and Telecommunications Engineering from the Technical University of Catalonia in Barcelona, Spain. He worked as an intern at Ayar Labs designing and implementing automated test setups for optical devices. He is a recipient of the La Caixa fellowship.
+Marc is a graduate student at MIT working in CMOS photonics with a high emphasis in communications applications. The research ranges from low power applications in the data center and high performance computing space to satellite and free space optical communications. He received his B.S. degree in Physics Engineering and Telecommunications Engineering from the Technical University of Catalonia in Barcelona, Spain. He worked as an intern at Ayar Labs designing and implementing automated test setups for optical devices. He is a recipient of the La Caixa fellowship.
 Marc is currently a resident at [X, the moonshot factory](https://x.company) (formerly known as Google X).
 ```
