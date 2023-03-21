@@ -287,8 +287,8 @@ for lam_j, E_j in zip(lams_both, xs_both):
         lam_j * (2 * np.pi / 1.55),
         omega=2 * np.pi / wavelength * speed_of_light,
     )
-    R.append(calculate_overlap(basis, E_i, H_i, basis, E_j, H_j) ** 2)
-
+    R.append(np.abs(calculate_overlap(basis, E_i, H_i, basis, E_j, H_j) ** 2))
+print(R)
 P = (
     R[0] ** 2
     + R[1] ** 2
@@ -307,3 +307,5 @@ plt.plot(ts, np.abs(np.array(ys)[:, 0]) ** 2, "r")
 plt.plot(ts, 1 - np.abs(np.array(ys)[:, 0]) ** 2, "r")
 # plt.plot(ts, np.array(ys).imag.reshape((-1,)+matrix.shape)@(1,0), 'g')
 plt.show()
+
+# %%
