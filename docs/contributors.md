@@ -51,3 +51,14 @@ target: https://github.com/mdecea
 Marc is a graduate student at MIT working in CMOS photonics with a high emphasis in communications applications. The research ranges from low power applications in the data center and high performance computing space to satellite and free space optical communications. He received his B.S. degree in Physics Engineering and Telecommunications Engineering from the Technical University of Catalonia in Barcelona, Spain. He worked as an intern at Ayar Labs designing and implementing automated test setups for optical devices. He is a recipient of the La Caixa fellowship.
 Marc is currently a resident at [X, the moonshot factory](https://x.company) (formerly known as Google X).
 ```
+
+## What about you?
+
+```{figure} https://github.com/identicons/HelgeGehring.png
+---
+align: left
+figclass: avatar
+target: .
+---
+What about you? We're happy about everyone joining our project!
+```
