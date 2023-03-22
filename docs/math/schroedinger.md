@@ -1,5 +1,18 @@
 # Schrödinger equation
 
+## Time dependent equation
+
+$$
+\mathrm{i} \hbar
+\frac{\partial}{\partial t}
+\varphi(x)
+=
+\left(
+    -\frac{\hbar^2}{2m} \frac{\mathrm{d^2}}{\mathrm{d}x^2} + V(x)
+\right)
+\varphi(x)
+$$
+
 ## Time independent equation
 
 $$
