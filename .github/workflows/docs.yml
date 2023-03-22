@@ -2,8 +2,6 @@ name: docs
 
 on:
   push:
-    branches:
-      - main
 
 jobs:
   build:
@@ -51,7 +49,7 @@ jobs:
           path: './docs/_build/html/'
 
   deploy:
-    if: ${{ github.repository == 'HelgeGehring/femwell' }} # skip for forks
+    if: ${{ github.repository == 'HelgeGehring/femwell' && github.ref == 'refs/heads/main' }} # skip for forks / branches
     needs: build
 
     permissions:
