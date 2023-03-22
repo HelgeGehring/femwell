@@ -10,6 +10,7 @@ parts:
       - file: math/thermal
       - file: math/dispersion
       - file: math/coupled_mode_theory
+      - file: math/schroedinger
     
   - caption: Examples
     chapters:
