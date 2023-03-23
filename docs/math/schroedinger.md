@@ -216,15 +216,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 u0 = np.sqrt(20)
-v = np.linspace(0,5,100)
+v = np.linspace(0,5,10000)
+yc = np.sqrt(u0**2-v**2)
 plt.ylim(0,u0+1)
-plt.plot(v, np.sqrt(u0**2-v**2))
+plt.plot(v, yc)
 
 y = v*np.tan(v)
-plt.plot(v, np.where(y>-10,y,np.nan), label='symmetric')
+y = np.where(y>-10,y,np.nan)
+plt.plot(v, y, label='symmetric')
+idx_s = np.argwhere(np.nan_to_num(np.diff(np.sign(y - yc)),-1))[:,0]
+plt.plot(v[idx_s], y[idx_s], 'ro')
+print(v[idx_s])
 
 y = -v*1/np.tan(v)
 plt.plot(v, np.where(y>-10,y,np.nan), label='asymmetric')
+idx_a = np.argwhere(np.nan_to_num(np.diff(np.sign(y - yc)),-1))[:,0]
+plt.plot(v[idx_a], y[idx_a], 'ro')
+print(v[idx_a])
+
 plt.legend()
 plt.show()
 ```
