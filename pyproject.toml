@@ -39,6 +39,7 @@ tqdm = "*"
 # sphinx-book-theme = "*"
 jupytext = "*"
 # myst-parser = "*"
+pandas = "*"
 
 [tool.black]
 line-length = 100
