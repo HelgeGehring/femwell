@@ -10,6 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Get Date
+        id: get-date
+        run: |
+          echo "date=$(/bin/date --date='TZ="America/Los_Angeles"' -u "+%Y%m%d")" >> $GITHUB_OUTPUT
+          cat $GITHUB_OUTPUT
       - uses: actions/checkout@v3
       - name: Setup Mambaforge
         uses: conda-incubator/setup-miniconda@v2
@@ -39,6 +44,13 @@ jobs:
           pip uninstall -y scikit-fem
           pip install --upgrade git+https://github.com/kinnala/scikit-fem.git
           pip list
+      - uses: actions/cache@v3
+        with:
+          path: |
+            docs/_build/.jupyter_cache
+          key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-${{ steps.get-date.outputs.date }}
       - name: Make docs
         run: |
           jupyter-book build docs/
