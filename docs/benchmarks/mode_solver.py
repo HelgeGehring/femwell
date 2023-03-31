@@ -99,7 +99,8 @@ pd.DataFrame(
     }
 ).style.apply(
     lambda differences: [
-        "background-color: green" if 3 < 1e-6 else "background-color: red" for i in differences
+        "background-color: green" if difference < 4e-6 else "background-color: red"
+        for difference in differences
     ],
     subset=["difference"],
 )
