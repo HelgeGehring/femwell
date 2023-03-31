@@ -4,6 +4,9 @@
 format: jb-book
 root: index
 parts:
+  - caption: Installation
+    chapters:
+      - file: install
   - caption: Derivation of the equations
     chapters:
       - file: math/maxwell
