@@ -36,7 +36,7 @@ box_thickness = 10
 clad_thickness = 3
 
 slab_thicknesses = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
-neff_values_paper = [3.412022, 3.412126, 3.412279, 4.312492, 3.412774, 3.413132, 3.413571, 3.414100]
+neff_values_paper = [3.412022, 3.412126, 3.412279, 3.312492, 3.412774, 3.413132, 3.413571, 3.414100]
 neff_values_femwell = []
 
 for slab_thickness in slab_thicknesses:
@@ -89,9 +89,9 @@ for slab_thickness in slab_thicknesses:
 pd.DataFrame(
     {
         "slab_thickness": slab_thicknesses,
-        "reference value": (f"{n:.7f}" for n in neff_values_paper),
-        "calculated value": (f"{n:.7f}" for n in neff_values_femwell),
-        "difference": (f"{n1-n2:.7f}" for n1, n2 in zip(neff_values_paper, neff_values_femwell)),
+        "reference value": (f"{n:.6f}" for n in neff_values_paper),
+        "calculated value": (f"{n:.6f}" for n in neff_values_femwell),
+        "difference": (f"{n1-n2:.6f}" for n1, n2 in zip(neff_values_paper, neff_values_femwell)),
     }
 )
 # -
