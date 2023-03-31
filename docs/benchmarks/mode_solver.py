@@ -89,7 +89,8 @@ for slab_thickness in slab_thicknesses:
 pd.DataFrame(
     {
         "slab_thickness": slab_thicknesses,
-        "reference value": (f"{n:.6f}" for n in neff_values_paper),
+        "reference value": (f"{n:.7f}" for n in neff_values_paper),
         "calculated value": (f"{n:.7f}" for n in neff_values_femwell),
+        "difference": (f"{n1-n2:.7f}" for n1, n2 in zip(neff_values_paper - neff_values_femwell)),
     }
 )
