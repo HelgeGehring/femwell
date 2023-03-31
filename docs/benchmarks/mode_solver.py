@@ -94,3 +94,11 @@ pd.DataFrame(
         "difference": (f"{n1-n2:.7f}" for n1, n2 in zip(neff_values_paper - neff_values_femwell)),
     }
 )
+# -
+
+# ## Bibliography
+#
+# ```{bibliography}
+# :style: unsrt
+# :filter: docname in docnames
+# ```
