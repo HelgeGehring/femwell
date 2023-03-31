@@ -14,7 +14,11 @@
 
 # # Benchmark of the mode solver
 
-# Reproducing {cite}`Hadley2002`
+# Reproducing {cite}`Hadley2002`, where the modes of a strip and
+# several rib waveguide were calculated and presented with an error value.
+# The error for all modes is calculated to be smaller than $\pm 3 \cdot 10^{-6}$,
+# thus this should be the maximum derivation for our simulations.
+# The results are presented here:
 
 # + tags=["remove-stderr", "hide-input"]
 from collections import OrderedDict
