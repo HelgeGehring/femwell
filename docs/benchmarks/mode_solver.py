@@ -97,13 +97,14 @@ pd.DataFrame(
         "calculated value": (f"{n:.6f}" for n in neff_values_femwell),
         "difference": (f"{n1-n2:.6f}" for n1, n2 in zip(neff_values_paper, neff_values_femwell)),
     }
-).style.apply(
-    lambda differences: [
-        "background-color: green" if difference < 4e-6 else "background-color: red"
-        for difference in differences
-    ],
-    subset=["difference"],
 )
+# .style.apply(
+#    lambda differences: [
+#        "background-color: green" if difference < 4e-6 else "background-color: red"
+#        for difference in differences
+#    ],
+#    subset=["difference"],
+# )
 # -
 
 # ## Bibliography
