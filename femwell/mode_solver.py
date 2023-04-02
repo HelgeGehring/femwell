@@ -1,6 +1,10 @@
 """Waveguide analysis based on https://doi.org/10.1080/02726340290084012."""
+from dataclasses import dataclass
 import matplotlib.pyplot as plt
 import numpy as np
+from typing import List
+from numpy.typing import NDArray
+from pyparsing import col
 import scipy.constants
 import scipy.sparse.linalg
 from scipy.constants import epsilon_0, speed_of_light
@@ -23,6 +27,55 @@ from skfem import (
 from skfem.helpers import cross, curl, dot, grad, inner
 from skfem.utils import solver_eigen_scipy
 
+@dataclass
+class Modes:
+    modes: List
+
+    def __getitem__(self, idx):
+        return self.modes[idx]
+
+    def __len__(self):
+        return len(self.modes)
+
+    def __repr__(self) -> str:
+        modes = '\n\t' + '\n\t'.join(repr(mode) for mode in self.modes) + '\n'
+        return f"{self.__class__.__name__}(modes=({modes}))"
+
+@dataclass(frozen=True)
+class Mode:
+    frequency: float
+    k: float
+    basis: Basis
+    epsilon_r: NDArray
+    E: NDArray
+    H: NDArray
+
+    @property
+    def omega(self):
+        return 2 * np.pi * self.frequency
+
+    @property
+    def k0(self):
+        return self.omega / speed_of_light
+
+    @property
+    def n_eff(self):
+        return self.k / self.k0
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(k: {self.k}, n_eff:{self.n_eff})"
+
+    def calculate_overlap(self, mode):
+        return calculate_overlap(self.basis, self.E, self.H, mode.basis, mode.E, mode.H)
+
+    def plot(self, field, plot_vectors=False, colorbar=True, direction='y', title='E'):
+        plot_mode(self.basis, field, plot_vectors=plot_vectors, colorbar=colorbar, title=title, direction=direction)
+
+    def show(self, field, **kwargs):
+        self.plot(field=field, **kwargs)
+        plt.show()
+        
+
 
 def compute_modes(
     basis_epsilon_r,
@@ -37,6 +90,7 @@ def compute_modes(
     solver="slepc",
     normalize=True,
     cache_path=None,
+    return_objects=False
 ):
     if solver == "scipy":
         solver = solver_eigen_scipy
@@ -109,14 +163,21 @@ def compute_modes(
         lams[:, np.newaxis]
     )  # undo the scaling E_3,new = beta * E_3
 
+    hs = []
     if normalize:
         for i, lam in enumerate(lams):
             H = calculate_hfield(
                 basis, xs[i], np.sqrt(lam), omega=k0 * scipy.constants.speed_of_light
             )
-            xs[i] /= np.sqrt(calculate_overlap(basis, xs[i], H, basis, xs[i], H))
+            power = calculate_overlap(basis, xs[i], H, basis, xs[i], H)
+            xs[i] /= np.sqrt(power)
+            H /=  np.sqrt(power)
+            hs.append(H)
 
-    return np.sqrt(lams)[:num_modes] / k0, basis, xs[:num_modes]
+    if return_objects:
+        return Modes(modes=[Mode(frequency=speed_of_light/wavelength,k=np.sqrt(lams[i]), basis=basis, epsilon_r=epsilon_r, E=xs[i], H=hs[i]) for i in range(num_modes)])
+    else:
+        return np.sqrt(lams)[:num_modes] / k0, basis, xs[:num_modes]
 
 
 def calculate_hfield(basis, xs, beta, omega=1):
@@ -326,7 +387,7 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title="E", directi
     return fig, axs
 
 
-def argsort_modes_by_power_in_elements(mode_basis, E_modes, H_modes, elements):
+def argsort_modes_by_power_in_elements(modes, elements):
     """Sorts the modes in the "modes" list by the power contained
     within the given elements.
 
@@ -334,11 +395,11 @@ def argsort_modes_by_power_in_elements(mode_basis, E_modes, H_modes, elements):
         the indices sorted from highest to lowest power.
     """
 
-    selection_basis = Basis(mode_basis.mesh, mode_basis.elem, elements=elements)
+    selection_basis = Basis(modes[0].basis.mesh, modes[0].basis.elem, elements=elements)
 
     overlaps = [
-        calculate_overlap(selection_basis, E_f, H_f, selection_basis, E_f, H_f)
-        for E_f, H_f in zip(E_modes, H_modes)
+        calculate_overlap(selection_basis, mode.E, mode.H, selection_basis, mode.E, mode.H)
+        for mode in modes
     ]
 
     return np.argsort(np.abs(overlaps))[::-1]
@@ -401,46 +462,22 @@ if __name__ == "__main__":
     epsilon[basis0.get_dofs(elements="box")] = 1.444**2
     # basis0.plot(epsilon, colorbar=True).show()
 
-    lams, basis, xs = compute_modes(
-        basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=6, order=2, radius=3, solver="scipy"
+    modes = compute_modes(
+        basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=6, order=2, radius=3
     )
-    print(lams)
+    print(modes)
 
-    plot_mode(basis, np.real(xs[0]))
-    plt.show()
-    plot_mode(basis, np.real(xs[1]))
-    plt.show()
-    plot_mode(basis, np.imag(xs[0]))
-    plt.show()
+    modes[0].show(np.real(modes[0].E))
+    modes[0].show(np.imag(modes[0].E))
 
-    xbs = calculate_hfield(basis, xs[0], lams[0] * (2 * np.pi / 1.55))
+    modes[0].show(np.real(modes[0].H))
+    modes[0].show(np.imag(modes[0].H))
 
-    plot_mode(basis, np.real(xbs))
-    plt.show()
-    plot_mode(basis, np.imag(xbs))
-    plt.show()
+    integrals = np.zeros((len(modes),) * 2, dtype=complex)
 
-    integrals = np.zeros((len(lams),) * 2, dtype=complex)
-    H_modes = list()
-
-    for i in range(len(lams)):
-        for j in range(len(lams)):
-            E_i = xs[i]
-            E_j = xs[j]
-            H_i = calculate_hfield(
-                basis,
-                E_i,
-                lams[i] * (2 * np.pi / 1.55),
-                omega=2 * np.pi / 1.55 * scipy.constants.speed_of_light,
-            )
-            H_j = calculate_hfield(
-                basis,
-                E_j,
-                lams[j] * (2 * np.pi / 1.55),
-                omega=2 * np.pi / 1.55 * scipy.constants.speed_of_light,
-            )
-            integrals[i, j] = calculate_overlap(basis, E_i, H_i, basis, E_j, H_j)
-        H_modes.append(H_i)
+    for i in range(len(modes)):
+        for j in range(len(modes)):
+            integrals[i, j] = modes[i].calculate_overlap(modes[j])
 
     plt.imshow(np.real(integrals))
     plt.colorbar()
@@ -451,29 +488,10 @@ if __name__ == "__main__":
         print(x)
         return (x[0] < 0) * (x[0] > -1) * (x[1] > 0) * (x[1] < 0.5)
 
-    selection_basis = Basis(
-        basis.mesh,
-        basis.elem,
-        # elements = lambda x: x[0] < 0 and x[0] > -1 and x[1] > 0 and x[1] < 0.5
-        elements=lambda x: sel_fun(x),
-    )
 
     print(
-        select_mode_by_overlap(
-            mode_basis=basis,
-            E_modes=xs,
-            H_modes=H_modes,
-            elements_list=["core"],
-            selection_basis=None,
-        )
-    )
-
-    print(
-        select_mode_by_overlap(
-            mode_basis=basis,
-            E_modes=xs,
-            H_modes=H_modes,
-            elements_list=None,
-            selection_basis=selection_basis,
+        argsort_modes_by_power_in_elements(
+            modes = modes,
+            elements=sel_fun,
         )
     )
