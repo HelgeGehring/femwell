@@ -1,12 +1,13 @@
 """Waveguide analysis based on https://doi.org/10.1080/02726340290084012."""
 from dataclasses import dataclass
+from typing import List
+
 import matplotlib.pyplot as plt
 import numpy as np
-from typing import List
-from numpy.typing import NDArray
-from pyparsing import col
 import scipy.constants
 import scipy.sparse.linalg
+from numpy.typing import NDArray
+from pyparsing import col
 from scipy.constants import epsilon_0, speed_of_light
 from skfem import (
     Basis,
@@ -27,6 +28,7 @@ from skfem import (
 from skfem.helpers import cross, curl, dot, grad, inner
 from skfem.utils import solver_eigen_scipy
 
+
 @dataclass
 class Modes:
     modes: List
@@ -38,8 +40,9 @@ class Modes:
         return len(self.modes)
 
     def __repr__(self) -> str:
-        modes = '\n\t' + '\n\t'.join(repr(mode) for mode in self.modes) + '\n'
+        modes = "\n\t" + "\n\t".join(repr(mode) for mode in self.modes) + "\n"
         return f"{self.__class__.__name__}(modes=({modes}))"
+
 
 @dataclass(frozen=True)
 class Mode:
@@ -68,13 +71,19 @@ class Mode:
     def calculate_overlap(self, mode):
         return calculate_overlap(self.basis, self.E, self.H, mode.basis, mode.E, mode.H)
 
-    def plot(self, field, plot_vectors=False, colorbar=True, direction='y', title='E'):
-        plot_mode(self.basis, field, plot_vectors=plot_vectors, colorbar=colorbar, title=title, direction=direction)
+    def plot(self, field, plot_vectors=False, colorbar=True, direction="y", title="E"):
+        plot_mode(
+            self.basis,
+            field,
+            plot_vectors=plot_vectors,
+            colorbar=colorbar,
+            title=title,
+            direction=direction,
+        )
 
     def show(self, field, **kwargs):
         self.plot(field=field, **kwargs)
         plt.show()
-        
 
 
 def compute_modes(
@@ -90,7 +99,7 @@ def compute_modes(
     solver="slepc",
     normalize=True,
     cache_path=None,
-    return_objects=False
+    return_objects=False,
 ):
     if solver == "scipy":
         solver = solver_eigen_scipy
@@ -171,11 +180,23 @@ def compute_modes(
             )
             power = calculate_overlap(basis, xs[i], H, basis, xs[i], H)
             xs[i] /= np.sqrt(power)
-            H /=  np.sqrt(power)
+            H /= np.sqrt(power)
             hs.append(H)
 
     if return_objects:
-        return Modes(modes=[Mode(frequency=speed_of_light/wavelength,k=np.sqrt(lams[i]), basis=basis, epsilon_r=epsilon_r, E=xs[i], H=hs[i]) for i in range(num_modes)])
+        return Modes(
+            modes=[
+                Mode(
+                    frequency=speed_of_light / wavelength,
+                    k=np.sqrt(lams[i]),
+                    basis=basis,
+                    epsilon_r=epsilon_r,
+                    E=xs[i],
+                    H=hs[i],
+                )
+                for i in range(num_modes)
+            ]
+        )
     else:
         return np.sqrt(lams)[:num_modes] / k0, basis, xs[:num_modes]
 
@@ -462,9 +483,7 @@ if __name__ == "__main__":
     epsilon[basis0.get_dofs(elements="box")] = 1.444**2
     # basis0.plot(epsilon, colorbar=True).show()
 
-    modes = compute_modes(
-        basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=6, order=2, radius=3
-    )
+    modes = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=6, order=2, radius=3)
     print(modes)
 
     modes[0].show(np.real(modes[0].E))
@@ -488,10 +507,9 @@ if __name__ == "__main__":
         print(x)
         return (x[0] < 0) * (x[0] > -1) * (x[1] > 0) * (x[1] < 0.5)
 
-
     print(
         argsort_modes_by_power_in_elements(
-            modes = modes,
+            modes=modes,
             elements=sel_fun,
         )
     )
