@@ -64,6 +64,10 @@ class Mode:
         return self.omega / speed_of_light
 
     @property
+    def wavelength(self):
+        return speed_of_light / self.frequency
+
+    @property
     def n_eff(self):
         return self.k / self.k0
 
