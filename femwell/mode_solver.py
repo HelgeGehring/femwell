@@ -73,7 +73,7 @@ class Mode:
 
     @cached_property
     def tm_fraction(self):
-        return 1 - calculate_te_frac(self.basis, self.E)
+        return 1 - self.te_fraction
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(k: {self.k}, n_eff:{self.n_eff})"
