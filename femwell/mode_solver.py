@@ -1,5 +1,7 @@
 """Waveguide analysis based on https://doi.org/10.1080/02726340290084012."""
 from dataclasses import dataclass
+from functools import cache, cached_property
+from time import time
 from typing import List
 
 import matplotlib.pyplot as plt
@@ -64,6 +66,14 @@ class Mode:
     @property
     def n_eff(self):
         return self.k / self.k0
+
+    @cached_property
+    def te_fraction(self):
+        return calculate_te_frac(self.basis, self.E)
+
+    @cached_property
+    def tm_fraction(self):
+        return 1 - calculate_te_frac(self.basis, self.E)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(k: {self.k}, n_eff:{self.n_eff})"
@@ -483,7 +493,16 @@ if __name__ == "__main__":
     epsilon[basis0.get_dofs(elements="box")] = 1.444**2
     # basis0.plot(epsilon, colorbar=True).show()
 
-    modes = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=6, order=2, radius=3)
+    modes = compute_modes(
+        basis0,
+        epsilon,
+        wavelength=1.55,
+        mu_r=1,
+        num_modes=6,
+        order=2,
+        radius=3,
+        return_objects=True,
+    )
     print(modes)
 
     modes[0].show(np.real(modes[0].E))
