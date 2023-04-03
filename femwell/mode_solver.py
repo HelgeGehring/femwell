@@ -50,8 +50,9 @@ class Modes:
 class Mode:
     frequency: float
     k: float
-    basis: Basis
+    basis_epsilon_r: Basis
     epsilon_r: NDArray
+    basis: Basis
     E: NDArray
     H: NDArray
 
@@ -73,7 +74,18 @@ class Mode:
 
     @cached_property
     def te_fraction(self):
-        return calculate_te_frac(self.basis, self.E)
+        @Functional
+        def ex(w):
+            return np.abs(w.E[0][0]) ** 2
+
+        @Functional
+        def ey(w):
+            return np.abs(w.E[0][1]) ** 2
+
+        ex_sum = ex.assemble(self.basis, E=self.basis.interpolate(self.E))
+        ey_sum = ey.assemble(self.basis, E=self.basis.interpolate(self.E))
+
+        return ex_sum / (ex_sum + ey_sum)
 
     @cached_property
     def tm_fraction(self):
@@ -203,8 +215,9 @@ def compute_modes(
                 Mode(
                     frequency=speed_of_light / wavelength,
                     k=np.sqrt(lams[i]),
-                    basis=basis,
+                    basis_epsilon_r=basis_epsilon_r,
                     epsilon_r=epsilon_r,
+                    basis=basis,
                     E=xs[i],
                     H=hs[i],
                 )
@@ -508,6 +521,7 @@ if __name__ == "__main__":
         return_objects=True,
     )
     print(modes)
+    print(modes[0].te_fraction)
 
     modes[0].show(np.real(modes[0].E))
     modes[0].show(np.imag(modes[0].E))
