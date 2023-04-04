@@ -97,6 +97,11 @@ class Mode:
     def calculate_overlap(self, mode):
         return calculate_overlap(self.basis, self.E, self.H, mode.basis, mode.E, mode.H)
 
+    def calculate_coupling_coefficient(self, mode, delta_epsilon):
+        return calculate_coupling_coefficient(
+            self.basis_epsilon_r, delta_epsilon, self.basis, self.E, mode.E
+        )
+
     def plot(self, field, plot_vectors=False, colorbar=True, direction="y", title="E"):
         plot_mode(
             self.basis,
