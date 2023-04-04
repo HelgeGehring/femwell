@@ -241,6 +241,13 @@ def compute_modes(
             ]
         )
     else:
+        import warnings
+
+        warnings.warn(
+            "return_objects will become the default behaviour with version 0.1.0."
+            "The current behaviour with return_objects=False is deprecated and will be removed.",
+            DeprecationWarning,
+        )
         return np.sqrt(lams)[:num_modes] / k0, basis, xs[:num_modes]
 
 
