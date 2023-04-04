@@ -102,6 +102,9 @@ class Mode:
             self.basis_epsilon_r, delta_epsilon, self.basis, self.E, mode.E
         )
 
+    def calculate_propagation_loss(self, distance):
+        return -20 / np.log(10) * self.k0 * np.imag(self.n_eff) * distance
+
     def plot(self, field, plot_vectors=False, colorbar=True, direction="y", title="E"):
         return plot_mode(
             self.basis,
