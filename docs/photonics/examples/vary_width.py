@@ -37,7 +37,7 @@ wavelength = 1.55
 num_modes = 8
 widths = np.linspace(0.5, 3.5, 100)
 
-all_lams = np.zeros((widths.shape[0], num_modes))
+all_neffs = np.zeros((widths.shape[0], num_modes))
 all_te_fracs = np.zeros((widths.shape[0], num_modes))
 for i, width in enumerate(tqdm(widths)):
     core = box(0, 0, width, 0.5)
@@ -56,19 +56,24 @@ for i, width in enumerate(tqdm(widths)):
     for subdomain, n in {"core": 1.9963, "box": 1.444, "clad": 1}.items():
         epsilon[basis0.get_dofs(elements=subdomain)] = n**2
 
-    lams, basis, xs = compute_modes(
-        basis0, epsilon, wavelength=wavelength, num_modes=num_modes, normalize=False
+    modes = compute_modes(
+        basis0,
+        epsilon,
+        wavelength=wavelength,
+        num_modes=num_modes,
+        normalize=False,
+        return_objects=True,
     )
-    all_lams[i] = np.real(lams)
-    all_te_fracs[i, :] = [calculate_te_frac(basis, xs[idx]) for idx in range(num_modes)]
+    all_neffs[i] = np.real([mode.n_eff for mode in modes])
+    all_te_fracs[i, :] = [mode.te_fraction for mode in modes]
 # -
 
 # + tags=["hide-input"]
-all_lams = np.real(all_lams)
+all_neffs = np.real(all_neffs)
 plt.xlabel("Width of waveguide / µm")
 plt.ylabel("Effective refractive index")
-plt.ylim(1.444, np.max(all_lams) + 0.1 * (np.max(all_lams) - 1.444))
-for lams, te_fracs in zip(all_lams.T, all_te_fracs.T):
+plt.ylim(1.444, np.max(all_neffs) + 0.1 * (np.max(all_neffs) - 1.444))
+for lams, te_fracs in zip(all_neffs.T, all_te_fracs.T):
     plt.plot(widths, lams)
     plt.scatter(widths, lams, c=te_fracs, cmap="cool")
 plt.colorbar().set_label("TE fraction")

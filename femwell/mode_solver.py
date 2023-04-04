@@ -215,7 +215,7 @@ def compute_modes(
     )  # undo the scaling E_3,new = beta * E_3
 
     hs = []
-    if normalize:
+    if normalize or return_objects:
         for i, lam in enumerate(lams):
             H = calculate_hfield(
                 basis, xs[i], np.sqrt(lam), omega=k0 * scipy.constants.speed_of_light
