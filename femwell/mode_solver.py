@@ -1,7 +1,6 @@
 """Waveguide analysis based on https://doi.org/10.1080/02726340290084012."""
 from dataclasses import dataclass
-from functools import cache, cached_property
-from time import time
+from functools import cached_property
 from typing import List
 
 import matplotlib.pyplot as plt
@@ -9,7 +8,6 @@ import numpy as np
 import scipy.constants
 import scipy.sparse.linalg
 from numpy.typing import NDArray
-from pyparsing import col
 from scipy.constants import epsilon_0, speed_of_light
 from skfem import (
     Basis,
