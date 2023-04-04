@@ -128,19 +128,12 @@ epsilon[basis0.get_dofs(elements=("sin"))] = 1.973**2
 # %%
 
 # basis0.plot(epsilon, colorbar=True).show()
-lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=4)
+modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=4, return_objects=True)
 
+for mode in modes:
+    mode.show(mode.E.real, direction="x")
 
-plot_mode(basis, np.real(xs[0]), direction="x")
-plt.show()
-plot_mode(basis, np.real(xs[1]), direction="x")
-plt.show()
-plot_mode(basis, np.real(xs[2]), direction="x")
-plt.show()
-plot_mode(basis, np.real(xs[3]), direction="x")
-plt.show()
-
-print(f"The effective index of the SiN mode is {np.real(lams[2])}")
+print(f"The effective index of the SiN mode is {np.real(modes[2].n_eff)}")
 
 # %% [markdown]
 
@@ -169,15 +162,12 @@ epsilon = basis0.zeros() + 1.444**2
 epsilon[basis0.get_dofs(elements=("si"))] = 1.444**2
 epsilon[basis0.get_dofs(elements=("sin"))] = 1.973**2
 
-lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=2)
+modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=2, return_objects=True)
 
+for mode in modes:
+    mode.show(mode.E.real, direction="x")
 
-plot_mode(basis, np.real(xs[0]), direction="x")
-plt.show()
-plot_mode(basis, np.real(xs[1]), direction="x")
-plt.show()
-
-print(f"The effective index of the SiN mode is {np.real(lams[0])}")
+print(f"The effective index of the SiN mode is {np.real(modes[0].n_eff)}")
 
 # %% [markdown]
 # ## 2. Giving a guess effective index
@@ -194,15 +184,14 @@ epsilon = basis0.zeros() + 1.444**2
 epsilon[basis0.get_dofs(elements=("si"))] = 3.4777**2
 epsilon[basis0.get_dofs(elements=("sin"))] = 1.973**2
 
-lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=2, n_guess=1.62)
+modes = compute_modes(
+    basis0, epsilon, wavelength=wavelength, num_modes=2, n_guess=1.62, return_objects=True
+)
 
+for mode in modes:
+    mode.show(mode.E.real, direction="x")
 
-plot_mode(basis, np.real(xs[0]), direction="x")
-plt.show()
-plot_mode(basis, np.real(xs[1]), direction="x")
-plt.show()
-
-print(f"The effective index of the SiN mode is {np.real(lams[1])}")
+print(f"The effective index of the SiN mode is {np.real(modes[1].n_eff)}")
 
 # %% [markdown]
 
@@ -227,26 +216,13 @@ print(f"The effective index of the SiN mode is {np.real(lams[1])}")
 
 # %%
 
-lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=4)
-
-# Calculate H field
-H_modes = list()
-for i, E in enumerate(xs):
-    H_modes.append(
-        calculate_hfield(
-            basis,
-            E,
-            lams[i] * (2 * np.pi / wavelength),
-            omega=2 * np.pi / 1.55 * scipy.constants.speed_of_light,
-        )
-    )
+modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=4, return_objects=True)
 
 # Option 1: using an element name
 
-ind_mode = argsort_modes_by_power_in_elements(basis, xs, H_modes, elements="sin")[0]
+modes_sorted = modes.sorted(key=lambda mode: mode.calculate_power(elements="sin"))
 
-plot_mode(basis, np.real(xs[ind_mode]), direction="x")
-plt.show()
+modes_sorted[0].show(modes_sorted[0].E.real, direction="x")
 
 # Option 2: using bounding box
 
@@ -254,9 +230,8 @@ plt.show()
 bbox = [-2, 0, 0, 0.4]
 
 elements = inside_bbox(bbox)
-ind_mode = argsort_modes_by_power_in_elements(basis, xs, H_modes, elements)[0]
+modes_sorted = modes.sorted(key=lambda mode: mode.calculate_power(elements=elements))
 
-plot_mode(basis, np.real(xs[ind_mode]), direction="x")
-plt.show()
+modes_sorted[0].show(modes_sorted[0].E.real, direction="x")
 
 # %%
