@@ -103,7 +103,7 @@ class Mode:
         )
 
     def plot(self, field, plot_vectors=False, colorbar=True, direction="y", title="E"):
-        plot_mode(
+        return plot_mode(
             self.basis,
             field,
             plot_vectors=plot_vectors,
