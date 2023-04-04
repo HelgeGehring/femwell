@@ -31,7 +31,7 @@ from skfem.helpers import cross, curl, dot, grad, inner
 from skfem.utils import solver_eigen_scipy
 
 
-@dataclass
+@dataclass(frozen=True)
 class Modes:
     modes: List
 
@@ -44,6 +44,9 @@ class Modes:
     def __repr__(self) -> str:
         modes = "\n\t" + "\n\t".join(repr(mode) for mode in self.modes) + "\n"
         return f"{self.__class__.__name__}(modes=({modes}))"
+
+    def sorted(self, key):
+        return Modes(modes=sorted(self.modes, key=key))
 
 
 @dataclass(frozen=True)
@@ -104,6 +107,13 @@ class Mode:
 
     def calculate_propagation_loss(self, distance):
         return -20 / np.log(10) * self.k0 * np.imag(self.n_eff) * distance
+
+    def calculate_power(self, elements=None):
+        if not elements:
+            basis = self.basis
+        else:
+            basis = self.basis.with_elements(elements)
+        return calculate_overlap(basis, self.E, self.H, basis, self.E, self.H)
 
     def plot(self, field, plot_vectors=False, colorbar=True, direction="y", title="E"):
         return plot_mode(
