@@ -61,9 +61,9 @@ epsilon[basis0.get_dofs(elements="clad")] = 1.444**2
 # Thus, we know, that we chose the cladding thick enough if the field vanishes at the outer boundaries.
 
 # +
-lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1)
+modes = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1, return_objects=True)
 
-fig, axs = plot_mode(basis, np.real(xs[0]), direction="x")
+fig, axs = modes[0].plot(modes[0].E.real, direction="x")
 plt.tight_layout()
 plt.show()
 # -
@@ -84,7 +84,7 @@ for mfd in tqdm(mfds):
     )
 
     efficiency = overlap(
-        basis_fiber, basis.interpolate(xs[0])[0][1], basis_fiber.interpolate(x_fiber)
+        basis_fiber, modes[0].basis.interpolate(modes[0].E)[0][1], basis_fiber.interpolate(x_fiber)
     )
     efficiencies.append(efficiency)
 
