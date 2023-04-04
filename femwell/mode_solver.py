@@ -50,31 +50,44 @@ class Modes:
 @dataclass(frozen=True)
 class Mode:
     frequency: float
+    """Frequency of the light"""
     k: float
+    """Propagation constant of the mode"""
     basis_epsilon_r: Basis
+    """Basis used for epsilon_r"""
     epsilon_r: NDArray
+    """Epsilon_r with which the mode was calculated"""
     basis: Basis
+    """Basis on which the mode was calculated and E/H are defined"""
     E: NDArray
+    """Electric field of the mode"""
     H: NDArray
+    """Magnetic field of the mode"""
 
     @property
     def omega(self):
+        """Angular frequency of the light"""
         return 2 * np.pi * self.frequency
 
     @property
     def k0(self):
+        """Vacuum propagation constant of the light"""
         return self.omega / speed_of_light
 
     @property
     def wavelength(self):
+        """Vacuum wavelength of the light"""
         return speed_of_light / self.frequency
 
     @property
     def n_eff(self):
+        """Effective refractive index of the mode"""
         return self.k / self.k0
 
     @cached_property
     def te_fraction(self):
+        """TE-fraction of the mode"""
+
         @Functional
         def ex(w):
             return np.abs(w.E[0][0]) ** 2
@@ -90,6 +103,8 @@ class Mode:
 
     @cached_property
     def tm_fraction(self):
+        """TM-fraction of the mode"""
+
         return 1 - self.te_fraction
 
     def __repr__(self) -> str:
