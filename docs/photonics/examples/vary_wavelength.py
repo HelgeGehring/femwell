@@ -29,7 +29,7 @@ from skfem.io.meshio import from_meshio
 from tqdm import tqdm
 
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import calculate_te_frac, compute_modes
+from femwell.mode_solver import compute_modes
 
 # -
 
