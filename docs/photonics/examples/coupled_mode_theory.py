@@ -260,13 +260,7 @@ plt.show()
 # ## two modes
 
 # %%
-R = []
-
-lam_i = modes_1[0].n_eff
-E_i = modes_1[0].E
-
-for mode_j in modes_both:
-    R.append(np.abs(mode_i.calculate_overlap(mode_j) ** 2))
+R = [np.abs(modes_1[0].calculate_overlap(mode_j) ** 2) for mode_j in modes_both]
 print(R)
 P = (
     R[0] ** 2
