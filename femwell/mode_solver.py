@@ -557,12 +557,6 @@ if __name__ == "__main__":
 
     # Create basis to select a certain simulation extent
     def sel_fun(x):
-        print(x)
         return (x[0] < 0) * (x[0] > -1) * (x[1] > 0) * (x[1] < 0.5)
 
-    print(
-        argsort_modes_by_power_in_elements(
-            modes=modes,
-            elements=sel_fun,
-        )
-    )
+    print(modes.sorted(lambda mode: mode.calculate_power(elements=sel_fun)))
