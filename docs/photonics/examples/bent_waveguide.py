@@ -25,8 +25,8 @@ from skfem import Basis, ElementDG, ElementTriP1
 from skfem.io.meshio import from_meshio
 from tqdm import tqdm
 
+from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import compute_modes
 
 # -
 
@@ -88,7 +88,7 @@ basis0.plot(epsilon.imag, shading="gouraud", colorbar=True).show()
 
 # +
 modes_straight = compute_modes(
-    basis0, epsilon, wavelength=wavelength, num_modes=1, order=2, radius=np.inf, return_objects=True
+    basis0, epsilon, wavelength=wavelength, num_modes=1, order=2, radius=np.inf
 )
 # -
 
@@ -111,7 +111,6 @@ for radius in tqdm(radiuss):
         radius=radius,
         n_guess=lam_guess,
         solver="scipy",
-        return_objects=True,
     )
     lam_guess = modes[0].n_eff
     radiuss_lams.append(modes[0].n_eff)

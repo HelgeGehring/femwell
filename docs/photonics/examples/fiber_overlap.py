@@ -25,8 +25,8 @@ from skfem.io import from_meshio
 from tqdm import tqdm
 
 from femwell.fiber import e_field_gaussian, overlap
+from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import compute_modes, plot_mode
 
 # -
 
@@ -61,7 +61,7 @@ epsilon[basis0.get_dofs(elements="clad")] = 1.444**2
 # Thus, we know, that we chose the cladding thick enough if the field vanishes at the outer boundaries.
 
 # +
-modes = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1, return_objects=True)
+modes = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=1)
 
 fig, axs = modes[0].plot(modes[0].E.real, direction="x")
 plt.tight_layout()

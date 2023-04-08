@@ -1,13 +1,9 @@
 """Waveguide analysis based on https://doi.org/10.1080/02726340290084012."""
-from dataclasses import dataclass
-from functools import cached_property
-from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.constants
 import scipy.sparse.linalg
-from numpy.typing import NDArray
 from scipy.constants import epsilon_0, speed_of_light
 from skfem import (
     Basis,
@@ -21,126 +17,11 @@ from skfem import (
     ElementVector,
     Functional,
     LinearForm,
-    Mesh,
     condense,
     solve,
 )
 from skfem.helpers import cross, curl, dot, grad, inner
 from skfem.utils import solver_eigen_scipy
-
-
-@dataclass(frozen=True)
-class Modes:
-    modes: List
-
-    def __getitem__(self, idx):
-        return self.modes[idx]
-
-    def __len__(self):
-        return len(self.modes)
-
-    def __repr__(self) -> str:
-        modes = "\n\t" + "\n\t".join(repr(mode) for mode in self.modes) + "\n"
-        return f"{self.__class__.__name__}(modes=({modes}))"
-
-    def sorted(self, key):
-        return Modes(modes=sorted(self.modes, key=key))
-
-
-@dataclass(frozen=True)
-class Mode:
-    frequency: float
-    """Frequency of the light"""
-    k: float
-    """Propagation constant of the mode"""
-    basis_epsilon_r: Basis
-    """Basis used for epsilon_r"""
-    epsilon_r: NDArray
-    """Epsilon_r with which the mode was calculated"""
-    basis: Basis
-    """Basis on which the mode was calculated and E/H are defined"""
-    E: NDArray
-    """Electric field of the mode"""
-    H: NDArray
-    """Magnetic field of the mode"""
-
-    @property
-    def omega(self):
-        """Angular frequency of the light"""
-        return 2 * np.pi * self.frequency
-
-    @property
-    def k0(self):
-        """Vacuum propagation constant of the light"""
-        return self.omega / speed_of_light
-
-    @property
-    def wavelength(self):
-        """Vacuum wavelength of the light"""
-        return speed_of_light / self.frequency
-
-    @property
-    def n_eff(self):
-        """Effective refractive index of the mode"""
-        return self.k / self.k0
-
-    @cached_property
-    def te_fraction(self):
-        """TE-fraction of the mode"""
-
-        @Functional
-        def ex(w):
-            return np.abs(w.E[0][0]) ** 2
-
-        @Functional
-        def ey(w):
-            return np.abs(w.E[0][1]) ** 2
-
-        ex_sum = ex.assemble(self.basis, E=self.basis.interpolate(self.E))
-        ey_sum = ey.assemble(self.basis, E=self.basis.interpolate(self.E))
-
-        return ex_sum / (ex_sum + ey_sum)
-
-    @cached_property
-    def tm_fraction(self):
-        """TM-fraction of the mode"""
-
-        return 1 - self.te_fraction
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(k: {self.k}, n_eff:{self.n_eff})"
-
-    def calculate_overlap(self, mode):
-        return calculate_overlap(self.basis, self.E, self.H, mode.basis, mode.E, mode.H)
-
-    def calculate_coupling_coefficient(self, mode, delta_epsilon):
-        return calculate_coupling_coefficient(
-            self.basis_epsilon_r, delta_epsilon, self.basis, self.E, mode.E
-        )
-
-    def calculate_propagation_loss(self, distance):
-        return -20 / np.log(10) * self.k0 * np.imag(self.n_eff) * distance
-
-    def calculate_power(self, elements=None):
-        if not elements:
-            basis = self.basis
-        else:
-            basis = self.basis.with_elements(elements)
-        return calculate_overlap(basis, self.E, self.H, basis, self.E, self.H)
-
-    def plot(self, field, plot_vectors=False, colorbar=True, direction="y", title="E"):
-        return plot_mode(
-            self.basis,
-            field,
-            plot_vectors=plot_vectors,
-            colorbar=colorbar,
-            title=title,
-            direction=direction,
-        )
-
-    def show(self, field, **kwargs):
-        self.plot(field=field, **kwargs)
-        plt.show()
 
 
 def compute_modes(
@@ -156,7 +37,6 @@ def compute_modes(
     solver="slepc",
     normalize=True,
     cache_path=None,
-    return_objects=False,
 ):
     if solver == "scipy":
         solver = solver_eigen_scipy
@@ -230,7 +110,7 @@ def compute_modes(
     )  # undo the scaling E_3,new = beta * E_3
 
     hs = []
-    if normalize or return_objects:
+    if normalize:
         for i, lam in enumerate(lams):
             H = calculate_hfield(
                 basis, xs[i], np.sqrt(lam), omega=k0 * scipy.constants.speed_of_light
@@ -240,30 +120,13 @@ def compute_modes(
             H /= np.sqrt(power)
             hs.append(H)
 
-    if return_objects:
-        return Modes(
-            modes=[
-                Mode(
-                    frequency=speed_of_light / wavelength,
-                    k=np.sqrt(lams[i]),
-                    basis_epsilon_r=basis_epsilon_r,
-                    epsilon_r=epsilon_r,
-                    basis=basis,
-                    E=xs[i],
-                    H=hs[i],
-                )
-                for i in range(num_modes)
-            ]
-        )
-    else:
-        import warnings
+    import warnings
 
-        warnings.warn(
-            "return_objects will become the default behaviour with version 0.1.0."
-            "The current behaviour with return_objects=False is deprecated and will be removed.",
-            DeprecationWarning,
-        )
-        return np.sqrt(lams)[:num_modes] / k0, basis, xs[:num_modes]
+    warnings.warn(
+        "femwell.maxwell.waveguide will replace this module with version 0.1.0.",
+        DeprecationWarning,
+    )
+    return np.sqrt(lams)[:num_modes] / k0, basis, xs[:num_modes]
 
 
 def calculate_hfield(basis, xs, beta, omega=1):
@@ -489,96 +352,3 @@ def argsort_modes_by_power_in_elements(modes, elements):
     ]
 
     return np.argsort(np.abs(overlaps))[::-1]
-
-
-if __name__ == "__main__":
-    from collections import OrderedDict
-
-    from shapely.geometry import Polygon
-
-    from femwell.mesh import mesh_from_OrderedDict
-
-    x_min = 0
-    w_sim = 3
-    h_clad = 0.7
-    h_box = 0.5
-    w_core = 1
-    h_core = 0.22
-    offset_heater = 2.2
-    h_heater = 0.14
-    w_heater = 2
-
-    polygons = OrderedDict(
-        core=Polygon(
-            [
-                (x_min - w_core / 2, 0),
-                (x_min - w_core / 2, h_core),
-                (x_min + w_core / 2, h_core),
-                (x_min + w_core / 2, 0),
-            ]
-        ),
-        clad=Polygon(
-            [
-                (x_min - w_sim / 2, 0),
-                (x_min - w_sim / 2, h_clad),
-                (x_min + w_sim / 2, h_clad),
-                (x_min + w_sim / 2, 0),
-            ]
-        ),
-        box=Polygon(
-            [
-                (x_min - w_sim / 2, 0),
-                (x_min - w_sim / 2, -h_box),
-                (x_min + w_sim / 2, -h_box),
-                (x_min + w_sim / 2, 0),
-            ]
-        ),
-    )
-
-    resolutions = dict(core={"resolution": 0.05, "distance": 1})
-
-    mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=0.2)
-
-    mesh = Mesh.load("mesh.msh")
-    basis = Basis(mesh, ElementTriN2() * ElementTriP2())
-    basis0 = basis.with_element(ElementTriP0())
-    epsilon = basis0.zeros(dtype=complex)
-    epsilon[basis0.get_dofs(elements="core")] = 3.4777**2
-    epsilon[basis0.get_dofs(elements="clad")] = 1.444**2
-    epsilon[basis0.get_dofs(elements="box")] = 1.444**2
-    # basis0.plot(epsilon, colorbar=True).show()
-
-    modes = compute_modes(
-        basis0,
-        epsilon,
-        wavelength=1.55,
-        mu_r=1,
-        num_modes=6,
-        order=2,
-        radius=3,
-        return_objects=True,
-    )
-    print(modes)
-    print(modes[0].te_fraction)
-
-    modes[0].show(np.real(modes[0].E))
-    modes[0].show(np.imag(modes[0].E))
-
-    modes[0].show(np.real(modes[0].H))
-    modes[0].show(np.imag(modes[0].H))
-
-    integrals = np.zeros((len(modes),) * 2, dtype=complex)
-
-    for i in range(len(modes)):
-        for j in range(len(modes)):
-            integrals[i, j] = modes[i].calculate_overlap(modes[j])
-
-    plt.imshow(np.real(integrals))
-    plt.colorbar()
-    plt.show()
-
-    # Create basis to select a certain simulation extent
-    def sel_fun(x):
-        return (x[0] < 0) * (x[0] > -1) * (x[1] > 0) * (x[1] < 0.5)
-
-    print(modes.sorted(lambda mode: mode.calculate_power(elements=sel_fun)))

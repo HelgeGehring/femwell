@@ -33,15 +33,8 @@ from shapely.geometry import Polygon
 from skfem import Basis, ElementTriP0, Mesh
 from skfem.io import from_meshio
 
+from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import (
-    argsort_modes_by_power_in_elements,
-    calculate_coupling_coefficient,
-    calculate_hfield,
-    calculate_overlap,
-    compute_modes,
-    plot_mode,
-)
 from femwell.utils import inside_bbox
 
 # %% [markdown]
@@ -128,7 +121,7 @@ epsilon[basis0.get_dofs(elements=("sin"))] = 1.973**2
 # %%
 
 # basis0.plot(epsilon, colorbar=True).show()
-modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=4, return_objects=True)
+modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=4)
 
 for mode in modes:
     mode.show(mode.E.real, direction="x")
@@ -162,7 +155,7 @@ epsilon = basis0.zeros() + 1.444**2
 epsilon[basis0.get_dofs(elements=("si"))] = 1.444**2
 epsilon[basis0.get_dofs(elements=("sin"))] = 1.973**2
 
-modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=2, return_objects=True)
+modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=2)
 
 for mode in modes:
     mode.show(mode.E.real, direction="x")
@@ -184,9 +177,7 @@ epsilon = basis0.zeros() + 1.444**2
 epsilon[basis0.get_dofs(elements=("si"))] = 3.4777**2
 epsilon[basis0.get_dofs(elements=("sin"))] = 1.973**2
 
-modes = compute_modes(
-    basis0, epsilon, wavelength=wavelength, num_modes=2, n_guess=1.62, return_objects=True
-)
+modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=2, n_guess=1.62)
 
 for mode in modes:
     mode.show(mode.E.real, direction="x")
@@ -216,7 +207,7 @@ print(f"The effective index of the SiN mode is {np.real(modes[1].n_eff)}")
 
 # %%
 
-modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=4, return_objects=True)
+modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=4)
 
 # Option 1: using an element name
 

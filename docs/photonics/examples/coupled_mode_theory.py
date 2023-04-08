@@ -38,8 +38,8 @@ from shapely.geometry import Polygon
 from skfem import Basis, ElementTriP0, Mesh
 from skfem.io import from_meshio
 
+from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import compute_modes
 
 # %% [markdown]
 # Let's set up the geometry!
@@ -114,9 +114,7 @@ basis0 = Basis(mesh, ElementTriP0(), intorder=4)
 epsilon = basis0.zeros() + 1.444**2
 epsilon[basis0.get_dofs(elements=("core_1", "core_2"))] = 3.4777**2
 # basis0.plot(epsilon, colorbar=True).show()
-modes_both = compute_modes(
-    basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=2, return_objects=True
-)
+modes_both = compute_modes(basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=2)
 modes_both[0].show(modes_both[0].E.real, direction="x")
 modes_both[1].show(modes_both[1].E.real, direction="x")
 print(
@@ -137,18 +135,14 @@ print(
 epsilon = basis0.zeros() + 1.444**2
 epsilon[basis0.get_dofs(elements="core_1")] = 3.4777**2
 # basis0.plot(epsilon, colorbar=True).show()
-modes_1 = compute_modes(
-    basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=1, return_objects=True
-)
+modes_1 = compute_modes(basis0, epsilon, wavelength=wavelength, mu_r=1, num_modes=1)
 print("Effective refractive index of the mode of the first waveguide", modes_1[0].n_eff)
 modes_1[0].show(modes_1[0].E.real, direction="x")
 
 epsilon_2 = basis0.zeros() + 1.444**2
 epsilon_2[basis0.get_dofs(elements="core_2")] = 3.4777**2
 # basis0.plot(epsilon_2, colorbar=True).show()
-modes_2 = compute_modes(
-    basis0, epsilon_2, wavelength=wavelength, mu_r=1, num_modes=1, return_objects=True
-)
+modes_2 = compute_modes(basis0, epsilon_2, wavelength=wavelength, mu_r=1, num_modes=1)
 print("Effective refractive index of the mode of the second waveguide", modes_2[0].n_eff)
 modes_2[0].show(modes_2[0].E.real, direction="x")
 
