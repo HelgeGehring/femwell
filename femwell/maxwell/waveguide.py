@@ -223,21 +223,17 @@ def compute_modes(
             solver=solver(k=num_modes, sigma=sigma),
         )
 
-    idx = np.abs(np.real(lams)).argsort()[::-1]
-    lams = lams[idx]
-    xs = xs[:, idx]
-
-    xs = xs.T
-    print([np.sum(np.abs(xs[0, basis.split_indices()[i]])) for i in range(2)])
-    xs[:, basis.split_indices()[1]] /= 1j * np.sqrt(
-        lams[:, np.newaxis] / k0**4
+    xs[basis.split_indices()[1], :] /= 1j * np.sqrt(
+        lams[np.newaxis, :] / k0**4
     )  # undo the scaling E_3,new = beta * E_3
 
     hs = []
     for i, lam in enumerate(lams):
-        H = calculate_hfield(basis, xs[i], np.sqrt(lam), omega=k0 * scipy.constants.speed_of_light)
-        power = calculate_overlap(basis, xs[i], H, basis, xs[i], H)
-        xs[i] /= np.sqrt(power)
+        H = calculate_hfield(
+            basis, xs[:, i], np.sqrt(lam), omega=k0 * scipy.constants.speed_of_light
+        )
+        power = calculate_overlap(basis, xs[:, i], H, basis, xs[:, i], H)
+        xs[:, i] /= np.sqrt(power)
         H /= np.sqrt(power)
         hs.append(H)
 
@@ -249,7 +245,7 @@ def compute_modes(
                 basis_epsilon_r=basis_epsilon_r,
                 epsilon_r=epsilon_r,
                 basis=basis,
-                E=xs[i],
+                E=xs[:, i],
                 H=hs[i],
             )
             for i in range(num_modes)
