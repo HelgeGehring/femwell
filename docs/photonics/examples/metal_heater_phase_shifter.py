@@ -24,8 +24,8 @@ from skfem import Basis, ElementTriP0
 from skfem.io import from_meshio
 from tqdm import tqdm
 
+from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import compute_modes, plot_mode
 from femwell.thermal import solve_thermal
 
 # -
@@ -144,13 +144,12 @@ for current_density in tqdm(current_densities):
     ) ** 2
     # basis0.plot(epsilon, colorbar=True).show()
 
-    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, num_modes=1)
+    modes = compute_modes(basis0, epsilon, wavelength=1.55, num_modes=1)
 
     if current_density == current_densities[-1]:
-        plot_mode(basis, xs[0].real)
-        plt.show()
+        modes[0].show(modes[0].E.real)
 
-    neffs.append(np.real(lams[0]))
+    neffs.append(np.real(modes[0].n_eff))
 
 print(f"Phase shift: {2 * np.pi / 1.55 * (neffs[-1] - neffs[0]) * 320}")
 plt.xlabel("Current / mA")
