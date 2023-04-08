@@ -28,8 +28,8 @@ from skfem import Basis, ElementTriP0
 from skfem.io.meshio import from_meshio
 from tqdm import tqdm
 
+from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import compute_modes
 
 # -
 
@@ -91,9 +91,7 @@ for i, wavelength in enumerate(tqdm(wavelengths)):
     }.items():
         epsilon[basis0.get_dofs(elements=subdomain)] = n**2
 
-    modes = compute_modes(
-        basis0, epsilon, wavelength=wavelength, num_modes=num_modes, normalize=False
-    )
+    modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=num_modes)
     all_neffs[i] = np.real([mode.n_eff for mode in modes])
     all_te_fracs[i, :] = [mode.te_fraction for mode in modes]
 # -
