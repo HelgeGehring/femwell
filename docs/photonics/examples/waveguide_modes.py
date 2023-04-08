@@ -26,14 +26,8 @@ from shapely.ops import clip_by_rect
 from skfem import Basis, ElementTriP0
 from skfem.io.meshio import from_meshio
 
+from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import (
-    calculate_hfield,
-    calculate_overlap,
-    compute_modes,
-    confinement_factor,
-    plot_mode,
-)
 from femwell.visualization import plot_domains
 
 # -
@@ -86,11 +80,10 @@ basis0.plot(epsilon, colorbar=True).show()
 # +
 wavelength = 1.55
 
-lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=2, order=2)
-for i, lam in enumerate(lams):
-    print(f"Effective refractive index: {lam:.4f}")
-    plot_mode(basis, xs[i].real, colorbar=True, direction="x")
-    plt.show()
+modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=2, order=2)
+for mode in modes:
+    print(f"Effective refractive index: {mode.n_eff:.4f}")
+    mode.show(mode.E.real, colorbar=True, direction="x")
 
 powers_in_waveguide = []
 confinement_factors_waveguide = []
@@ -100,17 +93,8 @@ confinement_factors_waveguide = []
 # What percentage of the mode is within the core for the calculated modes?
 
 # +
-basis_waveguide = Basis(basis.mesh, basis.elem, elements="core")
-basis0_waveguide = basis_waveguide.with_element(ElementTriP0())
-for i, lam in enumerate(lams):
-    H = calculate_hfield(
-        basis, xs[i], 2 * np.pi / wavelength * lam, omega=2 * np.pi / wavelength * speed_of_light
-    )
-    powers_in_waveguide.append(
-        calculate_overlap(basis_waveguide, xs[i], H, basis_waveguide, xs[i], H)
-    )
-    confinement_factors_waveguide.append(
-        confinement_factor(basis0_waveguide, epsilon, basis_waveguide, xs[i])
-    )
+for mode in modes:
+    powers_in_waveguide.append(mode.calculate_power(elements="core"))
+    confinement_factors_waveguide.append(mode.calculate_confinement_factor(elements="core"))
 print(powers_in_waveguide)
 print(confinement_factors_waveguide)

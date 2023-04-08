@@ -34,6 +34,7 @@ from femwell.mode_solver import (
     calculate_hfield,
     calculate_overlap,
     calculate_scalar_product,
+    confinement_factor,
     plot_mode,
 )
 
@@ -119,7 +120,7 @@ class Mode:
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(k: {self.k}, n_eff:{self.n_eff})"
 
-    def calculate_overlap(self, mode):
+    def calculate_overlap(self, mode, elements=None):
         return calculate_overlap(self.basis, self.E, self.H, mode.basis, mode.E, mode.H)
 
     def calculate_coupling_coefficient(self, mode, delta_epsilon):
@@ -136,6 +137,14 @@ class Mode:
         else:
             basis = self.basis.with_elements(elements)
         return calculate_overlap(basis, self.E, self.H, basis, self.E, self.H)
+
+    def calculate_confinement_factor(self, elements):
+        return confinement_factor(
+            self.basis_epsilon_r.with_elements(elements),
+            self.epsilon_r,
+            self.basis.with_elements(elements),
+            self.E,
+        )
 
     def plot(self, field, plot_vectors=False, colorbar=True, direction="y", title="E"):
         return plot_mode(
