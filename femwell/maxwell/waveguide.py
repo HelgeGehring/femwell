@@ -185,8 +185,6 @@ def compute_modes(
     basis = basis_epsilon_r.with_element(element)
     basis_epsilon_r = basis.with_element(basis_epsilon_r.elem)  # adjust quadrature
 
-    print(k0)
-
     @BilinearForm(dtype=epsilon_r.dtype)
     def aform(e_t, e_z, v_t, v_z, w):
         epsilon = w.epsilon * (1 + w.x[0] / radius) ** 2
