@@ -316,7 +316,7 @@ if __name__ == "__main__":
         mu_r=1,
         num_modes=6,
         order=2,
-        # radius=3 * scale,
+        radius=3 * scale,
     )
     print(modes)
     print(modes[0].te_fraction)
