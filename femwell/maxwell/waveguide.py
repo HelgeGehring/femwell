@@ -40,24 +40,6 @@ from femwell.mode_solver import (
 
 
 @dataclass(frozen=True)
-class Modes:
-    modes: List
-
-    def __getitem__(self, idx):
-        return self.modes[idx]
-
-    def __len__(self):
-        return len(self.modes)
-
-    def __repr__(self) -> str:
-        modes = "\n\t" + "\n\t".join(repr(mode) for mode in self.modes) + "\n"
-        return f"{self.__class__.__name__}(modes=({modes}))"
-
-    def sorted(self, key):
-        return Modes(modes=sorted(self.modes, key=key))
-
-
-@dataclass(frozen=True)
 class Mode:
     frequency: float
     """Frequency of the light"""
@@ -146,6 +128,20 @@ class Mode:
             self.E,
         )
 
+    def calculate_pertubated_neff(self, delta_epsilon):
+        return (
+            self.n_eff
+            + calculate_coupling_coefficient(
+                self.basis_epsilon_r,
+                delta_epsilon * scipy.constants.epsilon_0,
+                self.basis,
+                self.E,
+                self.E,
+            )
+            * scipy.constants.speed_of_light
+            * 0.5
+        )
+
     def plot(self, field, plot_vectors=False, colorbar=True, direction="y", title="E"):
         return plot_mode(
             self.basis,
@@ -161,6 +157,24 @@ class Mode:
         plt.show()
 
 
+@dataclass(frozen=True)
+class Modes:
+    modes: List
+
+    def __getitem__(self, idx) -> Mode:
+        return self.modes[idx]
+
+    def __len__(self) -> int:
+        return len(self.modes)
+
+    def __repr__(self) -> str:
+        modes = "\n\t" + "\n\t".join(repr(mode) for mode in self.modes) + "\n"
+        return f"{self.__class__.__name__}(modes=({modes}))"
+
+    def sorted(self, key):
+        return Modes(modes=sorted(self.modes, key=key))
+
+
 def compute_modes(
     basis_epsilon_r,
     epsilon_r,
@@ -172,7 +186,7 @@ def compute_modes(
     radius=np.inf,
     n_guess=None,
     solver="slepc",
-):
+) -> Modes:
     if solver == "scipy":
         solver = solver_eigen_scipy
     elif solver == "slepc":
