@@ -163,9 +163,7 @@ plt.show()
 
 epsilon_0 = basis0.zeros() + 1.444**2
 epsilon_0[basis0.get_dofs(elements="core")] = 3.4777**2
-modes_0 = compute_modes(
-    basis0, epsilon_0, wavelength=wavelength, mu_r=1, num_modes=1, solver="slepc"
-)
+modes_0 = compute_modes(basis0, epsilon_0, wavelength=wavelength, num_modes=1, solver="slepc")
 
 neffs = []
 neffs_approximated = []
