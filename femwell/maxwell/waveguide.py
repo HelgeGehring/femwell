@@ -289,7 +289,7 @@ def compute_modes(
     )
 
 
-def calculate_hfield(basis, xs, beta, omega=1):
+def calculate_hfield(basis, xs, beta, omega):
     @BilinearForm(dtype=np.complex64)
     def aform(e_t, e_z, v_t, v_z, w):
         return (
