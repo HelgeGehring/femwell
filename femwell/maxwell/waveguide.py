@@ -96,8 +96,17 @@ class Mode:
         return calculate_overlap(self.basis, self.E, self.H, mode.basis, mode.E, mode.H)
 
     def calculate_coupling_coefficient(self, mode, delta_epsilon):
-        return calculate_coupling_coefficient(
-            self.basis_epsilon_r, delta_epsilon, self.basis, self.E, mode.E
+        @Functional(dtype=complex)
+        def overlap(w):
+            return w["delta_epsilon"] * (
+                dot(np.conj(w["E_i"][0]), w["E_j"][0]) + np.conj(w["E_i"][1]) * w["E_j"][1]
+            )
+
+        return overlap.assemble(
+            self.basis,
+            E_i=self.basis.interpolate(self.E),
+            E_j=self.basis.interpolate(mode.E),
+            delta_epsilon=self.basis_epsilon_r.interpolate(delta_epsilon),
         )
 
     def calculate_propagation_loss(self, distance):
@@ -132,13 +141,8 @@ class Mode:
     def calculate_pertubated_neff(self, delta_epsilon):
         return (
             self.n_eff
-            + calculate_coupling_coefficient(
-                self.basis_epsilon_r,
-                delta_epsilon * scipy.constants.epsilon_0,
-                self.basis,
-                self.E,
-                self.E,
-            )
+            + self.calculate_coupling_coefficient(self, delta_epsilon)
+            * scipy.constants.epsilon_0
             * scipy.constants.speed_of_light
             * 0.5
         )
@@ -386,21 +390,6 @@ def calculate_scalar_product(basis_i, E_i, basis_j, H_j):
         )
 
     return overlap.assemble(basis_i, E_i=basis_i.interpolate(E_i))
-
-
-def calculate_coupling_coefficient(basis_epsilon, delta_epsilon, basis, E_i, E_j):
-    @Functional(dtype=complex)
-    def overlap(w):
-        return w["delta_epsilon"] * (
-            dot(np.conj(w["E_i"][0]), w["E_j"][0]) + np.conj(w["E_i"][1]) * w["E_j"][1]
-        )
-
-    return overlap.assemble(
-        basis,
-        E_i=basis.interpolate(E_i),
-        E_j=basis.interpolate(E_j),
-        delta_epsilon=basis_epsilon.interpolate(delta_epsilon),
-    )
 
 
 def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title="E", direction="y"):
