@@ -1,5 +1,7 @@
 """Waveguide analysis based on https://doi.org/10.1080/02726340290084012."""
 
+import warnings
+
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.constants
@@ -22,6 +24,11 @@ from skfem import (
 )
 from skfem.helpers import cross, curl, dot, grad, inner
 from skfem.utils import solver_eigen_scipy
+
+warnings.warn(
+    "femwell.maxwell.waveguide will replace this module with version 0.1.0.",
+    DeprecationWarning,
+)
 
 
 def compute_modes(
@@ -120,12 +127,6 @@ def compute_modes(
             H /= np.sqrt(power)
             hs.append(H)
 
-    import warnings
-
-    warnings.warn(
-        "femwell.maxwell.waveguide will replace this module with version 0.1.0.",
-        DeprecationWarning,
-    )
     return np.sqrt(lams)[:num_modes] / k0, basis, xs[:num_modes]
 
 
