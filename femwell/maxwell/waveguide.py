@@ -174,6 +174,10 @@ class Modes:
     def sorted(self, key):
         return Modes(modes=sorted(self.modes, key=key))
 
+    @property
+    def n_effs(self):
+        return np.array([mode.n_eff for mode in self.modes])
+
 
 def compute_modes(
     basis_epsilon_r,

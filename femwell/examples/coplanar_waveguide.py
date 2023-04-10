@@ -9,8 +9,8 @@ import shapely.ops
 from shapely.geometry import LineString, box
 from skfem import Basis, ElementTriP0, Mesh
 
+from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import calculate_hfield, compute_modes, plot_mode
 
 
 def mesh_waveguide(filename, wsim, hclad, hsi, wcore, hcore):
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     basis0.plot(np.real(epsilon), colorbar=True).show()
 
     conductors = ["isolator2___isolator"]
-    lams, basis, xs = compute_modes(
+    modes = compute_modes(
         basis0,
         epsilon,
         wavelength=scipy.constants.speed_of_light / frequency * 1e3,
@@ -117,10 +117,9 @@ if __name__ == "__main__":
         num_modes=len(conductors),
         metallic_boundaries=True,
     )
-    print("propagation constants", 1 / lams)
+    print("propagation constants", 1 / modes.n_effs)
 
-    fig, axs = plot_mode(basis, np.real(xs[0]), plot_vectors=True)
-    plt.show()
+    modes[0].show(modes[0].E.real, plot_vectors=True)
 
     from skfem import *
     from skfem.helpers import *
@@ -129,20 +128,12 @@ if __name__ == "__main__":
     def current_form(w):
         return inner(np.array([w.n[1], -w.n[0]]), w.H)
 
-    currents = np.zeros((len(conductors), len(lams)))
+    currents = np.zeros((len(conductors), len(modes)))
 
-    for mode_i in range(len(lams)):
-        xbs = calculate_hfield(
-            basis,
-            xs[mode_i],
-            lams[mode_i] * (2 * np.pi / (scipy.constants.speed_of_light / frequency * 1e3)),
-            omega=2 * np.pi * frequency * 1e-3,
-        )
+    for mode_i, mode in enumerate(modes):
+        mode.show(mode.H.real, plot_vectors=True)
 
-        fig, axs = plot_mode(basis, np.real(xbs), plot_vectors=True)
-        plt.show()
-
-        (ht, ht_basis), (hz, hz_basis) = basis.split(xbs)
+        (ht, ht_basis), (hz, hz_basis) = mode.basis.split(mode.H)
         for conductors_i, conductor in enumerate(conductors):
             facet_basis = ht_basis.boundary(facets=mesh.boundaries[conductor])
             current = abs(current_form.assemble(facet_basis, H=facet_basis.interpolate(ht)))
