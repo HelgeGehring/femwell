@@ -111,11 +111,22 @@ class Mode:
         return calculate_overlap(basis, self.E, self.H, basis, self.E, self.H)
 
     def calculate_confinement_factor(self, elements):
-        return confinement_factor(
-            self.basis_epsilon_r.with_elements(elements),
-            self.epsilon_r,
-            self.basis.with_elements(elements),
-            self.E,
+        @Functional
+        def factor(w):
+            return np.sqrt(w["epsilon"]) * (
+                dot(np.conj(w["E"][0]), w["E"][0]) + np.conj(w["E"][1]) * w["E"][1]
+            )
+
+        basis = self.basis.with_elements(elements)
+        basis_epsilon_r = self.basis_epsilon_r.with_elements(elements)
+        return (
+            speed_of_light
+            * epsilon_0
+            * factor.assemble(
+                basis,
+                E=basis.interpolate(self.E),
+                epsilon=basis_epsilon_r.interpolate(self.epsilon_r),
+            )
         )
 
     def calculate_pertubated_neff(self, delta_epsilon):
@@ -389,25 +400,6 @@ def calculate_coupling_coefficient(basis_epsilon, delta_epsilon, basis, E_i, E_j
         E_i=basis.interpolate(E_i),
         E_j=basis.interpolate(E_j),
         delta_epsilon=basis_epsilon.interpolate(delta_epsilon),
-    )
-
-
-def confinement_factor(basis_epsilon, epsilon, basis, E):
-    @Functional
-    def factor(w):
-        return (
-            (
-                np.sqrt(w["epsilon"])
-                * (dot(np.conj(w["E"][0]), w["E"][0]) + np.conj(w["E"][1]) * w["E"][1])
-            )
-            * speed_of_light
-            * epsilon_0
-        )
-
-    return factor.assemble(
-        basis,
-        E=basis.interpolate(E),
-        epsilon=basis_epsilon.interpolate(epsilon),
     )
 
 
