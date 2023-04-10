@@ -1,7 +1,5 @@
 """Waveguide analysis based on https://doi.org/10.1080/02726340290084012."""
 
-import warnings
-
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.constants
@@ -25,11 +23,6 @@ from skfem import (
 from skfem.helpers import cross, curl, dot, grad, inner
 from skfem.utils import solver_eigen_scipy
 
-warnings.warn(
-    "femwell.maxwell.waveguide will replace this module with version 0.1.0.",
-    DeprecationWarning,
-)
-
 
 def compute_modes(
     basis_epsilon_r,
@@ -45,6 +38,12 @@ def compute_modes(
     normalize=True,
     cache_path=None,
 ):
+    import warnings
+
+    warnings.warn(
+        "femwell.maxwell.waveguide will replace this module with version 0.1.0.",
+        DeprecationWarning,
+    )
     if solver == "scipy":
         solver = solver_eigen_scipy
     elif solver == "slepc":
