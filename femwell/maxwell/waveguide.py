@@ -183,6 +183,7 @@ def compute_modes(
     basis_epsilon_r,
     epsilon_r,
     wavelength,
+    *,
     mu_r=1,
     num_modes=1,
     order=1,
