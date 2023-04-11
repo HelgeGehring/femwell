@@ -11,6 +11,11 @@ def solver_dense(**kwargs):
             idx = np.abs(ks - kwargs["sigma"]).argsort()
             ks = ks[idx]
             xs = xs[:, idx]
+
+        if kwargs["which"] == "LR":
+            idx = np.real(ks - kwargs["sigma"]).argsort()
+            ks = ks[idx]
+            xs = xs[:, idx]
         return ks, xs
 
     return solver
