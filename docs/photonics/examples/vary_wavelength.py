@@ -28,8 +28,8 @@ from skfem import Basis, ElementTriP0
 from skfem.io.meshio import from_meshio
 from tqdm import tqdm
 
+from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import calculate_te_frac, compute_modes
 
 # -
 
@@ -79,7 +79,7 @@ mesh.draw().show()
 wavelengths = np.linspace(1.2, 1.9, 20)
 num_modes = 2
 
-all_lams = np.zeros((wavelengths.shape[0], num_modes))
+all_neffs = np.zeros((wavelengths.shape[0], num_modes))
 all_te_fracs = np.zeros((wavelengths.shape[0], num_modes))
 for i, wavelength in enumerate(tqdm(wavelengths)):
     basis0 = Basis(mesh, ElementTriP0())
@@ -91,11 +91,9 @@ for i, wavelength in enumerate(tqdm(wavelengths)):
     }.items():
         epsilon[basis0.get_dofs(elements=subdomain)] = n**2
 
-    lams, basis, xs = compute_modes(
-        basis0, epsilon, wavelength=wavelength, num_modes=num_modes, normalize=False
-    )
-    all_lams[i] = np.real(lams)
-    all_te_fracs[i, :] = [calculate_te_frac(basis, xs[idx]) for idx in range(num_modes)]
+    modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=num_modes)
+    all_neffs[i] = np.real([mode.n_eff for mode in modes])
+    all_te_fracs[i, :] = [mode.te_fraction for mode in modes]
 # -
 
 # Now we only look at the real part of the effective refractive indices and plot all the dispersion relation,
@@ -103,21 +101,21 @@ for i, wavelength in enumerate(tqdm(wavelengths)):
 # So convenient!
 
 # + tags=["hide-input"]
-all_lams = np.real(all_lams)
+all_neffs = np.real(all_neffs)
 
 fig, axs = plt.subplots(1, 3)
 
 axs[0].set_xlabel("Wavelength / µm")
 axs[0].set_ylabel("Effective refractive index")
-axs[0].set_ylim(1.444, np.max(all_lams) + 0.1 * (np.max(all_lams) - 1.444))
-for lams, te_fracs in zip(all_lams.T, all_te_fracs.T):
+axs[0].set_ylim(1.444, np.max(all_neffs) + 0.1 * (np.max(all_neffs) - 1.444))
+for lams, te_fracs in zip(all_neffs.T, all_te_fracs.T):
     axs[0].plot(wavelengths, lams)
     sc = axs[0].scatter(wavelengths, lams, c=te_fracs, cmap="cool", vmin=0, vmax=1)
 
 
 axs[1].set_xlabel("Wavelength / µm")
 axs[1].set_ylabel("Group velocity $v_g$")
-for lams, te_fracs in zip(all_lams.T, all_te_fracs.T):
+for lams, te_fracs in zip(all_neffs.T, all_te_fracs.T):
     fit = Polynomial.fit(wavelengths, lams, deg=4)
     y = speed_of_light / (lams - wavelengths * fit.deriv(1)(wavelengths))
     axs[1].plot(wavelengths, y)
@@ -125,7 +123,7 @@ for lams, te_fracs in zip(all_lams.T, all_te_fracs.T):
 
 axs[2].set_xlabel("Wavelength / µm")
 axs[2].set_ylabel("Group velocity dispersion coefficient $D$")
-for lams, te_fracs in zip(all_lams.T, all_te_fracs.T):
+for lams, te_fracs in zip(all_neffs.T, all_te_fracs.T):
     fit = Polynomial.fit(wavelengths, lams, deg=4)
     y = wavelengths**2 * fit.deriv(2)(wavelengths)
     axs[2].plot(wavelengths, y)

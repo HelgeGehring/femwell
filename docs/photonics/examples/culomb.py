@@ -27,8 +27,8 @@ from skfem.io import from_meshio
 from tqdm import tqdm
 
 from femwell.culomb import solve_coulomb
+from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import compute_modes
 
 # -
 
@@ -108,8 +108,8 @@ for voltage in tqdm(voltages):
     epsilon **= 2
     # basis_epsilon_r.plot(epsilon, colorbar=True).show()
 
-    neffs, basis_modes, modes = compute_modes(basis_epsilon_r, epsilon, 1.55, 1, 1, order=1)
-    voltages_neffs.append(neffs[0])
+    modes = compute_modes(basis_epsilon_r, epsilon, wavelength=1.55, order=1)
+    voltages_neffs.append(modes[0].n_eff)
 
     # from mode_solver import plot_mode
     # plot_mode(basis_modes, modes[0])

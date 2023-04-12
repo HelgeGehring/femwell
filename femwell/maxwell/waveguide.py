@@ -1,8 +1,13 @@
 """Waveguide analysis based on https://doi.org/10.1080/02726340290084012."""
+from dataclasses import dataclass
+from functools import cached_property
+from typing import List
+
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.constants
 import scipy.sparse.linalg
+from numpy.typing import NDArray
 from scipy.constants import epsilon_0, speed_of_light
 from skfem import (
     Basis,
@@ -24,10 +29,166 @@ from skfem.helpers import cross, curl, dot, grad, inner
 from skfem.utils import solver_eigen_scipy
 
 
+@dataclass(frozen=True)
+class Mode:
+    frequency: float
+    """Frequency of the light"""
+    k: float
+    """Propagation constant of the mode"""
+    basis_epsilon_r: Basis
+    """Basis used for epsilon_r"""
+    epsilon_r: NDArray
+    """Epsilon_r with which the mode was calculated"""
+    basis: Basis
+    """Basis on which the mode was calculated and E/H are defined"""
+    E: NDArray
+    """Electric field of the mode"""
+    H: NDArray
+    """Magnetic field of the mode"""
+
+    @property
+    def omega(self):
+        """Angular frequency of the light"""
+        return 2 * np.pi * self.frequency
+
+    @property
+    def k0(self):
+        """Vacuum propagation constant of the light"""
+        return self.omega / speed_of_light
+
+    @property
+    def wavelength(self):
+        """Vacuum wavelength of the light"""
+        return speed_of_light / self.frequency
+
+    @property
+    def n_eff(self):
+        """Effective refractive index of the mode"""
+        return self.k / self.k0
+
+    @cached_property
+    def te_fraction(self):
+        """TE-fraction of the mode"""
+
+        @Functional
+        def ex(w):
+            return np.abs(w.E[0][0]) ** 2
+
+        @Functional
+        def ey(w):
+            return np.abs(w.E[0][1]) ** 2
+
+        ex_sum = ex.assemble(self.basis, E=self.basis.interpolate(self.E))
+        ey_sum = ey.assemble(self.basis, E=self.basis.interpolate(self.E))
+
+        return ex_sum / (ex_sum + ey_sum)
+
+    @cached_property
+    def tm_fraction(self):
+        """TM-fraction of the mode"""
+
+        return 1 - self.te_fraction
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(k: {self.k}, n_eff:{self.n_eff})"
+
+    def calculate_overlap(self, mode, elements=None):
+        return calculate_overlap(self.basis, self.E, self.H, mode.basis, mode.E, mode.H)
+
+    def calculate_coupling_coefficient(self, mode, delta_epsilon):
+        @Functional(dtype=complex)
+        def overlap(w):
+            return w["delta_epsilon"] * (
+                dot(np.conj(w["E_i"][0]), w["E_j"][0]) + np.conj(w["E_i"][1]) * w["E_j"][1]
+            )
+
+        return overlap.assemble(
+            self.basis,
+            E_i=self.basis.interpolate(self.E),
+            E_j=self.basis.interpolate(mode.E),
+            delta_epsilon=self.basis_epsilon_r.interpolate(delta_epsilon),
+        )
+
+    def calculate_propagation_loss(self, distance):
+        return -20 / np.log(10) * self.k0 * np.imag(self.n_eff) * distance
+
+    def calculate_power(self, elements=None):
+        if not elements:
+            basis = self.basis
+        else:
+            basis = self.basis.with_elements(elements)
+        return calculate_overlap(basis, self.E, self.H, basis, self.E, self.H)
+
+    def calculate_confinement_factor(self, elements):
+        @Functional
+        def factor(w):
+            return np.sqrt(w["epsilon"]) * (
+                dot(np.conj(w["E"][0]), w["E"][0]) + np.conj(w["E"][1]) * w["E"][1]
+            )
+
+        basis = self.basis.with_elements(elements)
+        basis_epsilon_r = self.basis_epsilon_r.with_elements(elements)
+        return (
+            speed_of_light
+            * epsilon_0
+            * factor.assemble(
+                basis,
+                E=basis.interpolate(self.E),
+                epsilon=basis_epsilon_r.interpolate(self.epsilon_r),
+            )
+        )
+
+    def calculate_pertubated_neff(self, delta_epsilon):
+        return (
+            self.n_eff
+            + self.calculate_coupling_coefficient(self, delta_epsilon)
+            * scipy.constants.epsilon_0
+            * scipy.constants.speed_of_light
+            * 0.5
+        )
+
+    def plot(self, field, plot_vectors=False, colorbar=True, direction="y", title="E"):
+        return plot_mode(
+            self.basis,
+            field,
+            plot_vectors=plot_vectors,
+            colorbar=colorbar,
+            title=title,
+            direction=direction,
+        )
+
+    def show(self, field, **kwargs):
+        self.plot(field=field, **kwargs)
+        plt.show()
+
+
+@dataclass(frozen=True)
+class Modes:
+    modes: List
+
+    def __getitem__(self, idx) -> Mode:
+        return self.modes[idx]
+
+    def __len__(self) -> int:
+        return len(self.modes)
+
+    def __repr__(self) -> str:
+        modes = "\n\t" + "\n\t".join(repr(mode) for mode in self.modes) + "\n"
+        return f"{self.__class__.__name__}(modes=({modes}))"
+
+    def sorted(self, key):
+        return Modes(modes=sorted(self.modes, key=key))
+
+    @property
+    def n_effs(self):
+        return np.array([mode.n_eff for mode in self.modes])
+
+
 def compute_modes(
     basis_epsilon_r,
     epsilon_r,
     wavelength,
+    *,
     mu_r=1,
     num_modes=1,
     order=1,
@@ -35,9 +196,7 @@ def compute_modes(
     radius=np.inf,
     n_guess=None,
     solver="slepc",
-    normalize=True,
-    cache_path=None,
-):
+) -> Modes:
     if solver == "scipy":
         solver = solver_eigen_scipy
     elif solver == "slepc":
@@ -46,11 +205,6 @@ def compute_modes(
         solver = solver_eigen_slepc
     else:
         raise ValueError("`solver` must either be `scipy` or `slepc`")
-
-    if cache_path:
-        from femwell.solver import solver_cached
-
-        solver = solver_cached(solver, cache_path)
 
     k0 = 2 * np.pi / wavelength
 
@@ -69,16 +223,16 @@ def compute_modes(
         epsilon = w.epsilon * (1 + w.x[0] / radius) ** 2
 
         return (
-            1 / mu_r * curl(e_t) * curl(v_t)
-            - k0**2 * epsilon * dot(e_t, v_t)
+            1 / mu_r * curl(e_t) * curl(v_t) / k0**2
+            - epsilon * dot(e_t, v_t)
             + 1 / mu_r * dot(grad(e_z), v_t)
             + epsilon * inner(e_t, grad(v_z))
-            - epsilon * e_z * v_z
+            - epsilon * e_z * v_z * k0**2
         )
 
     @BilinearForm(dtype=epsilon_r.dtype)
     def bform(e_t, e_z, v_t, v_z, w):
-        return -1 / mu_r * dot(e_t, v_t)
+        return -1 / mu_r * dot(e_t, v_t) / k0**2
 
     A = aform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
     B = bform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
@@ -90,7 +244,12 @@ def compute_modes(
 
     if metallic_boundaries:
         lams, xs = solve(
-            *condense(-A, -B, D=basis.get_dofs(), x=basis.zeros(dtype=complex)),
+            *condense(
+                -A,
+                -B,
+                D=basis.get_dofs(None if metallic_boundaries is True else metallic_boundaries),
+                x=basis.zeros(dtype=complex),
+            ),
             solver=solver(k=num_modes, sigma=sigma),
         )
     else:
@@ -100,26 +259,37 @@ def compute_modes(
             solver=solver(k=num_modes, sigma=sigma),
         )
 
-    idx = np.abs(np.real(lams)).argsort()[::-1]
-    lams = lams[idx]
-    xs = xs[:, idx]
-
-    xs = xs.T
-    xs[:, basis.split_indices()[1]] /= 1j * np.sqrt(
-        lams[:, np.newaxis]
+    xs[basis.split_indices()[1], :] /= 1j * np.sqrt(
+        lams[np.newaxis, :] / k0**4
     )  # undo the scaling E_3,new = beta * E_3
 
-    if normalize:
-        for i, lam in enumerate(lams):
-            H = calculate_hfield(
-                basis, xs[i], np.sqrt(lam), omega=k0 * scipy.constants.speed_of_light
+    hs = []
+    for i, lam in enumerate(lams):
+        H = calculate_hfield(
+            basis, xs[:, i], np.sqrt(lam), omega=k0 * scipy.constants.speed_of_light
+        )
+        power = calculate_overlap(basis, xs[:, i], H, basis, xs[:, i], H)
+        xs[:, i] /= np.sqrt(power)
+        H /= np.sqrt(power)
+        hs.append(H)
+
+    return Modes(
+        modes=[
+            Mode(
+                frequency=speed_of_light / wavelength,
+                k=np.sqrt(lams[i]),
+                basis_epsilon_r=basis_epsilon_r,
+                epsilon_r=epsilon_r,
+                basis=basis,
+                E=xs[:, i],
+                H=hs[i],
             )
-            xs[i] /= np.sqrt(calculate_overlap(basis, xs[i], H, basis, xs[i], H))
+            for i in range(num_modes)
+        ]
+    )
 
-    return np.sqrt(lams)[:num_modes] / k0, basis, xs[:num_modes]
 
-
-def calculate_hfield(basis, xs, beta, omega=1):
+def calculate_hfield(basis, xs, beta, omega):
     @BilinearForm(dtype=np.complex64)
     def aform(e_t, e_z, v_t, v_z, w):
         return (
@@ -222,55 +392,6 @@ def calculate_scalar_product(basis_i, E_i, basis_j, H_j):
     return overlap.assemble(basis_i, E_i=basis_i.interpolate(E_i))
 
 
-def calculate_coupling_coefficient(basis_epsilon, delta_epsilon, basis, E_i, E_j):
-    @Functional(dtype=complex)
-    def overlap(w):
-        return w["delta_epsilon"] * (
-            dot(np.conj(w["E_i"][0]), w["E_j"][0]) + np.conj(w["E_i"][1]) * w["E_j"][1]
-        )
-
-    return overlap.assemble(
-        basis,
-        E_i=basis.interpolate(E_i),
-        E_j=basis.interpolate(E_j),
-        delta_epsilon=basis_epsilon.interpolate(delta_epsilon),
-    )
-
-
-def confinement_factor(basis_epsilon, epsilon, basis, E):
-    @Functional
-    def factor(w):
-        return (
-            (
-                np.sqrt(w["epsilon"])
-                * (dot(np.conj(w["E"][0]), w["E"][0]) + np.conj(w["E"][1]) * w["E"][1])
-            )
-            * speed_of_light
-            * epsilon_0
-        )
-
-    return factor.assemble(
-        basis,
-        E=basis.interpolate(E),
-        epsilon=basis_epsilon.interpolate(epsilon),
-    )
-
-
-def calculate_te_frac(basis, x):
-    @Functional
-    def ex(w):
-        return np.abs(w.E[0][0]) ** 2
-
-    @Functional
-    def ey(w):
-        return np.abs(w.E[0][1]) ** 2
-
-    ex_sum = ex.assemble(basis, E=basis.interpolate(x))
-    ey_sum = ey.assemble(basis, E=basis.interpolate(x))
-
-    return ex_sum / (ex_sum + ey_sum)
-
-
 def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title="E", direction="y"):
     from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -326,24 +447,6 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title="E", directi
     return fig, axs
 
 
-def argsort_modes_by_power_in_elements(mode_basis, E_modes, H_modes, elements):
-    """Sorts the modes in the "modes" list by the power contained
-    within the given elements.
-
-    Returns:
-        the indices sorted from highest to lowest power.
-    """
-
-    selection_basis = Basis(mode_basis.mesh, mode_basis.elem, elements=elements)
-
-    overlaps = [
-        calculate_overlap(selection_basis, E_f, H_f, selection_basis, E_f, H_f)
-        for E_f, H_f in zip(E_modes, H_modes)
-    ]
-
-    return np.argsort(np.abs(overlaps))[::-1]
-
-
 if __name__ == "__main__":
     from collections import OrderedDict
 
@@ -392,7 +495,8 @@ if __name__ == "__main__":
 
     mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=0.2)
 
-    mesh = Mesh.load("mesh.msh")
+    scale = 1e0
+    mesh = Mesh.load("mesh.msh").scaled(scale)
     basis = Basis(mesh, ElementTriN2() * ElementTriP2())
     basis0 = basis.with_element(ElementTriP0())
     epsilon = basis0.zeros(dtype=complex)
@@ -401,46 +505,29 @@ if __name__ == "__main__":
     epsilon[basis0.get_dofs(elements="box")] = 1.444**2
     # basis0.plot(epsilon, colorbar=True).show()
 
-    lams, basis, xs = compute_modes(
-        basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=6, order=2, radius=3, solver="scipy"
+    modes = compute_modes(
+        basis0,
+        epsilon,
+        wavelength=1.55 * scale,
+        mu_r=1,
+        num_modes=6,
+        order=2,
+        radius=3 * scale,
     )
-    print(lams)
+    print(modes)
+    print(modes[0].te_fraction)
 
-    plot_mode(basis, np.real(xs[0]))
-    plt.show()
-    plot_mode(basis, np.real(xs[1]))
-    plt.show()
-    plot_mode(basis, np.imag(xs[0]))
-    plt.show()
+    modes[0].show(np.real(modes[0].E))
+    modes[0].show(np.imag(modes[0].E))
 
-    xbs = calculate_hfield(basis, xs[0], lams[0] * (2 * np.pi / 1.55))
+    modes[0].show(np.real(modes[0].H))
+    modes[0].show(np.imag(modes[0].H))
 
-    plot_mode(basis, np.real(xbs))
-    plt.show()
-    plot_mode(basis, np.imag(xbs))
-    plt.show()
+    integrals = np.zeros((len(modes),) * 2, dtype=complex)
 
-    integrals = np.zeros((len(lams),) * 2, dtype=complex)
-    H_modes = list()
-
-    for i in range(len(lams)):
-        for j in range(len(lams)):
-            E_i = xs[i]
-            E_j = xs[j]
-            H_i = calculate_hfield(
-                basis,
-                E_i,
-                lams[i] * (2 * np.pi / 1.55),
-                omega=2 * np.pi / 1.55 * scipy.constants.speed_of_light,
-            )
-            H_j = calculate_hfield(
-                basis,
-                E_j,
-                lams[j] * (2 * np.pi / 1.55),
-                omega=2 * np.pi / 1.55 * scipy.constants.speed_of_light,
-            )
-            integrals[i, j] = calculate_overlap(basis, E_i, H_i, basis, E_j, H_j)
-        H_modes.append(H_i)
+    for i in range(len(modes)):
+        for j in range(len(modes)):
+            integrals[i, j] = modes[i].calculate_overlap(modes[j])
 
     plt.imshow(np.real(integrals))
     plt.colorbar()
@@ -448,32 +535,6 @@ if __name__ == "__main__":
 
     # Create basis to select a certain simulation extent
     def sel_fun(x):
-        print(x)
         return (x[0] < 0) * (x[0] > -1) * (x[1] > 0) * (x[1] < 0.5)
 
-    selection_basis = Basis(
-        basis.mesh,
-        basis.elem,
-        # elements = lambda x: x[0] < 0 and x[0] > -1 and x[1] > 0 and x[1] < 0.5
-        elements=lambda x: sel_fun(x),
-    )
-
-    print(
-        select_mode_by_overlap(
-            mode_basis=basis,
-            E_modes=xs,
-            H_modes=H_modes,
-            elements_list=["core"],
-            selection_basis=None,
-        )
-    )
-
-    print(
-        select_mode_by_overlap(
-            mode_basis=basis,
-            E_modes=xs,
-            H_modes=H_modes,
-            elements_list=None,
-            selection_basis=selection_basis,
-        )
-    )
+    print(modes.sorted(lambda mode: mode.calculate_power(elements=sel_fun)))

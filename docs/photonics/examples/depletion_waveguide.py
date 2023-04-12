@@ -23,8 +23,8 @@ import shapely
 from skfem import Basis, ElementTriP0
 from skfem.io.meshio import from_meshio
 
+from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import compute_modes
 from femwell.pn_analytical import index_pn_junction, k_to_alpha_dB
 
 # -
@@ -106,8 +106,8 @@ voltages = [0, -1, -2, -3, -4]
 neff_vs_V = []
 for V in voltages:
     basis0, epsilon = define_index(mesh, V, xpn, NA, ND, wavelength)
-    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=1, order=2)
-    neff_vs_V.append(lams)
+    modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=1, order=2)
+    neff_vs_V.append(modes[0].n_eff)
 # -
 
 # + tags=["hide-input"]

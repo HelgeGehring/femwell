@@ -8,8 +8,8 @@ from shapely.geometry import Polygon
 from skfem import Basis, ElementTriP0, ElementVector, Mesh
 from skfem.io.meshio import from_meshio
 
+from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import compute_modes, plot_mode
 
 
 def mesh_waveguide(filename, wsim, hclad, hbox, wcore, hcore):
@@ -66,7 +66,6 @@ if __name__ == "__main__":
     epsilon[basis0.get_dofs(elements="box")] = 1.444**2
     basis0.plot(epsilon, colorbar=True).show()
 
-    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=5)
+    modes = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=5)
 
-    fig, axs = plot_mode(basis, xs[0], colorbar=False)
-    plt.show()
+    modes[0].show(modes[0].E.real)

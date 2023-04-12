@@ -156,7 +156,6 @@ if __name__ == "__main__":
     mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=0.4)
 
     mesh = Mesh.load("mesh.msh")
-    print(mesh.boundaries)
 
     currents = np.linspace(0.007, 10e-3, 10) / polygons["heater"].area
     neffs = []
@@ -185,7 +184,7 @@ if __name__ == "__main__":
         # basis.plot(temperature, colorbar=True)
         # plt.show()
 
-        from femwell.mode_solver import compute_modes, plot_mode
+        from femwell.maxwell.waveguide import compute_modes
 
         temperature0 = basis0.project(basis.interpolate(temperature))
         epsilon = basis0.zeros() + (1.444 + 1.00e-5 * temperature0) ** 2
@@ -194,14 +193,11 @@ if __name__ == "__main__":
         ) ** 2
         # basis0.plot(epsilon, colorbar=True).show()
 
-        lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.55, mu_r=1, num_modes=5)
+        modes = compute_modes(basis0, epsilon, wavelength=1.55, num_modes=5)
 
-        print(lams)
+        # modes[0].show(modes[0].E)
 
-        # plot_mode(basis, xs[0])
-        # plt.show()
-
-        neffs.append(np.real(lams[0]))
+        neffs.append(np.real(modes[0].n_eff))
 
     print(f"Phase shift: {2 * np.pi / 1.55 * (neffs[-1] - neffs[0]) * 320}")
     plt.xlabel("Power")

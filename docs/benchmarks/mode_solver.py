@@ -30,8 +30,8 @@ import shapely.affinity
 from skfem import Basis, ElementTriP0
 from skfem.io.meshio import from_meshio
 
+from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import compute_modes
 
 core_width = 3
 core_thickness = 1
@@ -86,9 +86,9 @@ for slab_thickness in slab_thicknesses:
     for subdomain, n in {"core": 3.44, "box": 3.40, "clad": 1}.items():
         epsilon[basis0.get_dofs(elements=subdomain)] = n**2
 
-    lams, basis, xs = compute_modes(basis0, epsilon, wavelength=1.15, num_modes=1, order=2)
+    modes = compute_modes(basis0, epsilon, wavelength=1.15, num_modes=1, order=2)
 
-    neff_values_femwell.append(np.real(lams[0]))
+    neff_values_femwell.append(np.real(modes[0].n_eff))
 
 pd.DataFrame(
     {

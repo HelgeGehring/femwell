@@ -28,8 +28,8 @@ from shapely.ops import clip_by_rect
 from skfem import Basis, ElementDG, ElementTriP1
 from skfem.io.meshio import from_meshio
 
+from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import compute_modes, plot_mode
 from femwell.visualization import plot_domains
 
 # %% [markdown]
@@ -105,13 +105,13 @@ plt.show()
 # %%
 wavelength = 1.55
 
-lams, basis, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=1, order=1)
-for i, lam in enumerate(lams):
+modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=1, order=1)
+for mode in modes:
     print(
-        f"Effective refractive index: {lam:.12f}, "
-        f"Loss: {-20/np.log(10)*2*np.pi/wavelength*np.imag(lam):4f} / dB/um"
+        f"Effective refractive index: {mode.n_eff:.12f}, "
+        f"Loss: {mode.calculate_propagation_loss(distance=1):4f} / dB/um"
     )
-    plot_mode(basis, xs[i].real, colorbar=True, direction="x")
+    mode.plot(mode.E.real, colorbar=True, direction="x")
     plt.show()
 
 # %%

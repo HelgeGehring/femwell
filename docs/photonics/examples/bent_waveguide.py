@@ -19,20 +19,14 @@ from collections import OrderedDict
 
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.constants
 from shapely import box
 from shapely.ops import clip_by_rect
 from skfem import Basis, ElementDG, ElementTriP1
 from skfem.io.meshio import from_meshio
 from tqdm import tqdm
 
+from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import (
-    calculate_hfield,
-    calculate_overlap,
-    compute_modes,
-    plot_mode,
-)
 
 # -
 
@@ -93,14 +87,8 @@ basis0.plot(epsilon.imag, shading="gouraud", colorbar=True).show()
 # and for mode overlap calculations between straight and bent waveguides.
 
 # +
-lams_straight, basis_straight, xs_straight = compute_modes(
+modes_straight = compute_modes(
     basis0, epsilon, wavelength=wavelength, num_modes=1, order=2, radius=np.inf
-)
-H_straight = calculate_hfield(
-    basis_straight,
-    xs_straight[0],
-    2 * np.pi / wavelength * lams_straight[0],
-    omega=2 * np.pi / wavelength * scipy.constants.speed_of_light,
 )
 # -
 
@@ -112,9 +100,9 @@ H_straight = calculate_hfield(
 radiuss = np.linspace(40, 5, 21)
 radiuss_lams = []
 overlaps = []
-lam_guess = lams_straight[0]
+lam_guess = modes_straight[0].n_eff
 for radius in tqdm(radiuss):
-    lams, basis, xs = compute_modes(
+    modes = compute_modes(
         basis0,
         epsilon,
         wavelength=wavelength,
@@ -124,18 +112,10 @@ for radius in tqdm(radiuss):
         n_guess=lam_guess,
         solver="scipy",
     )
-    lam_guess = lams[0]
-    H_bent = calculate_hfield(
-        basis_straight,
-        xs[0],
-        2 * np.pi / wavelength * lams[0],
-        omega=2 * np.pi / wavelength * scipy.constants.speed_of_light,
-    )
-    radiuss_lams.append(lams[0])
+    lam_guess = modes[0].n_eff
+    radiuss_lams.append(modes[0].n_eff)
 
-    overlaps.append(
-        calculate_overlap(basis_straight, xs[0], H_bent, basis_straight, xs_straight[0], H_straight)
-    )
+    overlaps.append(modes_straight[0].calculate_overlap(modes[0]))
 # -
 
 # And now we plot it!
@@ -164,7 +144,7 @@ plt.show()
 # Here we show only the real part of the mode.
 
 # + tags=["hide-input"]
-for i, lam in enumerate(lams):
-    print(f"Effective refractive index: {lam:.14f}")
-    plot_mode(basis, xs[i].real, colorbar=True, direction="x")
+for mode in modes:
+    print(f"Effective refractive index: {mode.n_eff:.14f}")
+    mode.plot(mode.E.real, colorbar=True, direction="x")
     plt.show()

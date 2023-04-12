@@ -26,8 +26,8 @@ from skfem import Basis, ElementTriP0, LinearForm
 from skfem.io import from_meshio
 from tqdm import tqdm
 
+from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
-from femwell.mode_solver import calculate_coupling_coefficient, compute_modes, plot_mode
 from femwell.thermal_transient import solve_thermal_transient
 
 # Simulating the TiN TOPS heater in https://doi.org/10.1364/OE.27.010456
@@ -163,17 +163,13 @@ plt.show()
 
 epsilon_0 = basis0.zeros() + 1.444**2
 epsilon_0[basis0.get_dofs(elements="core")] = 3.4777**2
-lams_0, basis_modes_0, xs_0 = compute_modes(
-    basis0, epsilon_0, wavelength=wavelength, mu_r=1, num_modes=1, solver="slepc"
-)
+modes_0 = compute_modes(basis0, epsilon_0, wavelength=wavelength, num_modes=1, solver="slepc")
 
 neffs = []
 neffs_approximated = []
 for temperature in tqdm(temperatures):
     # basis.plot(temperature, vmin=0, vmax=np.max(temperatures))
     # plt.show()
-
-    from femwell.mode_solver import compute_modes
 
     temperature0 = basis0.project(basis.interpolate(temperature))
     epsilon = basis0.zeros() + (1.444 + 1.00e-5 * temperature0) ** 2
@@ -182,27 +178,14 @@ for temperature in tqdm(temperatures):
     ) ** 2
     # basis0.plot(epsilon, colorbar=True).show()
 
-    lams, basis_modes, xs = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=1)
+    modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=1)
 
     # from femwell.mode_solver import plot_mode
     # plot_mode(basis_modes, xs[0])
     # plt.show()
 
-    neffs.append(np.real(lams[0]))
-    neffs_approximated.append(
-        np.real(
-            lams_0[0]
-            + calculate_coupling_coefficient(
-                basis0,
-                (epsilon - epsilon_0) * scipy.constants.epsilon_0,
-                basis_modes_0,
-                xs_0[0],
-                xs_0[0],
-            )
-            * scipy.constants.speed_of_light
-            * 0.5
-        )
-    )
+    neffs.append(np.real(modes[0].n_eff))
+    neffs_approximated.append(np.real(modes_0[0].calculate_pertubated_neff(epsilon - epsilon_0)))
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
@@ -211,10 +194,12 @@ ax.set_ylabel("Current / mA")
 ax.plot(times * 1e6, current(times) * 1000, "b-o")
 ax2 = ax.twinx()
 ax2.set_ylabel("Phase shift")
-ax2.plot(times * 1e6, 2 * np.pi / wavelength * (neffs - lams_0[0]) * 320, "r-o", label="Exact")
+ax2.plot(
+    times * 1e6, 2 * np.pi / wavelength * (neffs - modes_0[0].n_eff) * 320, "r-o", label="Exact"
+)
 ax2.plot(
     times * 1e6,
-    2 * np.pi / wavelength * (neffs_approximated - lams_0[0]) * 320,
+    2 * np.pi / wavelength * (neffs_approximated - modes_0[0].n_eff) * 320,
     "g-o",
     label="Approximation",
 )
