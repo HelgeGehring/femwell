@@ -2,6 +2,7 @@
 
 ## v0.1.0
 
+- Rewrite maxwell waveguide mode solver - now completely object oriented!
 - Start implementing schrödinger's equation
 - Start docs for schrödinger's equation
 - Add potential well
