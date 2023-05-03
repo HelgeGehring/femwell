@@ -1,27 +1,24 @@
 # Maxwell-equations
 
-Starting with the maxwell equations:
+Starting with the Maxwell equations:
 
 $$
 \begin{aligned} 
     &\nabla\cdot \left(\varepsilon\vec{\mathcal{E}}\right)
-    =
-    \rho
+    &=
+    &\, \, \rho
     \\
-    &
-    \nabla\cdot \left(\mu\vec{\mathcal{H}}\right)
-    =
-    0
+    &\nabla\cdot \left(\mu\vec{\mathcal{H}}\right)
+    &=
+    & \,\, 0
     \\
-    &
-    \nabla\times\vec{\mathcal{E}}
-    =
-    - \mu \frac{\partial \vec{\mathcal{H}}}{\partial t}
+    &\nabla\times\vec{\mathcal{E}}
+    &=
+    &- \mu \frac{\partial \vec{\mathcal{H}}}{\partial t}
     \\
-    &
-    \nabla\times\vec{\mathcal{H}}
-    =
-    \varepsilon\frac{\partial \vec{\mathcal{E}}}{\partial t} + \vec{J}
+    &\nabla\times\vec{\mathcal{H}}
+    &=
+    &\,\, \varepsilon\frac{\partial \vec{\mathcal{E}}}{\partial t} + \vec{J}
 \end{aligned}
 $$ (maxwell)
 
