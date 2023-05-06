@@ -12,7 +12,7 @@ from femwell.mesh import mesh_from_OrderedDict
 waveguide = shapely.box(0, 0, 10, 1)
 mesh = from_meshio(
     mesh_from_OrderedDict(
-        OrderedDict(waveguide=waveguide), resolutions={}, default_resolution_max=0.1
+        OrderedDict(waveguide=waveguide), resolutions={}, default_resolution_max=0.04
     )
 )
 
@@ -27,7 +27,15 @@ basis0.plot(epsilon_r.imag, shading="gouraud", colorbar=True)
 plt.show()
 
 mu_r = 1
-k0 = 4
+k0 = 10
+
+
+def h_m(y, b, m):
+    return np.sqrt((1 if m == 0 else 2) / b) * np.sin(m * np.pi * y / b)
+
+
+def gamma_m(b, m):
+    return np.sqrt((m * np.pi / b) ** 2 - k0**2)
 
 
 @BilinearForm(dtype=complex)
@@ -38,7 +46,7 @@ def maxwell(u, v, w):
 A = maxwell.assemble(basis, epsilon_r=basis0.interpolate(epsilon_r))
 B = basis.zeros(dtype=complex)
 dofs = basis.get_dofs(lambda x: x[0] == np.min(x[0]))
-B[dofs] = basis.project(lambda x: np.sin(np.pi * x[1]), dtype=complex)[dofs]
+B[dofs] = basis.project(lambda x: h_m(x[1], 1, 1), dtype=complex)[dofs]
 
 C = solve(
     *condense(
