@@ -12,22 +12,27 @@ from femwell.mesh import mesh_from_OrderedDict
 waveguide = shapely.box(0, 0, 10, 1)
 mesh = from_meshio(
     mesh_from_OrderedDict(
-        OrderedDict(waveguide=waveguide), resolutions={}, default_resolution_max=0.04
+        OrderedDict(waveguide=waveguide), resolutions={}, default_resolution_max=0.02
     )
 )
 
 basis = Basis(mesh, ElementTriP1())
 basis0 = basis.with_element(ElementTriP0())
 epsilon_r = basis0.zeros(dtype=complex) + 1
-dofs = basis0.get_dofs(elements=lambda x: x[0] > 5)
-epsilon_r[dofs] += basis0.project(lambda x: np.maximum(0, x[0] - 5) ** 2 * 0.05j, dtype=complex)[
+dofs = basis0.get_dofs(elements=lambda x: (x[0] > 4.48))  # *(x[1]>.5))
+epsilon_r[dofs] = 2**2
+dofs = basis0.get_dofs(elements=lambda x: (x[0] > 6))  # *(x[1]>.5))
+epsilon_r[dofs] = 1**2
+dofs = basis0.get_dofs(elements=lambda x: x[0] > 7)
+epsilon_r[dofs] += basis0.project(lambda x: np.maximum(0, x[0] - 7) ** 2 * 0.5j, dtype=complex)[
     dofs
 ]
 basis0.plot(epsilon_r.imag, shading="gouraud", colorbar=True)
 plt.show()
+input_basis = basis.boundary(lambda x: x[0] == np.min(x[0]))
 
 mu_r = 1
-k0 = 10
+k0 = 6
 
 
 def h_m(y, b, m):
@@ -35,7 +40,7 @@ def h_m(y, b, m):
 
 
 def gamma_m(b, m):
-    return np.sqrt((m * np.pi / b) ** 2 - k0**2)
+    return np.sqrt((m * np.pi / b) ** 2 - k0**2, dtype=complex)
 
 
 @BilinearForm(dtype=complex)
@@ -43,18 +48,37 @@ def maxwell(u, v, w):
     return 0.5 * (1 / w.epsilon_r * inner(grad(u), grad(v))) - k0**2 * inner(u, v)
 
 
+@BilinearForm(dtype=complex)
+def input_form(u, v, w):
+    return 0.5 * inner(
+        u,
+        np.sum([h_m(w.x[1], 1, m) * gamma_m(1, m) * inner(h_m(w.x[1], 1, m), v) for m in range(3)]),
+    )
+
+
+@LinearForm(dtype=complex)
+def input_form_rhs(u, w):
+    return -inner(h_m(w.x[1], 1, m=1), u)
+
+
+I = input_form.assemble(input_basis)
+print("I", I)
+Ir = input_form_rhs.assemble(input_basis)
+print("I", I)
+
 A = maxwell.assemble(basis, epsilon_r=basis0.interpolate(epsilon_r))
 B = basis.zeros(dtype=complex)
-dofs = basis.get_dofs(lambda x: x[0] == np.min(x[0]))
-B[dofs] = basis.project(lambda x: h_m(x[1], 1, 1), dtype=complex)[dofs]
+input_dofs = basis.get_dofs(lambda x: x[0] == np.min(x[0]))
+# B[input_dofs] = basis.project(lambda x: h_m(x[1], 1, 1), dtype=complex)[input_dofs]
 
 C = solve(
     *condense(
-        A,
+        A + I,
+        Ir,
         x=B,
         D=basis.get_dofs(
             {
-                lambda x: x[0] == np.min(x[0]),
+                # lambda x: x[0] == np.min(x[0]),
                 lambda x: x[1] == np.min(x[1]),
                 lambda x: x[1] == np.max(x[1]),
             }
@@ -63,7 +87,7 @@ C = solve(
     )
 )
 # C = solve(A,B)
-
-basis.plot(C.real, shading="gouraud", colorbar=True)
+C_abs = basis.project(np.abs(basis.interpolate(C)))
+basis.plot(C_abs, shading="gouraud", colorbar=True)
 plt.show()
 print(C)
