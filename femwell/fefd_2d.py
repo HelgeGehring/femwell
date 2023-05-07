@@ -9,10 +9,14 @@ from skfem.io import from_meshio
 
 from femwell.mesh import mesh_from_OrderedDict
 
+out = shapely.LineString(((6, 0), (6, 1)))
 waveguide = shapely.box(0, 0, 10, 1)
 mesh = from_meshio(
     mesh_from_OrderedDict(
-        OrderedDict(waveguide=waveguide), resolutions={}, default_resolution_max=0.02
+        OrderedDict(out=out, waveguide=waveguide),
+        resolutions={},
+        default_resolution_max=0.02,
+        filename="test.msh",
     )
 )
 
@@ -21,8 +25,8 @@ basis0 = basis.with_element(ElementTriP0())
 epsilon_r = basis0.zeros(dtype=complex) + 1
 dofs = basis0.get_dofs(elements=lambda x: (x[0] > 4.48))  # *(x[1]>.5))
 epsilon_r[dofs] = 2**2
-dofs = basis0.get_dofs(elements=lambda x: (x[0] > 6))  # *(x[1]>.5))
-epsilon_r[dofs] = 1**2
+# dofs = basis0.get_dofs(elements=lambda x: (x[0] > 6))  # *(x[1]>.5))
+# epsilon_r[dofs] = 1**2
 dofs = basis0.get_dofs(elements=lambda x: x[0] > 7)
 epsilon_r[dofs] += basis0.project(lambda x: np.maximum(0, x[0] - 7) ** 2 * 0.5j, dtype=complex)[
     dofs
@@ -30,6 +34,7 @@ epsilon_r[dofs] += basis0.project(lambda x: np.maximum(0, x[0] - 7) ** 2 * 0.5j,
 basis0.plot(epsilon_r.imag, shading="gouraud", colorbar=True)
 plt.show()
 input_basis = basis.boundary(lambda x: x[0] == np.min(x[0]))
+output_basis = basis.boundary("out")
 
 mu_r = 1
 k0 = 6
@@ -57,14 +62,12 @@ def input_form(u, v, w):
 
 
 @LinearForm(dtype=complex)
-def input_form_rhs(u, w):
-    return -inner(h_m(w.x[1], 1, m=1), u)
+def input_form_rhs(v, w):
+    return -2 * gamma_m(1, m=1) * inner(h_m(w.x[1], 1, m=1), v)
 
 
 I = input_form.assemble(input_basis)
-print("I", I)
 Ir = input_form_rhs.assemble(input_basis)
-print("I", I)
 
 A = maxwell.assemble(basis, epsilon_r=basis0.interpolate(epsilon_r))
 B = basis.zeros(dtype=complex)
@@ -87,7 +90,15 @@ C = solve(
     )
 )
 # C = solve(A,B)
-C_abs = basis.project(np.abs(basis.interpolate(C)))
+C_abs = basis.project(np.abs(basis.interpolate(C)) ** 2)
 basis.plot(C_abs, shading="gouraud", colorbar=True)
 plt.show()
-print(C)
+
+
+@Functional(dtype=complex)
+def coefficient(w):
+    return -inner(h_m(w.x[1], 1, m=w.m), w.H)
+
+
+print(np.abs(coefficient.assemble(input_basis, H=input_basis.interpolate(C), m=1)))
+print(np.abs(coefficient.assemble(output_basis, H=output_basis.interpolate(C), m=1)))
