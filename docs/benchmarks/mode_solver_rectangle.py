@@ -41,7 +41,8 @@ epsilons_paper = [
 ]
 boundaries = [["left", "right"], ["left", "right"], ["left", "top"], ["left", "top"]]
 neff_values_paper = [1.27627404, 2.65679692, 1.387926425, 2.761465320]
-neff_values_femwell = []
+neff_values_femwell_slepc = []
+neff_values_femwell_scipy = []
 
 polygons = OrderedDict(
     left=shapely.LineString(((0, 0), (0, 1))),
@@ -65,8 +66,18 @@ for epsilons, boundaries in zip(epsilons_paper, boundaries):
     modes = compute_modes(
         basis0, epsilon, wavelength=1.5, num_modes=1, order=2, metallic_boundaries=boundaries
     )
+    neff_values_femwell_slepc.append(np.real(modes[0].n_eff))
 
-    neff_values_femwell.append(np.real(modes[0].n_eff))
+    modes = compute_modes(
+        basis0,
+        epsilon,
+        wavelength=1.5,
+        num_modes=1,
+        order=2,
+        metallic_boundaries=boundaries,
+        solver="scipy",
+    )
+    neff_values_femwell_scipy.append(np.real(modes[0].n_eff))
 
 pd.DataFrame(
     {
@@ -74,18 +85,22 @@ pd.DataFrame(
             f"{epsilons['core']:.2f} / {epsilons['clad']:.2f}" for epsilons in epsilons_paper
         ],
         "reference value": (f"{n:.8f}" for n in neff_values_paper),
-        "calculated value": (f"{n:.8f}" for n in neff_values_femwell),
-        "difference": (f"{n1-n2:.8f}" for n1, n2 in zip(neff_values_paper, neff_values_femwell)),
+        "calculated value slepc": (f"{n:.8f}" for n in neff_values_femwell_slepc),
+        "difference slepc": (
+            f"{n1-n2:.8f}" for n1, n2 in zip(neff_values_paper, neff_values_femwell_slepc)
+        ),
+        "calculated value scipy": (f"{n:.8f}" for n in neff_values_femwell_scipy),
+        "difference scipy": (
+            f"{n1-n2:.8f}" for n1, n2 in zip(neff_values_paper, neff_values_femwell_scipy)
+        ),
     }
+).style.apply(
+    lambda differences: [
+        "background-color: green" if abs(float(difference)) < 5e-6 else "background-color: red"
+        for difference in differences
+    ],
+    subset=["difference slepc", "difference scipy"],
 )
-
-# .style.apply(
-#    lambda differences: [
-#        "background-color: green" if difference < 4e-6 else "background-color: red"
-#        for difference in differences
-#    ],
-#    subset=["difference"],
-# )
 # -
 
 # ## Bibliography
