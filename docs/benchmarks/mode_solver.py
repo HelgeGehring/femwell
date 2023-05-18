@@ -12,7 +12,7 @@
 #     name: python3
 # ---
 
-# # Benchmark of the mode solver
+# # Benchmark of the mode solver 2
 
 # Reproducing {cite}`Hadley2002`, where the modes of a strip and
 # several rib waveguide were calculated and presented with an error value.

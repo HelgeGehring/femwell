@@ -36,6 +36,7 @@ parts:
 
   - caption: Benchmarks
     chapters:
+    - file: benchmarks/mode_solver_rectangle
     - file: benchmarks/mode_solver
 
   - caption: About Femwell
