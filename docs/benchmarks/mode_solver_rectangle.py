@@ -52,7 +52,7 @@ polygons = OrderedDict(
 )
 
 mesh = from_meshio(
-    mesh_from_OrderedDict(polygons, {}, default_resolution_max=0.01, filename="mesh.msh")
+    mesh_from_OrderedDict(polygons, {}, default_resolution_max=0.005, filename="mesh.msh")
 )
 
 basis0 = Basis(mesh, ElementTriP0())
