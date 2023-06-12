@@ -33,9 +33,11 @@ parts:
     - file: photonics/examples/grating_coupler.py
     - file: photonics/examples/coupled_mode_theory.py
     - file: photonics/examples/depletion_waveguide.py
+    - file: photonics/examples/refinement.py
 
   - caption: Benchmarks
     chapters:
+    - file: benchmarks/mode_solver_rectangle
     - file: benchmarks/mode_solver
 
   - caption: About Femwell

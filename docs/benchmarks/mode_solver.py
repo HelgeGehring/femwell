@@ -12,7 +12,7 @@
 #     name: python3
 # ---
 
-# # Benchmark of the mode solver
+# # Benchmark of the mode solver 2
 
 # Reproducing {cite}`Hadley2002`, where the modes of a strip and
 # several rib waveguide were calculated and presented with an error value.
@@ -41,7 +41,8 @@ clad_thickness = 3
 
 slab_thicknesses = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
 neff_values_paper = [3.412022, 3.412126, 3.412279, 3.412492, 3.412774, 3.413132, 3.413571, 3.414100]
-neff_values_femwell = []
+neff_values_femwell_slepc = []
+neff_values_femwell_scipy = []
 
 for slab_thickness in slab_thicknesses:
     if slab_thickness == 0.0:
@@ -87,24 +88,31 @@ for slab_thickness in slab_thicknesses:
         epsilon[basis0.get_dofs(elements=subdomain)] = n**2
 
     modes = compute_modes(basis0, epsilon, wavelength=1.15, num_modes=1, order=2)
+    neff_values_femwell_slepc.append(np.real(modes[0].n_eff))
 
-    neff_values_femwell.append(np.real(modes[0].n_eff))
+    modes = compute_modes(basis0, epsilon, wavelength=1.15, num_modes=1, order=2, solver="scipy")
+    neff_values_femwell_scipy.append(np.real(modes[0].n_eff))
 
 pd.DataFrame(
     {
         "slab_thickness": slab_thicknesses,
         "reference value": (f"{n:.6f}" for n in neff_values_paper),
-        "calculated value": (f"{n:.6f}" for n in neff_values_femwell),
-        "difference": (f"{n1-n2:.6f}" for n1, n2 in zip(neff_values_paper, neff_values_femwell)),
+        "calculated value slepc": (f"{n:.6f}" for n in neff_values_femwell_slepc),
+        "difference slepc": (
+            f"{n1-n2:.6f}" for n1, n2 in zip(neff_values_paper, neff_values_femwell_slepc)
+        ),
+        "calculated value scipy": (f"{n:.6f}" for n in neff_values_femwell_scipy),
+        "difference scipy": (
+            f"{n1-n2:.6f}" for n1, n2 in zip(neff_values_paper, neff_values_femwell_scipy)
+        ),
     }
+).style.apply(
+    lambda differences: [
+        "background-color: green" if abs(float(difference)) < 5e-6 else "background-color: red"
+        for difference in differences
+    ],
+    subset=["difference slepc", "difference scipy"],
 )
-# .style.apply(
-#    lambda differences: [
-#        "background-color: green" if difference < 4e-6 else "background-color: red"
-#        for difference in differences
-#    ],
-#    subset=["difference"],
-# )
 # -
 
 # ## Bibliography
