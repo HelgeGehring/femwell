@@ -1,7 +1,7 @@
 """Waveguide analysis based on https://doi.org/10.1080/02726340290084012."""
 from dataclasses import dataclass
 from functools import cached_property
-from typing import List
+from typing import List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -28,6 +28,13 @@ from skfem import (
 )
 from skfem.helpers import cross, curl, dot, grad, inner
 from skfem.utils import solver_eigen_scipy
+
+
+class Conf:
+    solver = "scipy"
+
+
+CONFIG = Conf()
 
 
 @dataclass(frozen=True)
@@ -196,8 +203,10 @@ def compute_modes(
     metallic_boundaries=False,
     radius=np.inf,
     n_guess=None,
-    solver="slepc",
+    solver: Optional[str] = None,
 ) -> Modes:
+    solver = solver or CONFIG.solver
+
     if solver == "scipy":
         solver = solver_eigen_scipy
     elif solver == "slepc":
