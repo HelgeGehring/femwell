@@ -240,7 +240,7 @@ def compute_modes(
     if n_guess:
         sigma = sigma = k0**2 * n_guess**2
     else:
-        sigma = sigma = k0**2 * np.max(epsilon_r) ** 2
+        sigma = sigma = k0**2 * np.max(epsilon_r)
 
     if metallic_boundaries:
         lams, xs = solve(

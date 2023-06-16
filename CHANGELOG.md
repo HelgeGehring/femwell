@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.1
+
+- Add mesh refinement
+- Add scipy benchmarks
+- Fix n_eff-guess for compute_modes (->seems to fix mode calculations with scipy)
+
 ## v0.1.0
 
 - Rewrite maxwell waveguide mode solver - now completely object oriented!
