@@ -20,6 +20,7 @@ from skfem import (
     ElementTriP2,
     ElementVector,
     Functional,
+    InteriorFacetBasis,
     LinearForm,
     Mesh,
     condense,
@@ -419,7 +420,7 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title="E", directi
     rc = (3, 1) if direction != "x" else (1, 3)
     fig, axs = plt.subplots(*rc, subplot_kw=dict(aspect=1))
     for ax in axs:
-        basis.mesh.draw(ax=ax, boundaries=True, boundaries_only=True)
+        basis.mesh.draw(ax=ax, boundaries_only=True)
         for subdomain in basis.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
             basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
 
@@ -445,6 +446,33 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title="E", directi
             plt.tight_layout()
 
     return fig, axs
+
+
+def eval_error_estimator(basis, u):
+    @Functional
+    def interior_residual(w):
+        h = w.h
+        x, y = w.x
+        return h**2  # * load_func(x, y) ** 2
+
+    eta_K = interior_residual.elemental(basis, w=basis.interpolate(u))
+
+    # facet jump
+    fbasis = [InteriorFacetBasis(basis.mesh, basis.elem, side=i) for i in [0, 1]]
+    w = {"u" + str(i + 1): fbasis[i].interpolate(u) for i in [0, 1]}
+
+    @Functional
+    def edge_jump(w):
+        return w.h * (
+            np.abs(dot(grad(w["u1"][1]) - grad(w["u2"][1]), w.n)) ** 2
+            + np.abs(dot(w["u1"][0] - w["u2"][0], w.n)) ** 2
+        )
+
+    tmp = np.zeros(basis.mesh.facets.shape[1])
+    tmp[fbasis[0].find] = edge_jump.elemental(fbasis[0], **w)
+    eta_E = np.sum(0.5 * tmp[basis.mesh.t2f], axis=0)
+
+    return eta_K + eta_E
 
 
 if __name__ == "__main__":
