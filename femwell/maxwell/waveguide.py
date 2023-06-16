@@ -196,7 +196,7 @@ def compute_modes(
     metallic_boundaries=False,
     radius=np.inf,
     n_guess=None,
-    solver="slepc",
+    solver="scipy",
 ) -> Modes:
     if solver == "scipy":
         solver = solver_eigen_scipy
