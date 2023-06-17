@@ -64,7 +64,13 @@ for epsilons, boundaries in zip(epsilons_paper, boundaries):
         epsilon[basis0.get_dofs(elements=subdomain)] = e
 
     modes = compute_modes(
-        basis0, epsilon, wavelength=1.5, num_modes=1, order=2, metallic_boundaries=boundaries
+        basis0,
+        epsilon,
+        wavelength=1.5,
+        num_modes=1,
+        order=2,
+        metallic_boundaries=boundaries,
+        solver="slepc",
     )
     neff_values_femwell_slepc.append(np.real(modes[0].n_eff))
 
