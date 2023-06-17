@@ -87,7 +87,7 @@ for slab_thickness in slab_thicknesses:
     for subdomain, n in {"core": 3.44, "box": 3.40, "clad": 1}.items():
         epsilon[basis0.get_dofs(elements=subdomain)] = n**2
 
-    modes = compute_modes(basis0, epsilon, wavelength=1.15, num_modes=1, order=2)
+    modes = compute_modes(basis0, epsilon, wavelength=1.15, num_modes=1, order=2, solver="slepc")
     neff_values_femwell_slepc.append(np.real(modes[0].n_eff))
 
     modes = compute_modes(basis0, epsilon, wavelength=1.15, num_modes=1, order=2, solver="scipy")
