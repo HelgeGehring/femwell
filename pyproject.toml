@@ -24,7 +24,7 @@ Documentation = "https://HelgeGehring.github.io/femwell/"
 
 [tool.poetry.dependencies]
 python = ">=3.8"
-scikit-fem = ">=8.0.0"
+scikit-fem = ">=8.1.0"
 gmsh = "*"
 pygmsh = "*"
 matplotlib = "*"
