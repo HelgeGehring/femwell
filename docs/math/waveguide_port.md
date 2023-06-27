@@ -203,7 +203,7 @@ F(H_z)
 \end{aligned}
 $$
 
-where $\Sigma$ is the simulation domain and the $\sigma$ are the boundaries of $\Sigma$, where the waveguide port condition are applied to.
+where $\Omega$ is the simulation domain and the $\sigma$ are the boundaries of $\Omega$, where the waveguide port condition are applied to.
 
 As $\lim_{m\to\infty} h_m=0$, the functional converges and only needs a limited amount of summands.
 
