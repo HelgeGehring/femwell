@@ -41,7 +41,7 @@ $$
 \int_0^b h_m(y)h_{m'}(y)\mathrm{d}y = \delta_{m,m'}
 $$
 
-## Interface
+## Field at the interface
 
 The field at the interface can be described using these modes as
 
@@ -50,7 +50,7 @@ H_z(x,y)
 =
 H_z^{inc}(x,y)
 +
-\sum_{m=0}^\inf
+\sum_{m=0}^\infty
 a_m h_m(y) \mathrm{e}^{\gamma_m x},
 $$
 
@@ -63,7 +63,106 @@ a_m
 \int_0^b \left[ H_z(x_1,y)-H_z^{inc}(x_1,y) \right] h_m(y) \mathrm{d}y \,.
 $$
 
-We obtain for the partial derivative with respect to $x$
+This way we get for $H_z$ the expression
+
+$$
+H_z(x,y)
+=
+H_z^{inc}(x,y)
++
+\sum_{m=0}^\infty
+\mathrm{e}^{\gamma_m (x-x_1)} h_m(y)
+\int_0^b \left[ H_z(x_1,y')-H_z^{inc}(x_1,y') \right] h_m(y') \mathrm{d}y'
+,
+$$
+
+and for the derivative with respect to $x$
+
+$$
+\frac{
+    \partial H_z
+}{
+    \partial x
+}
+=
+\frac{
+    \partial H_z^{inc}
+}{
+    \partial x
+}
++
+\sum_{m=0}^\infty
+\gamma_m\mathrm{e}^{\gamma_m (x-x_1)} h_m(y)
+\int_0^b \left[ H_z(x_1,y')-H_z^{inc}(x_1,y') \right] h_m(y') \mathrm{d}y'
+,
+$$
+
+and at the interface $x=x_1$
+
+$$
+\left.
+\frac{
+    \partial H_z
+}{
+    \partial x
+}
+\right|_{x=x_1}
+=
+\left.
+\frac{
+    \partial H_z^{inc}
+}{
+    \partial x
+}
+\right|_{x=x_1}
++
+\sum_{m=0}^\infty
+\gamma_m
+\int_0^b \left[ H_z(x_1,y')-H_z^{inc}(x_1,y') \right] h_m(y') \mathrm{d}y'
+,
+$$
+
+## Boundary condition
+
+Using this, we can write it in the form of a generalized boundary condition:
+
+$$
+\frac{
+    \partial H_z
+}{
+    \partial \vec{n}
+}
++
+\gamma(H_z) = q \,,
+$$
+
+where $\vec{n}$ is the vector orthogonal to the interface. the boundary operator $\gamma$ is given by
+
+$$
+\gamma(H_z) = \sum_{m=0}^\infty \gamma_m h_m(y) \int_0^b H_z^{inc}(x_1,y') h_m(y') \mathrm{d}y'
+$$
+
+and $q$ is defined as
+
+$$
+q
+=
+\left.
+\frac{
+    \partial H_z^{inc}
+}{
+    \partial \vec{n}
+}
+\right|_{x=x_1}
++
+\sum_{m=0}^\infty \gamma_m h_m(y) \int_0^b H_z^{inc}(x_1,y') h_m(y') \mathrm{d}y'
+$$
+
+and simplifies for single-mode incidence of mode $n$ to
+
+$$
+q = 2 \gamma_n H_0 h_n(y) \mathrm{e}^{-\gamma_n x_1}
+$$
 
 ## Bibliography
 
