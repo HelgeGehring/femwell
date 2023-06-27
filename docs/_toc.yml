@@ -10,7 +10,8 @@ parts:
   - caption: Derivation of the equations
     chapters:
       - file: math/maxwell
-      - file: math/waveguide_port
+        sections:
+        - file: math/waveguide_port
       - file: math/thermal
       - file: math/dispersion
       - file: math/coupled_mode_theory
