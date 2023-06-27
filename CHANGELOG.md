@@ -3,6 +3,7 @@
 ## v0.1.3
 
 - Update minimum version of scikit-fem
+
 ## v0.1.2
 
 - Fix n_eff guess to make scipy solver work
