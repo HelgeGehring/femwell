@@ -161,8 +161,51 @@ $$
 and simplifies for single-mode incidence of mode $n$ to
 
 $$
-q = 2 \gamma_n H_0 h_n(y) \mathrm{e}^{-\gamma_n x_1}
+q = 2 \gamma_n H_0 h_n(y) \mathrm{e}^{-\gamma_n x_1} \,,
 $$
+
+where $H_0$ is the magnitude of the incident field and $n$ is the number of the incident mode.
+
+By setting $H_0=0$ and thus setting the right-hand side of the boundary condition to zero, this kind of boundary condition can be used as an absorbing boundary condition.
+
+## Functional defining the finite-element simulation
+
+Adding this boundary condition to the functional defining the simulation leads to
+
+$$
+\begin{aligned}
+F(H_z)
+=
+&\frac{1}{2}
+\int_\Omega
+\left[
+    \frac{
+        \left(
+            \frac{\partial H_z}{\partial x}
+        \right)^2
+        +
+        \left(
+            \frac{\partial H_z}{\partial y}
+        \right)^2
+        -
+        k_0^2 \mu_r H_z^2
+    }{\epsilon_r}
+\right]
+\mathrm{d}\Omega
+\\
+&+
+\sum_\sigma
+\int_\sigma
+\left[
+    \frac{1}{2} H_z \gamma(H_z) - q H_z
+\right]
+\mathrm{d}y
+\end{aligned}
+$$
+
+where $\Sigma$ is the simulation domain and the $\sigma$ are the boundaries of $\Sigma$, where the waveguide port condition are applied to.
+
+As $\lim_{m\to\infty} h_m=0$, the functional converges and only needs a limited amount of summands.
 
 ## Bibliography
 
