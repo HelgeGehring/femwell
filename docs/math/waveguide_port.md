@@ -32,7 +32,7 @@ $$
 leading to the propagating modes being described as
 
 $$
-H_{z,m}(x,y) = h_m(y)\exp{\gamma_m x}\,.
+H_{z,m}(x,y) = h_m(y)\mathrm{e}^{\gamma_m x}\,.
 $$
 
 As these modes are orthogonal to each other, they fullfill the orthogonallity relation
