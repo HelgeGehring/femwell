@@ -139,7 +139,7 @@ $$
 where $\vec{n}$ is the vector orthogonal to the interface. the boundary operator $\gamma$ is given by
 
 $$
-\gamma(H_z) = \sum_{m=0}^\infty \gamma_m h_m(y) \int_0^b H_z^{inc}(x_1,y') h_m(y') \mathrm{d}y'
+\gamma(H_z) = \sum_{m=0}^\infty \gamma_m h_m(y) \int_0^b H_z(x_1,y') h_m(y') \mathrm{d}y'
 $$
 
 and $q$ is defined as
