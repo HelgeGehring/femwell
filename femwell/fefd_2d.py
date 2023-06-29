@@ -9,11 +9,13 @@ from skfem.io import from_meshio
 
 from femwell.mesh import mesh_from_OrderedDict
 
-out = shapely.LineString(((6, 0), (6, 1)))
-waveguide = shapely.box(0, 0, 10, 1)
+line1 = shapely.LineString(((6, 0), (6, 1)))
+line2 = shapely.LineString(((4, 0), (4, 1)))
+waveguide1 = shapely.box(0, 0, 5, 1)
+waveguide2 = shapely.box(5, 0, 15, 1)
 mesh = from_meshio(
     mesh_from_OrderedDict(
-        OrderedDict(out=out, waveguide=waveguide),
+        OrderedDict(line1=line1, line2=line2, waveguide1=waveguide1, waveguide2=waveguide2),
         resolutions={},
         default_resolution_max=0.02,
         filename="test.msh",
@@ -23,21 +25,22 @@ mesh = from_meshio(
 basis = Basis(mesh, ElementTriP1())
 basis0 = basis.with_element(ElementTriP0())
 epsilon_r = basis0.zeros(dtype=complex) + 1
-dofs = basis0.get_dofs(elements=lambda x: (x[0] > 4.48))  # *(x[1]>.5))
-epsilon_r[dofs] = 2**2
+dofs = basis0.get_dofs(elements="waveguide2")  # *(x[1]>.5))
+epsilon_r[dofs] = 1.5**2
+basis0.plot(epsilon_r.real).show()
 # dofs = basis0.get_dofs(elements=lambda x: (x[0] > 6))  # *(x[1]>.5))
 # epsilon_r[dofs] = 1**2
 dofs = basis0.get_dofs(elements=lambda x: x[0] > 7)
-epsilon_r[dofs] += basis0.project(lambda x: np.maximum(0, x[0] - 7) ** 2 * 0.5j, dtype=complex)[
+epsilon_r[dofs] += basis0.project(lambda x: np.maximum(0, x[0] - 7) ** 2 * 0.007j, dtype=complex)[
     dofs
 ]
 basis0.plot(epsilon_r.imag, shading="gouraud", colorbar=True)
 plt.show()
-input_basis = basis.boundary(lambda x: x[0] == np.min(x[0]))
-output_basis = basis.boundary("out")
+input_basis = basis.boundary("line1")
+output_basis = basis.boundary("line2")
 
 mu_r = 1
-k0 = 6
+k0 = 4
 
 
 def h_m(y, b, m):
@@ -100,5 +103,10 @@ def coefficient(w):
     return -inner(h_m(w.x[1], 1, m=w.m), w.H)
 
 
-print(np.abs(coefficient.assemble(input_basis, H=input_basis.interpolate(C), m=1)))
-print(np.abs(coefficient.assemble(output_basis, H=output_basis.interpolate(C), m=1)))
+@Functional(dtype=complex)
+def field(w):
+    return w.H
+
+
+print(np.abs(field.assemble(input_basis, H=input_basis.interpolate(C), m=1)))
+print(np.abs(field.assemble(output_basis, H=output_basis.interpolate(C), m=1)))
