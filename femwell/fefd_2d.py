@@ -9,8 +9,8 @@ from skfem.io import from_meshio
 
 from femwell.mesh import mesh_from_OrderedDict
 
-line1 = shapely.LineString(((6, 0), (6, 1)))
-line2 = shapely.LineString(((4, 0), (4, 1)))
+line1 = shapely.LineString(((4.5, 0), (4.5, 1)))
+line2 = shapely.LineString(((6, 0), (6, 1)))
 waveguide1 = shapely.box(0, 0, 5, 1)
 waveguide2 = shapely.box(5, 0, 15, 1)
 mesh = from_meshio(
@@ -36,11 +36,12 @@ epsilon_r[dofs] += basis0.project(lambda x: np.maximum(0, x[0] - 7) ** 2 * 0.007
 ]
 basis0.plot(epsilon_r.imag, shading="gouraud", colorbar=True)
 plt.show()
-input_basis = basis.boundary("line1")
-output_basis = basis.boundary("line2")
+input_basis = basis.boundary(lambda x: x[0] == np.min(x[0]))
+line1_basis = basis.boundary("line1")
+line2_basis = basis.boundary("line2")
 
 mu_r = 1
-k0 = 4
+k0 = 6
 
 
 def h_m(y, b, m):
@@ -109,4 +110,5 @@ def field(w):
 
 
 print(np.abs(field.assemble(input_basis, H=input_basis.interpolate(C), m=1)))
-print(np.abs(field.assemble(output_basis, H=output_basis.interpolate(C), m=1)))
+print(np.abs(field.assemble(line1_basis, H=line1_basis.interpolate(C), m=1)))
+print(np.abs(field.assemble(line2_basis, H=line2_basis.interpolate(C), m=1)))
