@@ -184,6 +184,33 @@ class Mode:
         self.plot(field=field, **kwargs)
         plt.show()
 
+    def plot_intensity(
+        self, field: NDArray, colorbar: bool = True, normalize: bool = True
+    ) -> Tuple[Figure, NDArray]:
+        """Plots the intensity of a field.
+
+        Args:
+            field (NDArray): Field whose intensity is to be plotted.
+            colorbar (bool, optional): Adds a colorbar to the plot. Defaults to True.
+            normalize (bool, optional): Normalizes the intensity by its maximum value. Defaults to True.
+
+        Returns:
+            Tuple[Figure, NDArray]: Figure and axes of the plot.
+        """
+        intensity, intensity_basis = self.calculate_intensity(field=field)
+        if normalize:
+            intensity = intensity / intensity.max()
+
+        fig, ax = plt.subplots()
+        for subdomain in self.basis.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
+            self.basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True, color="w")
+        intensity_basis.plot(intensity, ax=ax, cmap="inferno")
+
+        if colorbar:
+            plt.colorbar(ax.collections[-1])
+
+        return fig, ax
+
 
 @dataclass(frozen=True)
 class Modes:
