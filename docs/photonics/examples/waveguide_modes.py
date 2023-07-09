@@ -85,14 +85,24 @@ for mode in modes:
     print(f"Effective refractive index: {mode.n_eff:.4f}")
     mode.show(mode.E.real, colorbar=True, direction="x")
 
-powers_in_waveguide = []
-confinement_factors_waveguide = []
+# -
+
+# The electric or magnetic field intensity can be plotted directly from the mode object
+
+# +
+
+modes[0].plot_intensity(field=modes[0].E)
+plt.show()
+
 # -
 
 # Now, let's calculate with the modes:
 # What percentage of the mode is within the core for the calculated modes?
 
 # +
+powers_in_waveguide = []
+confinement_factors_waveguide = []
+
 for mode in modes:
     powers_in_waveguide.append(mode.calculate_power(elements="core"))
     confinement_factors_waveguide.append(mode.calculate_confinement_factor(elements="core"))
