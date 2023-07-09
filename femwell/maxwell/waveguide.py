@@ -1,10 +1,11 @@
 """Waveguide analysis based on https://doi.org/10.1080/02726340290084012."""
 from dataclasses import dataclass
 from functools import cached_property
-from typing import List
-
+from typing import List, Tuple
+from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy.typing import NDArray
 import scipy.constants
 import scipy.sparse.linalg
 from numpy.typing import NDArray
@@ -332,7 +333,30 @@ def calculate_energy_current_density(basis, xs):
     return basis_energy, scipy.sparse.linalg.spsolve(b_operator, a_operator)
 
 
-def calculate_overlap(basis_i, E_i, H_i, basis_j, E_j, H_j):
+def calculate_overlap(
+    basis_i: Basis,
+    E_i: np.ndarray,
+    H_i: np.ndarray,
+    basis_j: Basis,
+    E_j: np.ndarray,
+    H_j: np.ndarray,
+) -> np.complex64:
+    """Calculates the fully vectorial overlap between two modes.
+
+    If the modes do not share the basis, interpolation is performed automatically.
+
+    Args:
+        basis_i (Basis): Basis of the first mode
+        E_i (np.ndarray): Electric field of the first mode
+        H_i (np.ndarray): Magnetic field of the first mode
+        basis_j (Basis): Basis of the second mode
+        E_j (np.ndarray): Electric field of the first mode
+        H_j (np.ndarray): Magnetic field of the first mode
+
+    Returns:
+        np.complex64: Complex overlap between the two modes
+    """
+
     @Functional(dtype=np.complex64)
     def overlap(w):
         return cross(np.conj(w["E_i"][0]), w["H_j"][0]) + cross(w["E_j"][0], np.conj(w["H_i"][0]))
