@@ -149,6 +149,27 @@ class Mode:
             * 0.5
         )
 
+    def calculate_intensity(self, field: NDArray) -> Tuple[NDArray, Basis]:
+        """Calculates the intensity of a field as the sum of the absolute values squared of its components.
+
+        First, the field is interpolated on the quadrature points with a discontinuous
+        element, then the intensity is calculated directly on the quadrature points.
+
+        Args:
+            field (NDArray): Field whose intensity is to be calculated.
+
+        Returns:
+            NDArray, Basis: Interpolated intensity and plot-ready basis
+        """
+        (et, et_basis), (ez, ez_basis) = self.basis.split(field)
+        plot_basis = et_basis.with_element(ElementVector(ElementDG(ElementTriP1())))
+        et_xy = plot_basis.project(et_basis.interpolate(et), dtype=np.complex128)
+        (et_x, et_x_basis), (et_y, et_y_basis) = plot_basis.split(et_xy)
+        ez2 = et_x_basis.project(ez_basis.interpolate(ez), dtype=np.complex128)
+        intensity = np.abs(et_x) ** 2 + np.abs(et_y) ** 2 + np.abs(ez2) ** 2
+
+        return intensity, et_x_basis
+
     def plot(self, field, plot_vectors=False, colorbar=True, direction="y", title="E"):
         return plot_mode(
             self.basis,
