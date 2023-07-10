@@ -135,7 +135,7 @@ class MeshTracker:
         Add a shapely line (multi-point line) to the gmsh model in the xy plane, or retrieve the existing gmsh segment with equivalent coordinates (within tol.)
 
         Args:
-            shapely_xy_curve (shapely.geometry.LineString): curve
+            shapely_xy_curves (shapely.geometry.LineString): curve
         """
         segments = []
         for shapely_xy_curve in (
