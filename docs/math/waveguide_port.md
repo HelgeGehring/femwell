@@ -187,9 +187,9 @@ F(H_z)
         \left(
             \frac{\partial H_z}{\partial y}
         \right)^2
+    }{\epsilon_r}
         -
         k_0^2 \mu_r H_z^2
-    }{\epsilon_r}
 \right]
 \mathrm{d}\Omega
 \\
