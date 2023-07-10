@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.4
+
+- Fix meshing if a LineString is cut by the geometry
+
 ## v0.1.3
 
 - Update minimum version of scikit-fem
