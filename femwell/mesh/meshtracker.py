@@ -130,24 +130,27 @@ class MeshTracker:
             self.xy_segments_secondary_labels.append(None)
         return gmsh_segment, orientation
 
-    def add_get_xy_line(self, shapely_xy_curve, label):
+    def add_get_xy_line(self, shapely_xy_curves, label):
         """
         Add a shapely line (multi-point line) to the gmsh model in the xy plane, or retrieve the existing gmsh segment with equivalent coordinates (within tol.)
 
         Args:
-            shapely_xy_curve (shapely.geometry.LineString): curve
+            shapely_xy_curves (shapely.geometry.LineString): curve
         """
         segments = []
-        for shapely_xy_point1, shapely_xy_point2 in zip(
-            shapely_xy_curve.coords[:-1], shapely_xy_curve.coords[1:]
+        for shapely_xy_curve in (
+            shapely_xy_curves.geoms if hasattr(shapely_xy_curves, "geoms") else [shapely_xy_curves]
         ):
-            gmsh_segment, orientation = self.add_get_xy_segment(
-                Point(shapely_xy_point1), Point(shapely_xy_point2), label
-            )
-            if orientation:
-                segments.append(gmsh_segment)
-            else:
-                segments.append(-gmsh_segment)
+            for shapely_xy_point1, shapely_xy_point2 in zip(
+                shapely_xy_curve.coords[:-1], shapely_xy_curve.coords[1:]
+            ):
+                gmsh_segment, orientation = self.add_get_xy_segment(
+                    Point(shapely_xy_point1), Point(shapely_xy_point2), label
+                )
+                if orientation:
+                    segments.append(gmsh_segment)
+                else:
+                    segments.append(-gmsh_segment)
         self.model.add_physical(segments, f"{label}")
 
     def add_xy_surface(self, shapely_xy_polygons, label=None, physical=True):
