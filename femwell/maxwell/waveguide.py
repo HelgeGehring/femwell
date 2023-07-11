@@ -151,24 +151,33 @@ class Mode:
 
     def calculate_intensity(self, field: NDArray) -> Tuple[NDArray, Basis]:
         """Calculates the intensity of a field as the sum of the absolute values squared of its components.
-
-        First, the field is interpolated on the quadrature points with a discontinuous
-        element, then the intensity is calculated directly on the quadrature points.
+        
+        The electric/magnetic intensity comprises of the relative permittivity/permeability 
+        (respectively) as pointed out in https://doi.org/10.1364/OE.16.016659. 
+        
+        The calculation is performed as follows:
+        1) The field is interpolated on the quadrature points with the simulation basis;
+        2) The intensity is calculated directly on the quadrature points;
+        3) The intensity is projected on a new discontinuous, piecewise linear triangular basis.
 
         Args:
             field (NDArray): Field whose intensity is to be calculated.
 
         Returns:
-            NDArray, Basis: Interpolated intensity and plot-ready basis
+            NDArray, Basis: Intensity and plot-ready basis
         """
-        (et, et_basis), (ez, ez_basis) = self.basis.split(field)
-        plot_basis = et_basis.with_element(ElementVector(ElementDG(ElementTriP1())))
-        et_xy = plot_basis.project(et_basis.interpolate(et), dtype=np.complex128)
-        (et_x, et_x_basis), (et_y, et_y_basis) = plot_basis.split(et_xy)
-        ez2 = et_x_basis.project(ez_basis.interpolate(ez), dtype=np.complex128)
-        intensity = np.abs(et_x) ** 2 + np.abs(et_y) ** 2 + np.abs(ez2) ** 2
+        epsilon = self.basis_epsilon_r.interpolate(self.epsilon_r)
+        if field is self.E:
+            factor = epsilon
+        else:
+            factor = np.ones_like(epsilon)  # TODO: Needs vectorized mu_r for magnetic materials
 
-        return intensity, et_x_basis
+        (f_x, f_y), f_z = self.basis.interpolate(field)
+        intensity = np.real(factor) * (np.abs(f_x) ** 2 + np.abs(f_y) ** 2 + np.abs(f_z) ** 2)
+        basis2 = self.basis.with_element(ElementDG(ElementTriP1()))
+        intensity2 = basis2.project(intensity)
+
+        return intensity2, basis2
 
     def plot(self, field, plot_vectors=False, colorbar=True, direction="y", title="E"):
         return plot_mode(
