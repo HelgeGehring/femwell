@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import List, Tuple
 from matplotlib.figure import Figure
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.typing import NDArray
@@ -151,10 +152,10 @@ class Mode:
 
     def calculate_intensity(self, field: NDArray) -> Tuple[NDArray, Basis]:
         """Calculates the intensity of a field as the sum of the absolute values squared of its components.
-        
-        The electric/magnetic intensity comprises of the relative permittivity/permeability 
-        (respectively) as pointed out in https://doi.org/10.1364/OE.16.016659. 
-        
+
+        The electric/magnetic intensity comprises of the relative permittivity/permeability
+        (respectively) as pointed out in https://doi.org/10.1364/OE.16.016659.
+
         The calculation is performed as follows:
         1) The field is interpolated on the quadrature points with the simulation basis;
         2) The intensity is calculated directly on the quadrature points;
@@ -194,23 +195,32 @@ class Mode:
         plt.show()
 
     def plot_intensity(
-        self, field: NDArray, colorbar: bool = True, normalize: bool = True
-    ) -> Tuple[Figure, NDArray]:
+        self,
+        field: NDArray,
+        ax: Axes = None,
+        colorbar: bool = True,
+        normalize: bool = True,
+    ) -> Tuple[Figure, Axes]:
         """Plots the intensity of a field.
 
         Args:
             field (NDArray): Field whose intensity is to be plotted.
+            ax (Axes, optional): Axes onto which the plot is drawn. Defaults to None.
             colorbar (bool, optional): Adds a colorbar to the plot. Defaults to True.
             normalize (bool, optional): Normalizes the intensity by its maximum value. Defaults to True.
 
         Returns:
-            Tuple[Figure, NDArray]: Figure and axes of the plot.
+            Tuple[Figure, Axes]: Figure and axes of the plot.
         """
         intensity, intensity_basis = self.calculate_intensity(field=field)
         if normalize:
             intensity = intensity / intensity.max()
 
-        fig, ax = plt.subplots()
+        if ax is None:
+            fig, ax = plt.subplots()
+        else:
+            fig = plt.gcf()
+
         for subdomain in self.basis.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
             self.basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True, color="w")
         intensity_basis.plot(intensity, ax=ax, cmap="inferno")
