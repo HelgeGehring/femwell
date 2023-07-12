@@ -14,9 +14,11 @@
 
 # # Physics-informed propagation loss model
 #
-# The ability to locally refine the mesh makes FEM well-suited to problems with very different lengthscales. 
+# The ability to locally refine the mesh makes FEM well-suited to problems with very different lengthscales.
 #
-# One such problem is empirically modeling the propagation loss due to sidewall roughness, for instance as performed in \cite{Lindecrantz2014}.
+# One such problem is empirically modeling the propagation loss due to sidewall roughness, for instance as performed in {cite}`Lindecrantz2014`.
+
+# + tags=["remove-stderr"]
 
 import shapely
 from collections import OrderedDict
@@ -29,6 +31,7 @@ from femwell.visualization import plot_domains
 from skfem import Basis, ElementTriP0
 from femwell.maxwell.waveguide import compute_modes
 from scipy.optimize import curve_fit
+# -
 
 # Assume there is some information available about TE waveguide loss as a function of wavelength and width:
 
@@ -227,3 +230,11 @@ plt.scatter(widths, losses, label="strip data")
 plt.legend()
 plt.xlabel("Core width (um)")
 plt.ylabel("Propagation loss (dB/cm)")
+# -
+
+# ## Bibliography
+#
+# ```{bibliography}
+# :style: unsrt
+# :filter: docname in docnames
+# ```
