@@ -20,17 +20,20 @@
 
 # + tags=["remove-stderr"]
 
-import shapely
 from collections import OrderedDict
-from shapely.ops import clip_by_rect
-from shapely.affinity import scale
+
 import numpy as np
+import shapely
+from scipy.optimize import curve_fit
+from shapely.affinity import scale
+from shapely.ops import clip_by_rect
+from skfem import Basis, ElementTriP0
 from skfem.io.meshio import from_meshio
+
+from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.visualization import plot_domains
-from skfem import Basis, ElementTriP0
-from femwell.maxwell.waveguide import compute_modes
-from scipy.optimize import curve_fit
+
 # -
 
 # Assume there is some information available about TE waveguide loss as a function of wavelength and width:
@@ -59,15 +62,16 @@ xdata = np.array(xdata)
 
 # Assuming sidewall roughness dominates the loss, we prepare the following mesh:
 
-def waveguide(core_width, 
-              slab_thickness,
-              core_thickness = core_thickness,
-              slab_width = 4,
-              sidewall_extent = 0.02,
-              sidewall_k = 1E-4,
-              material_k = 1E-5
-              ):
-    
+
+def waveguide(
+    core_width,
+    slab_thickness,
+    core_thickness=core_thickness,
+    slab_width=4,
+    sidewall_extent=0.02,
+    sidewall_k=1e-4,
+    material_k=1e-5,
+):
     core = shapely.geometry.box(-core_width / 2, 0, +core_width / 2, core_thickness)
 
     # Core sidewalls (only keep side extensions)
@@ -91,22 +95,23 @@ def waveguide(core_width,
             core_sidewalls=core_sidewalls,
             clad=clad,
         )
-    resolutions = dict(core={"resolution": 0.03, "distance": 0.5},
-                       core_sidewalls={"resolution": 0.005, "distance": 0.5},
-                       slab={"resolution": 0.06, "distance": 0.5},
-                       )
-    
-    mesh = from_meshio(
-            mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=10)
-        )
-    
+    resolutions = dict(
+        core={"resolution": 0.03, "distance": 0.5},
+        core_sidewalls={"resolution": 0.005, "distance": 0.5},
+        slab={"resolution": 0.06, "distance": 0.5},
+    )
+
+    mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=10))
+
     basis0 = Basis(mesh, ElementTriP0())
     epsilon = basis0.zeros(dtype=complex)
 
-    materials = {"core": n_si - 1j * material_k, 
-                "core_sidewalls": n_sio2 - 1j * sidewall_k, 
-                "clad": n_sio2}
-    
+    materials = {
+        "core": n_si - 1j * material_k,
+        "core_sidewalls": n_sio2 - 1j * sidewall_k,
+        "clad": n_sio2,
+    }
+
     if slab_thickness:
         materials["slab"] = n_si - 1j * material_k
 
@@ -117,10 +122,11 @@ def waveguide(core_width,
 
 
 # +
-mesh, basis0, epsilon = waveguide(core_width = 0.5, 
-              slab_thickness = 0.0,
-              core_thickness = 0.22,
-              )
+mesh, basis0, epsilon = waveguide(
+    core_width=0.5,
+    slab_thickness=0.0,
+    core_thickness=0.22,
+)
 
 plot_domains(mesh)
 basis0.plot(epsilon.real, colorbar=True).show()
@@ -131,95 +137,104 @@ basis0.plot(epsilon.imag, colorbar=True).show()
 
 # Now that we have a simulation, we can compute TE0 modes, and fit the hyperparameters `sidewall_extent` and `sidewall_index` to get a better model for loss as a function of waveguide geometry:
 
-def compute_propagation_loss(wavelength,
-              core_width, 
-              slab_thickness,
-              core_thickness = core_thickness,
-              slab_width = 4,
-              sidewall_extent = sidewall_extent,
-              sidewall_k = 1E-4,
-              material_k = 1E-5,
-              ):
-    
-    mesh, basis0, epsilon = waveguide(core_width = core_width, 
-              slab_thickness = slab_thickness,
-              core_thickness = core_thickness,
-              slab_width = slab_width,
-              sidewall_extent = sidewall_extent,
-              sidewall_k = sidewall_k,
-              material_k = material_k
-              )
+
+def compute_propagation_loss(
+    wavelength,
+    core_width,
+    slab_thickness,
+    core_thickness=core_thickness,
+    slab_width=4,
+    sidewall_extent=sidewall_extent,
+    sidewall_k=1e-4,
+    material_k=1e-5,
+):
+    mesh, basis0, epsilon = waveguide(
+        core_width=core_width,
+        slab_thickness=slab_thickness,
+        core_thickness=core_thickness,
+        slab_width=slab_width,
+        sidewall_extent=sidewall_extent,
+        sidewall_k=sidewall_k,
+        material_k=material_k,
+    )
 
     modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=1, order=2)
 
     keff = modes[0].n_eff.imag
     wavelength_m = wavelength * 1e-6  # convert to m
     alpha = -4 * np.pi * keff / wavelength_m
-    return 10 * np.log10(np.exp(1)) * alpha * 1e-2 # convert to cm
+    return 10 * np.log10(np.exp(1)) * alpha * 1e-2  # convert to cm
 
 
 for wavelength, core_width, slab_thickness, loss in zip(wavelengths, widths, slab_heights, losses):
-
-    predicted_loss = compute_propagation_loss(wavelength=wavelength,
-                core_width=core_width, 
-                slab_thickness=slab_thickness,
-                core_thickness = core_thickness,
-                slab_width = 4,
-                sidewall_extent = sidewall_extent,
-                sidewall_k = 3E-4,
-                material_k = 2.5E-6,
-                )
+    predicted_loss = compute_propagation_loss(
+        wavelength=wavelength,
+        core_width=core_width,
+        slab_thickness=slab_thickness,
+        core_thickness=core_thickness,
+        slab_width=4,
+        sidewall_extent=sidewall_extent,
+        sidewall_k=3e-4,
+        material_k=2.5e-6,
+    )
 
     print(wavelength, core_width, slab_thickness, predicted_loss, loss)
 
 
 # Pretty close, refine through optimization:
 
+
 def objective_vector(xdata, sidewall_k, material_k):
     losses_obj = []
     for wavelength, width, slab_height in xdata:
-        losses_obj.append(compute_propagation_loss(wavelength=wavelength,
-                    core_width=width, 
-                    slab_thickness=slab_height,
-                    core_thickness = core_thickness,
-                    slab_width = 4,
-                    sidewall_extent = sidewall_extent,
-                    sidewall_k = sidewall_k,
-                    material_k = material_k,
-                    ))
+        losses_obj.append(
+            compute_propagation_loss(
+                wavelength=wavelength,
+                core_width=width,
+                slab_thickness=slab_height,
+                core_thickness=core_thickness,
+                slab_width=4,
+                sidewall_extent=sidewall_extent,
+                sidewall_k=sidewall_k,
+                material_k=material_k,
+            )
+        )
     return losses_obj
 
 
-popt, pcov = curve_fit(objective_vector, xdata, ydata, bounds=(0, [1E-2, 1E-2]), p0 = (3E-4, 1E-6))
+popt, pcov = curve_fit(objective_vector, xdata, ydata, bounds=(0, [1e-2, 1e-2]), p0=(3e-4, 1e-6))
 
 popt, pcov
 
 for wavelength, core_width, slab_thickness, loss in zip(wavelengths, widths, slab_heights, losses):
-
-    predicted_loss = compute_propagation_loss(wavelength=wavelength,
-                core_width=core_width, 
-                slab_thickness=slab_thickness,
-                core_thickness = core_thickness,
-                slab_width = 4,
-                sidewall_extent = sidewall_extent,
-                sidewall_k = popt[0],
-                material_k = popt[1],
-                )
+    predicted_loss = compute_propagation_loss(
+        wavelength=wavelength,
+        core_width=core_width,
+        slab_thickness=slab_thickness,
+        core_thickness=core_thickness,
+        slab_width=4,
+        sidewall_extent=sidewall_extent,
+        sidewall_k=popt[0],
+        material_k=popt[1],
+    )
 
     print(wavelength, core_width, slab_thickness, predicted_loss, loss)
 
 widths_plot = np.linspace(0.275, 2.0, 19)
 losses_plot_strip = []
 for width in widths_plot:
-    losses_plot_strip.append(compute_propagation_loss(wavelength=1.55,
-                core_width=width, 
-                slab_thickness=0.0,
-                core_thickness = core_thickness,
-                slab_width = 4,
-                sidewall_extent = sidewall_extent,
-                sidewall_k = popt[0],
-                material_k = popt[1],
-                ))
+    losses_plot_strip.append(
+        compute_propagation_loss(
+            wavelength=1.55,
+            core_width=width,
+            slab_thickness=0.0,
+            core_thickness=core_thickness,
+            slab_width=4,
+            sidewall_extent=sidewall_extent,
+            sidewall_k=popt[0],
+            material_k=popt[1],
+        )
+    )
 
 # +
 import matplotlib.pyplot as plt
