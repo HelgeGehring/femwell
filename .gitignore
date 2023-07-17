@@ -9,6 +9,7 @@ docs/_build
 *.msh
 *.xdmf
 *.vtk
+*.vtu
 
 *.png
 *.gif
