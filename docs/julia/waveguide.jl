@@ -17,6 +17,11 @@
 # %% [markdown]
 # # Coupled mode theory
 
+# %% [markdown]
+# ```{caution}
+# **This example is under construction**
+# ```
+
 # %% tags=["hide-output"]
 using PyCall
 np = pyimport("numpy")
