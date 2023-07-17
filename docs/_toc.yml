@@ -37,6 +37,10 @@ parts:
     - file: photonics/examples/depletion_waveguide.py
     - file: photonics/examples/refinement.py
 
+  - caption: Julia Examples
+    chapters:
+    - file: julia/waveguide.jl
+
   - caption: Benchmarks
     chapters:
     - file: benchmarks/mode_solver_rectangle
