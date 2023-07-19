@@ -87,14 +87,12 @@ for mode in modes:
 
 # -
 
-# The electric and magnetic field intensity can be plotted directly from the mode object
+# The intensity can be plotted directly from the mode object
 # +
 
-fig, axs = plt.subplots(2, 1)
-modes[0].plot_intensity(field=modes[0].E, ax=axs[0])
-modes[0].plot_intensity(field=modes[0].H, ax=axs[1])
-axs[0].set_title("Normalized Electric Field Intensity")
-axs[1].set_title("Normalized Magnetic Field Intensity")
+fig, ax = plt.subplots()
+modes[0].plot_intensity(ax=ax)
+plt.title("Normalized Intensity")
 plt.tight_layout()
 plt.show()
 
