@@ -51,12 +51,12 @@ propagation_loss(mode::Mode, distance::Real) =
     -20 / log(10) * mode.k0 * np.imag(n_eff(mode)) * distance
 
 te_fraction(mode::Mode) = abs(
-    sum(∫(mode.E[1] ⋅ TensorValue(1, 0, 0, 0) ⋅ mode.E[1])Measure(mode)) /
-    sum(∫(mode.E[1] ⋅ mode.E[1])Measure(mode)),
+    ∑(∫(mode.E[1] ⋅ TensorValue(1, 0, 0, 0) ⋅ mode.E[1])Measure(mode)) /
+    ∑(∫(mode.E[1] ⋅ mode.E[1])Measure(mode)),
 )
 tm_fraction(mode::Mode) = abs(
-    sum(∫(mode.E[1] ⋅ TensorValue(0, 0, 0, 1) ⋅ mode.E[1])Measure(mode)) /
-    sum(∫(mode.E[1] ⋅ mode.E[1])Measure(mode)),
+    ∑(∫(mode.E[1] ⋅ TensorValue(0, 0, 0, 1) ⋅ mode.E[1])Measure(mode)) /
+    ∑(∫(mode.E[1] ⋅ mode.E[1])Measure(mode)),
 )
 
 function calculate_modes(
