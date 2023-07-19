@@ -150,31 +150,23 @@ class Mode:
             * 0.5
         )
 
-    def calculate_intensity(self, field: NDArray) -> Tuple[NDArray, Basis]:
-        """Calculates the intensity of a field as the sum of the absolute values squared of its components.
+    def calculate_intensity(self) -> Tuple[NDArray, Basis]:
+        """Calculates the intensity of a mode.
 
-        The electric/magnetic intensity comprises of the relative permittivity/permeability
-        (respectively) as pointed out in https://doi.org/10.1364/OE.16.016659.
+        The intensity is calculated from the cross-product between the electric and magnetic field, as 
+        described in https://doi.org/10.1364/OE.16.016659.
 
         The calculation is performed as follows:
-        1) The field is interpolated on the quadrature points with the simulation basis;
+        1) The electric and magnetic fields are interpolated on the quadrature points with the simulation basis;
         2) The intensity is calculated directly on the quadrature points;
         3) The intensity is projected on a new discontinuous, piecewise linear triangular basis.
-
-        Args:
-            field (NDArray): Field whose intensity is to be calculated.
 
         Returns:
             NDArray, Basis: Intensity and plot-ready basis
         """
-        epsilon = self.basis_epsilon_r.interpolate(self.epsilon_r)
-        if field is self.E:
-            factor = epsilon
-        else:
-            factor = np.ones_like(epsilon)  # TODO: Needs vectorized mu_r for magnetic materials
-
-        (f_x, f_y), f_z = self.basis.interpolate(field)
-        intensity = np.real(factor) * (np.abs(f_x) ** 2 + np.abs(f_y) ** 2 + np.abs(f_z) ** 2)
+        (Ex, Ey), _ = self.basis.interpolate(self.E)
+        (Hx, Hy), _ = self.basis.interpolate(np.conj(self.H))
+        intensity = 0.5 * np.real(Ex * Hy - Ey * Hx)
         basis2 = self.basis.with_element(ElementDG(ElementTriP1()))
         intensity2 = basis2.project(intensity)
 
@@ -196,15 +188,13 @@ class Mode:
 
     def plot_intensity(
         self,
-        field: NDArray,
         ax: Axes = None,
         colorbar: bool = True,
         normalize: bool = True,
     ) -> Tuple[Figure, Axes]:
-        """Plots the intensity of a field.
+        """Plots the intensity of a mode as outlined in `calculate_intensity`.
 
         Args:
-            field (NDArray): Field whose intensity is to be plotted.
             ax (Axes, optional): Axes onto which the plot is drawn. Defaults to None.
             colorbar (bool, optional): Adds a colorbar to the plot. Defaults to True.
             normalize (bool, optional): Normalizes the intensity by its maximum value. Defaults to True.
@@ -212,7 +202,7 @@ class Mode:
         Returns:
             Tuple[Figure, Axes]: Figure and axes of the plot.
         """
-        intensity, intensity_basis = self.calculate_intensity(field=field)
+        intensity, intensity_basis = self.calculate_intensity()
         if normalize:
             intensity = intensity / intensity.max()
 
