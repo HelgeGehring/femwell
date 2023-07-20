@@ -1,10 +1,12 @@
 """Waveguide analysis based on https://doi.org/10.1080/02726340290084012."""
 from dataclasses import dataclass
 from functools import cached_property
-from typing import List
-
+from typing import List, Tuple
+from matplotlib.figure import Figure
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy.typing import NDArray
 import scipy.constants
 import scipy.sparse.linalg
 from numpy.typing import NDArray
@@ -148,6 +150,28 @@ class Mode:
             * 0.5
         )
 
+    def calculate_intensity(self) -> Tuple[NDArray, Basis]:
+        """Calculates the intensity of a mode.
+
+        The intensity is calculated from the cross-product between the electric and magnetic field, as 
+        described in https://doi.org/10.1364/OE.16.016659.
+
+        The calculation is performed as follows:
+        1) The electric and magnetic fields are interpolated on the quadrature points with the simulation basis;
+        2) The intensity is calculated directly on the quadrature points;
+        3) The intensity is projected on a new discontinuous, piecewise linear triangular basis.
+
+        Returns:
+            Basis, NDArray: Plot-ready basis and intensity array
+        """
+        (Ex, Ey), _ = self.basis.interpolate(self.E)
+        (Hx, Hy), _ = self.basis.interpolate(np.conj(self.H))
+        intensity = 0.5 * np.real(Ex * Hy - Ey * Hx)
+        basis2 = self.basis.with_element(ElementDG(ElementTriP1()))
+        intensity2 = basis2.project(intensity)
+
+        return basis2, intensity2
+
     def plot(self, field, plot_vectors=False, colorbar=True, direction="y", title="E"):
         return plot_mode(
             self.basis,
@@ -161,6 +185,40 @@ class Mode:
     def show(self, field, **kwargs):
         self.plot(field=field, **kwargs)
         plt.show()
+
+    def plot_intensity(
+        self,
+        ax: Axes = None,
+        colorbar: bool = True,
+        normalize: bool = True,
+    ) -> Tuple[Figure, Axes]:
+        """Plots the intensity of a mode as outlined in `calculate_intensity`.
+
+        Args:
+            ax (Axes, optional): Axes onto which the plot is drawn. Defaults to None.
+            colorbar (bool, optional): Adds a colorbar to the plot. Defaults to True.
+            normalize (bool, optional): Normalizes the intensity by its maximum value. Defaults to True.
+
+        Returns:
+            Tuple[Figure, Axes]: Figure and axes of the plot.
+        """
+        intensity_basis, intensity = self.calculate_intensity()
+        if normalize:
+            intensity = intensity / intensity.max()
+
+        if ax is None:
+            fig, ax = plt.subplots()
+        else:
+            fig = plt.gcf()
+
+        for subdomain in self.basis.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
+            self.basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True, color="w")
+        intensity_basis.plot(intensity, ax=ax, cmap="inferno")
+
+        if colorbar:
+            plt.colorbar(ax.collections[-1])
+
+        return fig, ax
 
 
 @dataclass(frozen=True)
@@ -332,7 +390,30 @@ def calculate_energy_current_density(basis, xs):
     return basis_energy, scipy.sparse.linalg.spsolve(b_operator, a_operator)
 
 
-def calculate_overlap(basis_i, E_i, H_i, basis_j, E_j, H_j):
+def calculate_overlap(
+    basis_i: Basis,
+    E_i: np.ndarray,
+    H_i: np.ndarray,
+    basis_j: Basis,
+    E_j: np.ndarray,
+    H_j: np.ndarray,
+) -> np.complex64:
+    """Calculates the fully vectorial overlap between two modes.
+
+    If the modes do not share the basis, interpolation is performed automatically.
+
+    Args:
+        basis_i (Basis): Basis of the first mode
+        E_i (np.ndarray): Electric field of the first mode
+        H_i (np.ndarray): Magnetic field of the first mode
+        basis_j (Basis): Basis of the second mode
+        E_j (np.ndarray): Electric field of the first mode
+        H_j (np.ndarray): Magnetic field of the first mode
+
+    Returns:
+        np.complex64: Complex overlap between the two modes
+    """
+
     @Functional(dtype=np.complex64)
     def overlap(w):
         return cross(np.conj(w["E_i"][0]), w["H_j"][0]) + cross(w["E_j"][0], np.conj(w["H_i"][0]))
