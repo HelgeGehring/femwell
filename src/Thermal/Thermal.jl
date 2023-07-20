@@ -48,11 +48,18 @@ function calculate_temperature_transient(
     t_end::Float64,
     order::Int = 1,
 )
-    tags = collect(keys(temperatures))
-    tags_temperatures = [temperatures[tag] for tag in tags]
+    temperatures_c = collect(temperatures)
+    tags = [u for (u, v) in temperatures_c]
 
-    g(x, t::Real) = 0.0
-    g(t::Real) = x -> g(x, t)
+    function def_g(value)
+        g(x, t::Real) = value
+        g(t::Real) = x -> g(x, t)
+        return g
+    end
+
+    tags_temperatures = [def_g(v) for (u, v) in temperatures_c]
+    println(tags_temperatures)
+
     model = get_active_model(get_triangulation(diffusitivity))
     V = TestFESpace(
         model,
@@ -60,7 +67,7 @@ function calculate_temperature_transient(
         conformity = :H1,
         dirichlet_tags = tags,
     )
-    U = TransientTrialFESpace(V, g)
+    U = TransientTrialFESpace(V, tags_temperatures)
 
     Ω = Triangulation(model)
     dΩ = Measure(Ω, order)
