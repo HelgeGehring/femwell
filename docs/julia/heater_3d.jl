@@ -30,10 +30,9 @@ electrical_conductivity =
     Dict(get_tag_from_name(labels, u) => v for (u, v) in electrical_conductivity)
 ϵ_electrical_conductivity(tag) = electrical_conductivity[tag]
 
-p0 = compute_potential(
-    ϵ_electrical_conductivity ∘ τ,
-    Dict(["metal3#e1___None" => 0.1, "metal3#e2___None" => 0.0]),
-)
+boundary_conditions = Dict(["metal3#e1___None" => 0.1, "metal3#e2___None" => 0.0])
+
+p0 = compute_potential(ϵ_electrical_conductivity ∘ τ, boundary_conditions)
 
 thermal_conductivities = [
     "core" => 90,
@@ -51,11 +50,9 @@ thermal_conductivities =
     Dict(get_tag_from_name(labels, u) => v for (u, v) in thermal_conductivities)
 ϵ_conductivities(tag) = thermal_conductivities[tag]
 
-t0 = calculate_temperature(
-    ϵ_conductivities ∘ τ,
-    power_density(p0),
-    Dict("box___None" => 0.0),
-)
+temperatures = Dict("box___None" => 0.0)
+
+T0 = calculate_temperature(ϵ_conductivities ∘ τ, power_density(p0), temperatures)
 
 writevtk(
     Ω,
@@ -63,6 +60,38 @@ writevtk(
     cellfields = [
         "potential" => potential(p0),
         "current" => current_density(p0),
-        "temperature" => temperature(t0),
+        "temperature" => temperature(T0),
     ],
 )
+
+thermal_diffisitivities = [
+    "core" => 90 / 711 / 2330,
+    "box" => 1.38 / 709 / 2203,
+    "clad" => 1.38 / 709 / 2203,
+    "heater" => 28 / 598 / 5240,
+    "via2" => 28 / 598 / 5240,
+    "metal2" => 28 / 598 / 5240,
+    "via1" => 28 / 598 / 5240,
+    "metal3" => 28 / 598 / 5240,
+    "metal3#e1" => 28 / 598 / 5240,
+    "metal3#e2" => 28 / 598 / 5240,
+]
+thermal_diffisitivities =
+    Dict(get_tag_from_name(labels, u) => v for (u, v) in thermal_diffisitivities)
+ϵ_diffisitivities(tag) = thermal_diffisitivities[tag]
+
+uₕₜ = calculate_temperature_transient(
+    ϵ_diffisitivities ∘ τ,
+    0.0,
+    temperatures,
+    temperature(T0),
+    .5e-6,
+    2e-5,
+)
+
+createpvd("poisson_transient_solution") do pvd
+    for (uₕ, t) in uₕₜ
+        pvd[t] =
+            createvtk(Ω, "poisson_transient_solution_$t" * ".vtu", cellfields = ["u" => uₕ])
+    end
+end

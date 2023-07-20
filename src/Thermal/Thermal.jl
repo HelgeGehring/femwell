@@ -2,7 +2,7 @@ module Thermal
 
 using Gridap
 
-export calculate_temperature, temperature
+export calculate_temperature, temperature, calculate_temperature_transient
 
 struct Temperature
     temperature::FEFunction
@@ -38,5 +38,45 @@ function calculate_temperature(
 end
 
 temperature(temperature::Temperature) = temperature.temperature
+
+function calculate_temperature_transient(
+    diffusitivity::CellField,
+    power_density::Union{CellField,Float64},
+    temperatures::Dict{String,Float64},
+    T0::CellField,
+    Δt::Float64,
+    t_end::Float64,
+    order::Int = 1,
+)
+    tags = collect(keys(temperatures))
+    tags_temperatures = [temperatures[tag] for tag in tags]
+
+    g(x, t::Real) = 0.0
+    g(t::Real) = x -> g(x, t)
+    model = get_active_model(get_triangulation(diffusitivity))
+    V = TestFESpace(
+        model,
+        ReferenceFE(lagrangian, Float64, order);
+        conformity = :H1,
+        dirichlet_tags = tags,
+    )
+    U = TransientTrialFESpace(V, g)
+
+    Ω = Triangulation(model)
+    dΩ = Measure(Ω, order)
+    m₀(u, v) = ∫(u * v)dΩ
+    b₀(v) = ∫(power_density * v)dΩ
+    a₀(u, v) = ∫(diffusitivity * (∇(u) ⋅ ∇(v)))dΩ
+    op_C = TransientConstantFEOperator(m₀, a₀, b₀, U, V)
+
+    linear_solver = LUSolver()
+    θ = 0.5
+    ode_solver = ThetaMethod(linear_solver, Δt, θ)
+
+    u₀ = interpolate_everywhere(T0, U(0.0))
+    uₕₜ = solve(ode_solver, op_C, u₀, 0, t_end)
+
+    return uₕₜ
+end
 
 end
