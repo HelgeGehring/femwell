@@ -2,13 +2,13 @@
 from dataclasses import dataclass
 from functools import cached_property
 from typing import List, Tuple
-from matplotlib.figure import Figure
-from matplotlib.axes import Axes
+
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy.typing import NDArray
 import scipy.constants
 import scipy.sparse.linalg
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from numpy.typing import NDArray
 from scipy.constants import epsilon_0, speed_of_light
 from skfem import (
@@ -153,7 +153,7 @@ class Mode:
     def calculate_intensity(self) -> Tuple[NDArray, Basis]:
         """Calculates the intensity of a mode.
 
-        The intensity is calculated from the cross-product between the electric and magnetic field, as 
+        The intensity is calculated from the cross-product between the electric and magnetic field, as
         described in https://doi.org/10.1364/OE.16.016659.
 
         The calculation is performed as follows:
