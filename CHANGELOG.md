@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.5
+
+- Add function to calculate intensities
+- Add function to plot intensities
 ## v0.1.4
 
 - Fix meshing if a LineString is cut by the geometry
