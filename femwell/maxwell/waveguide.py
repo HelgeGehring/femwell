@@ -162,7 +162,7 @@ class Mode:
         3) The intensity is projected on a new discontinuous, piecewise linear triangular basis.
 
         Returns:
-            NDArray, Basis: Intensity and plot-ready basis
+            Basis, NDArray: Plot-ready basis and intensity array
         """
         (Ex, Ey), _ = self.basis.interpolate(self.E)
         (Hx, Hy), _ = self.basis.interpolate(np.conj(self.H))
@@ -170,7 +170,7 @@ class Mode:
         basis2 = self.basis.with_element(ElementDG(ElementTriP1()))
         intensity2 = basis2.project(intensity)
 
-        return intensity2, basis2
+        return basis2, intensity2
 
     def plot(self, field, plot_vectors=False, colorbar=True, direction="y", title="E"):
         return plot_mode(
@@ -202,7 +202,7 @@ class Mode:
         Returns:
             Tuple[Figure, Axes]: Figure and axes of the plot.
         """
-        intensity, intensity_basis = self.calculate_intensity()
+        intensity_basis, intensity = self.calculate_intensity()
         if normalize:
             intensity = intensity / intensity.max()
 
