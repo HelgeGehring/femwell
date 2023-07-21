@@ -160,7 +160,7 @@ if __name__ == "__main__":
 
     lams, xs = solve(
         *condense(A, B, I=basis_source_1d.get_dofs(facets="source")),
-        solver=solver_eigen_scipy_sym(sigma=3.55**2, which="LM")
+        solver=solver_eigen_scipy_sym(sigma=3.55**2, which="LM"),
     )
 
     # xs[:,0] = xs[:,0]*0+1

@@ -71,7 +71,7 @@ def compute_modes(basis_epsilon_r, epsilon_r, mu_r, num_modes, phase_x):
 
     lams, xs = solve(
         *condense(A + D1, B, D=basis.get_dofs(["top", "bottom"]), x=basis.zeros(dtype=complex)),
-        solver=solver_slepc(k=num_modes, which="LR", sigma=10)
+        solver=solver_slepc(k=num_modes, which="LR", sigma=10),
     )
 
     return np.sqrt(lams), basis, xs
