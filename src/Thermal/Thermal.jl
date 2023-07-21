@@ -29,7 +29,7 @@ function calculate_temperature(
     dΩ = Measure(Ω, order)
 
     a(u, v) = ∫(conductivity * ∇(v) ⋅ ∇(u))dΩ
-    b(v) = ∫(v * conductivity * power_density)dΩ
+    b(v) = ∫(v * power_density)dΩ
 
     op = AffineFEOperator(a, b, U, V)
     temperature = solve(op)
@@ -40,6 +40,7 @@ end
 temperature(temperature::Temperature) = temperature.temperature
 
 function calculate_temperature_transient(
+    conductivity::CellField,
     diffusitivity::CellField,
     power_density::Union{CellField,Float64},
     temperatures::Dict{String,Float64},
@@ -58,7 +59,6 @@ function calculate_temperature_transient(
     end
 
     tags_temperatures = [def_g(v) for (u, v) in temperatures_c]
-    println(tags_temperatures)
 
     model = get_active_model(get_triangulation(diffusitivity))
     V = TestFESpace(
@@ -71,9 +71,9 @@ function calculate_temperature_transient(
 
     Ω = Triangulation(model)
     dΩ = Measure(Ω, order)
-    m₀(u, v) = ∫(u * v)dΩ
+    m₀(u, v) = ∫(conductivity / diffusitivity * u * v)dΩ
     b₀(v) = ∫(power_density * v)dΩ
-    a₀(u, v) = ∫(diffusitivity * (∇(u) ⋅ ∇(v)))dΩ
+    a₀(u, v) = ∫(conductivity * (∇(u) ⋅ ∇(v)))dΩ
     op_C = TransientConstantFEOperator(m₀, a₀, b₀, U, V)
 
     linear_solver = LUSolver()

@@ -1,3 +1,4 @@
+using GLMakie
 
 using Gridap
 using GridapGmsh
@@ -81,8 +82,9 @@ thermal_diffisitivities =
 ϵ_diffisitivities(tag) = thermal_diffisitivities[tag]
 
 uₕₜ = calculate_temperature_transient(
+    ϵ_conductivities ∘ τ,
     ϵ_diffisitivities ∘ τ,
-    0.0,
+    power_density(p0) * 0,
     temperatures,
     temperature(T0),
     .5e-6,
@@ -95,3 +97,8 @@ createpvd("poisson_transient_solution") do pvd
             createvtk(Ω, "poisson_transient_solution_$t" * ".vtu", cellfields = ["u" => uₕ])
     end
 end
+
+Ω_w = Triangulation(model, tags = "core")
+dΩ_w = Measure(Ω_w, 1)
+sums = [(t, ∑(∫(u)dΩ_w)) for (u, t) in uₕₜ]
+lines(sums)
