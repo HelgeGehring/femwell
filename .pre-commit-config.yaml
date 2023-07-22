@@ -20,7 +20,7 @@ repos:
     hooks:
       - id: poetry-check
 
-  - repo: https://github.com/qiaojunfeng/pre-commit-julia-format
-    rev: "v0.1.1"
+  - repo: "https://github.com/domluna/JuliaFormatter.jl"
+    rev: "v1.0.34"
     hooks:
-    - id: julia-format
+      - id: "julia-formatter"
