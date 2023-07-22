@@ -3,7 +3,7 @@ module Waveguide
 using Gridap
 using Gridap.TensorValues
 using Arpack
-using GridapMakie, GLMakie
+using GridapMakie, CairoMakie
 import PhysicalConstants.CODATA2018: c_0, μ_0, ε_0
 import Unitful: ustrip
 
