@@ -1,6 +1,8 @@
 module Electrostatic
 
 using Gridap
+using Gridap.Algebra
+using GridapPETSc
 
 export compute_potential, current_density, power_density, potential
 
@@ -11,8 +13,9 @@ end
 
 function compute_potential(
     conductivity::CellField,
-    voltages::Dict{String,Float64},
+    voltages::Dict{String,Float64};
     order::Int = 1,
+    solver::LinearSolver = BackslashSolver(),
 )
     tags = collect(keys(voltages))
     tags_voltages = [voltages[tag] for tag in tags]
@@ -32,7 +35,7 @@ function compute_potential(
     b(v) = 0
 
     op = AffineFEOperator(a, b, Ug, V0)
-    potential = solve(op)
+    potential = solve(solver, op)
 
     return Potential(potential, conductivity)
 end

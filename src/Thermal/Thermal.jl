@@ -1,6 +1,7 @@
 module Thermal
 
 using Gridap
+using Gridap.Algebra
 
 export calculate_temperature, temperature, calculate_temperature_transient
 
@@ -11,8 +12,9 @@ end
 function calculate_temperature(
     conductivity::CellField,
     power_density::CellField,
-    temperatures = Dict{String,Float64},
+    temperatures = Dict{String,Float64};
     order::Int = 1,
+    solver::LinearSolver = BackslashSolver(),
 )
     tags = collect(keys(temperatures))
     tags_temperatures = [temperatures[tag] for tag in tags]
@@ -32,7 +34,7 @@ function calculate_temperature(
     b(v) = ∫(v * power_density)dΩ
 
     op = AffineFEOperator(a, b, U, V)
-    temperature = solve(op)
+    temperature = solve(solver, op)
 
     return Temperature(temperature)
 end
