@@ -20,6 +20,7 @@
 # %% [markdown]
 # ```{caution}
 # **This example is under construction**
+# As Julia-Dicts are not ordered, the mesh might become incorrect when adjusted (for now, better do the meshing in python)
 # ```
 
 # %% tags=["hide-output"]
