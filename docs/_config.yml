@@ -62,3 +62,6 @@ sphinx:
         .py:
             - jupytext.reads
             - fmt: py
+        .jl:
+            - jupytext.reads
+            - fmt: jl

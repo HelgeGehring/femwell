@@ -31,7 +31,7 @@ basis0.plot(epsilon_r.real).show()
 # dofs = basis0.get_dofs(elements=lambda x: (x[0] > 6))  # *(x[1]>.5))
 # epsilon_r[dofs] = 1**2
 dofs = basis0.get_dofs(elements=lambda x: x[0] > 7)
-epsilon_r[dofs] += basis0.project(lambda x: np.maximum(0, x[0] - 7) ** 2 * 0.007j, dtype=complex)[
+epsilon_r[dofs] += basis0.project(lambda x: np.maximum(0, x[0] - 7) ** 2 * 0.07j, dtype=complex)[
     dofs
 ]
 basis0.plot(epsilon_r.imag, shading="gouraud", colorbar=True)
@@ -41,7 +41,7 @@ line1_basis = basis.boundary("line1")
 line2_basis = basis.boundary("line2")
 
 mu_r = 1
-k0 = 6
+k0 = 4
 
 
 def h_m(y, b, m):
@@ -54,7 +54,7 @@ def gamma_m(b, m):
 
 @BilinearForm(dtype=complex)
 def maxwell(u, v, w):
-    return 0.5 * (1 / w.epsilon_r * inner(grad(u), grad(v))) - k0**2 * inner(u, v)
+    return 0.5 * (1 / w.epsilon_r * inner(grad(u), grad(v)) - k0**2 * inner(u, v))
 
 
 @BilinearForm(dtype=complex)

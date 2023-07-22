@@ -39,13 +39,17 @@ jobs:
           sudo apt-get install -y libglu1-mesa
           poetry install --no-interaction
           mamba install slepc4py=*=complex* -y
+          mamba install julia
           pip install jupyter-book
           pip install --upgrade jupytext
           pip install sphinx=="5.3.0"
           pip install docutils=="0.17.1"
-          pip uninstall -y scikit-fem
-          pip install --upgrade git+https://github.com/kinnala/scikit-fem.git
           pip list
+      
+      - uses: julia-actions/setup-julia@v1
+        with:
+          version: '1.9.2'
+      - uses: julia-actions/julia-buildpkg@v1
       - uses: actions/cache@v3
         with:
           path: |
