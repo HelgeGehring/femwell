@@ -15,7 +15,7 @@
 # ---
 
 # %% [markdown]
-# # Coupled mode theory
+# # Mode solving
 
 # %% [markdown]
 # ```{caution}
@@ -61,7 +61,7 @@ using GridapMakie, CairoMakie
 
 using Femwell.Maxwell.Waveguide
 
-GLMakie.inline!(true)
+CairoMakie.inline!(true)
 
 model = GmshDiscreteModel("mesh.msh")
 Ω = Triangulation(model)
