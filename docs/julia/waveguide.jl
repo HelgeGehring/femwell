@@ -86,10 +86,11 @@ println(n_eff(modes[1]))
 write_mode_to_vtk("mode", modes[1])
 
 plot_mode(modes[1])
-println(modes)
+modes
 
 # %% [markdown]
-# # Perturbations
+# ## Perturbations
+# Let's add a minor perturbation
 
 # %% tags=["remove-stderr"]
 epsilons_p = ["core" => -0.1im, "box" => -0.0im, "clad" => -0.0im]
@@ -99,3 +100,5 @@ println(perturbed_neff(modes[1], ε_p ∘ τ))
 
 modes_p = calculate_modes(ε ∘ τ + ε_p ∘ τ, λ = 1.55, num = 2, order = 1)
 println(n_eff(modes_p[1]))
+
+# %%
