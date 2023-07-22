@@ -45,8 +45,10 @@ input_form_rhs(v) = ∫(-2 * ((x -> VectorValue(1, 0, 0)) ⋅ v))dΓ_in
 V = TestFESpace(
     model,
     ReferenceFE(nedelec, Float64, 1),
+    conformity = :HCurl,
     vector_type = Vector{ComplexF64},
-    dirichlet_tags = Int[],# ["line_top", "line_bottom"],
+    #dirichlet_tags = ["cladding___boundary", "substrate___boundary"],
+    #dirichlet_masks=[(true,false,false),(true,false,false)]
 )
 U = TrialFESpace(V, x -> VectorValue(0, 0, 0))
 println(num_free_dofs(V))

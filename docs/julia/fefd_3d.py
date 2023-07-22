@@ -56,16 +56,8 @@ if __name__ == "__main__":
     )
     import shapely.ops
 
-    left_boundary = Prism(
+    boundary = Prism(
         polygons=shapely.ops.unary_union([box(1, 0, 2, 1), box(-1, 0, 0, 1)]),
-        buffers={
-            -substrate_thickness - pml_thickness: 0.0,
-            cladding_thickness + pml_thickness: 0.0,
-        },
-        model=model,
-    )
-    right_boundary = Prism(
-        polygons=box(-1, 0, 0, 1),
         buffers={
             -substrate_thickness - pml_thickness: 0.0,
             cladding_thickness + pml_thickness: 0.0,
@@ -83,12 +75,13 @@ if __name__ == "__main__":
     entities["PML_cladding"] = PML_cladding
     entities["PML_substrate"] = PML_substrate
 
-    boundaries = dict(left=left_boundary)
+    boundaries = dict(boundary=boundary)
 
     mesh = model.mesh(
         entities,
         boundaries_dict=boundaries,
         verbosity=5,
         filename="mesh.msh",
-        default_characteristic_length=0.1,
+        default_characteristic_length=0.2,
+        resolutions={"substrate": {"resolution": 0.07}, "cladding": {"resolution": 0.07}},
     )
