@@ -25,7 +25,9 @@ jobs:
         with:
           version: '1.9.2'
       - uses: julia-actions/cache@v1
-      - uses: julia-actions/julia-buildpkg@v1
+      - name: Install JuliaFormatter and format
+        run: |
+          julia  -e 'using Pkg; Pkg.add(PackageSpec(name="JuliaFormatter"))'
       - uses: pre-commit/action@v3.0.0
 
   flake8-lint:
