@@ -57,7 +57,7 @@ using Gridap.Geometry
 using Gridap.Visualization
 using Gridap.ReferenceFEs
 using GridapGmsh
-using GridapMakie, GLMakie
+using GridapMakie, CairoMakie
 
 using Femwell.Maxwell.Waveguide
 
@@ -82,7 +82,7 @@ epsilons = ["core" => 1.9963^2, "box" => 1.444^2, "clad" => 1.0^2]
 modes = calculate_modes(ε ∘ τ, λ = 1.55, num = 2, order = 1)
 println(n_eff(modes[1]))
 write_mode_to_vtk("mode", modes[1])
-modes
+
 
 #epsilons_p = ["core"=>-.1im,"box"=>-.0im,"clad"=>-.0im]
 #ε_p(tag) = Dict(get_tag_from_name(labels, u)=>v for (u,v) in epsilons_p)[tag]
@@ -93,4 +93,5 @@ modes
 #println(n_eff(modes[1]))
 
 
-#plot_mode(modes[1])
+plot_mode(modes[1])
+modes
