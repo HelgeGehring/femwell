@@ -84,15 +84,17 @@ modes = calculate_modes(ε ∘ τ, λ = 1.55, num = 2, order = 1)
 println(n_eff(modes[1]))
 write_mode_to_vtk("mode", modes[1])
 
-
-#epsilons_p = ["core"=>-.1im,"box"=>-.0im,"clad"=>-.0im]
-#ε_p(tag) = Dict(get_tag_from_name(labels, u)=>v for (u,v) in epsilons_p)[tag]
-#println(perturbed_neff(modes[1],ε_p∘τ))
-#println((perturbed_neff(modes[1],ε_p∘τ)-n_eff(modes[1]))*2+n_eff(modes[1]))
-
-#modes = calculate_modes(ε∘τ + ε_p∘τ, λ=1.55, num=6, radius=3, order=2)
-#println(n_eff(modes[1]))
-
-
 plot_mode(modes[1])
-modes
+println(modes)
+
+# %% [markdown]
+# # Perturbations
+
+# %% tags=["remove-stderr"]
+epsilons_p = ["core" => -0.1im, "box" => -0.0im, "clad" => -0.0im]
+ε_p(tag) = Dict(get_tag_from_name(labels, u) => v for (u, v) in epsilons_p)[tag]
+
+println(perturbed_neff(modes[1], ε_p ∘ τ))
+
+modes_p = calculate_modes(ε ∘ τ + ε_p ∘ τ, λ = 1.55, num = 2, order = 1)
+println(n_eff(modes_p[1]))
