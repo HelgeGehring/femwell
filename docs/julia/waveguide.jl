@@ -51,7 +51,7 @@ mesh = mesh_from_OrderedDict(
     filename = "mesh.msh",
 )
 
-# %%
+# %% tags=["remove-stderr", "hide-output"]
 using Gridap
 using Gridap.Geometry
 using Gridap.Visualization
@@ -63,6 +63,7 @@ using Femwell.Maxwell.Waveguide
 
 CairoMakie.inline!(true)
 
+# %% tags=["remove-stderr"]
 model = GmshDiscreteModel("mesh.msh")
 Ω = Triangulation(model)
 #fig = plot(Ω)
