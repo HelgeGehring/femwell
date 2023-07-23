@@ -90,13 +90,18 @@ modes
 
 # %% [markdown]
 # ## Perturbations
-# Let's add a minor perturbation
+# Let's add a minor perturbation and calculate the effective refractive index using perturbation theory:
 
 # %% tags=["remove-stderr"]
 epsilons_p = ["core" => -0.1im, "box" => -0.0im, "clad" => -0.0im]
 ε_p(tag) = Dict(get_tag_from_name(labels, u) => v for (u, v) in epsilons_p)[tag]
 
 println(perturbed_neff(modes[1], ε_p ∘ τ))
+
+# %% [markdown]
+# For comparison, we also calculate directly the effective refractive index:
+
+# %% tags=["remove-stderr"]
 
 modes_p = calculate_modes(ε ∘ τ + ε_p ∘ τ, λ = 1.55, num = 2, order = 1)
 println(n_eff(modes_p[1]))
