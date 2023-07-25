@@ -48,8 +48,9 @@ function calculate_temperature_transient(
     temperatures::Dict{String,Float64},
     T0::CellField,
     Δt::Float64,
-    t_end::Float64,
+    t_end::Float64;
     order::Int = 1,
+    solver::LinearSolver = LUSolver(),
 )
     temperatures_c = collect(temperatures)
     tags = [u for (u, v) in temperatures_c]
@@ -78,9 +79,8 @@ function calculate_temperature_transient(
     a₀(u, v) = ∫(conductivity * (∇(u) ⋅ ∇(v)))dΩ
     op_C = TransientConstantFEOperator(m₀, a₀, b₀, U, V)
 
-    linear_solver = LUSolver()
     θ = 0.5
-    ode_solver = ThetaMethod(linear_solver, Δt, θ)
+    ode_solver = ThetaMethod(solver, Δt, θ)
 
     u₀ = interpolate_everywhere(T0, U(0.0))
     uₕₜ = solve(ode_solver, op_C, u₀, 0, t_end)
