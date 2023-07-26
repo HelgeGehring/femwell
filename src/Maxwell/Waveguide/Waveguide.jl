@@ -157,4 +157,19 @@ function write_mode_to_vtk(filename::String, mode::Mode)
     )
 end
 
+# https://www.nature.com/articles/ncomms8027#Sec11
+A1(mode::Mode) = ∑(
+    ∫(
+        ω(mode) * E(mode) ⋅ TensorValue([1 0 0; 0 1 0; 0 0 0]) ⋅ (ustrip(ε_0) * mode.ε) ⋅ E(mode) -
+        1 / ω(mode) * curl(mode.E[1]) ⋅ 1 / ustrip(μ_0) ⋅ curl(mode.E[1]),
+    )dΩ,
+)
+A2(mode::Mode) = ∑(
+    ∫(
+        ω(mode) * ustrip(μ_0) * H(mode) ⋅ TensorValue([1 0 0; 0 1 0; 0 0 0]) ⋅ H(mode) +
+        1 / ω(mode) * mode.E[2] ⋅ (ustrip(ε_0) * mode.ε) ⋅ mode.E[2] * ω(mode)^2,
+    )dΩ,
+)
+B(mode::Mode) = 2∑(∫(E(mode) ⋅ TensorValue([0 1 0; 0 -1 0; 0 0 0]) ⋅ H(mode))dΩ)
+
 end
