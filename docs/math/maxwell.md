@@ -1,70 +1,120 @@
-# Maxwell-equations
+# Background on simulations for the electromagnetic field
 
-Starting with the Maxwell equations:
+### Some useful relations
 
-$$
-\begin{aligned} 
-    &\nabla\cdot \left(\varepsilon\vec{\mathcal{E}}\right)
-    &=
-    &\, \, \rho
-    \\
-    &\nabla\cdot \left(\mu\vec{\mathcal{H}}\right)
-    &=
-    & \,\, 0
-    \\
-    &\nabla\times\vec{\mathcal{E}}
-    &=
-    &- \mu \frac{\partial \vec{\mathcal{H}}}{\partial t}
-    \\
-    &\nabla\times\vec{\mathcal{H}}
-    &=
-    &\,\, \varepsilon\frac{\partial \vec{\mathcal{E}}}{\partial t} + \vec{J}
-\end{aligned}
-$$ (maxwell)
+We here put some useful equations connecting the (angular) frequency $\omega$, the wave length $\lambda$ and the wave number $k$ in various ways (so you don't have to think about them again). The equations include also the (regular) frequency $f$ and the speed of light $c$.
 
-where $\mu$ and $\epsilon$ are assumed to be element wise constant.
+$$\begin{aligned}
+    \omega=2\pi f = c k  = \frac{2\pi c}{\lambda}\\
+    \lambda = \frac{c}{f} = \frac{2\pi c}{\omega} = \frac{2\pi}{k} \\
+    k =\frac{2\pi}{\lambda}=\frac{2\pi f}{c} = \frac{\omega}{c}
+\end{aligned}$$
 
-## Further definitions / relations
+## Maxwell's equations 
 
-$$
-    &\mu = \mu_0 \mu_r
+Starting point to describe a light field are always Maxwell's equations. We here will look at Maxwell's equations in materials, which can be described by the dielectric constant. Derivations of these equations can be found in most standard textbooks on electrodynamics. 
 
-    &\epsilon = \epsilon_0 \epsilon_r
+A general way to write the Maxwell's equations is 
 
-    &\mu_0 \epsilon_0 = c^{-2}
+$$\begin{aligned}
+    \mathbf{\nabla}\cdot\mathbf{D} &= \varrho_{\text{ext}}\\
+    \mathbf{\nabla}\cdot\mathbf{B} &= 0 \\
+    \mathbf{\nabla}\times\mathbf{E} &= - \frac{\partial \mathbf{B}} {\partial t} \\ 
+    \mathbf{\nabla}\times\mathbf{H} &= \mathbf{J}_{ext} + \frac{\partial \mathbf{D}} {\partial t} 
+\end{aligned}$$ 
 
-    &\vec{\mathcal{D}} = \epsilon_0 \epsilon_r \vec{\mathcal{E}}
+with the four fields
 
-    &\vec{\mathcal{B}} = \mu_0 \mu_r \vec{\mathcal{H}}
-$$
+-   $\mathbf{D}$: electric displacement
 
-$$
-    &\omega = 2 \pi f
+-   $\mathbf{E}$: electric field
 
-    &\lambda = \frac{c}{f} = \frac{2 \pi c}{\omega} = \frac{2 \pi}{k}
+-   $\mathbf{H}$: magnetic displacement
 
-    &k = \frac{2 \pi}{\lambda} = \frac{2 \pi f}{c} = \frac{\omega}{c}
-$$
+-   $\mathbf{B}$: magnetic field
+
+In the equations $\varrho_{\text{ext}}$ and $\mathbf{J}_{\text{ext}}$ are the external charge and current density. These are macroscopic equations, i.e., local average over microscopic quantities.
+
+The coupling to matter can be described in the macroscopic equations via the polarisation $\mathbf{P}$ and the magnetisation $\mathbf{M}$
+
+$$\begin{aligned}
+    \mathbf{D} &=& \varepsilon_0 \mathbf{E} + \mathbf{P}\\
+    \mathbf{H}&=& \frac{1}{\mu_0} \mathbf{B}- \mathbf{M}    
+\end{aligned}$$ 
+
+with $\varepsilon_0$ the electric permittivity and $\mu_0$ the magnetic permeability. The polarisation $\mathbf{P}$ describes the dipole moment per unit cell of the material
+
+$$\begin{aligned}
+    \mathbf{\nabla}\cdot\mathbf{P} = - \varrho_{\text{int}} \notag
+\end{aligned}$$ 
+
+Now putting these back in the Maxwell equations we obtain 
+
+$$\begin{aligned}
+    \mathbf{\nabla}\cdot\mathbf{D}= \mathbf{\nabla}\cdot\left(\varepsilon_0 \mathbf{E} + \mathbf{P} \right) 
+        \qquad \Rightarrow \qquad  \mathbf{\nabla}\cdot\mathbf{E} = \frac{1}{\varepsilon_0} \varrho\, , 
+\end{aligned}$$ 
+
+which constitutes a link between the electric field $\mathbf{E}$ and all polarization effects. Here $\rho=\rho_{\text{ext}}+\rho_{\text{int}}$ is the sum of the external and internal charges. 
+
+For most effects in light-matter interaction, it is sufficient to consider linear and isotropic materials. Then, a linear connection between polarisation and electric field can be given by the dielectric
+susceptibility $\chi$ constant (for anisotropic materials $\underline{\underline{\chi}}$ is a tensor) via 
+
+$$\mathbf{P} = \varepsilon_0 \chi \mathbf{E} \,.$$ 
+
+With this we can write 
+
+$$\begin{aligned}
+    \mathbf{D}= \varepsilon_0 \mathbf{E} + \mathbf{P} = ( \varepsilon_0 + \varepsilon_0 \chi) \mathbf{E}  = \varepsilon_0 (1+\chi)\mathbf{E}=  \varepsilon_0 \varepsilon_r \mathbf{E}
+\end{aligned}$$ 
+
+using the dielectric displacement $\varepsilon=1+ \chi$, also called dielectric constant. The dielectric constant is often given to quantify the response of a material to an external field, hence, it
+is an important quantity. Note that for the magnetic field it holds analogously
+
+$$\mathbf{B} = \mu_0 \mu_r \mathbf{H}$$ 
+
+with the permeablitiy $\mu$ and for non-magnetic materials (as considered here) we have $\mu=1$. We summarize 
+
+$$\begin{aligned}
+    \varepsilon = \varepsilon_0 \varepsilon_r\\
+    \mu = \mu_0 \mu_r
+\end{aligned}$$ 
+
+We remind that it holds that 
+
+$$\begin{aligned}
+    c^2=\frac{1}{\mu_0\varepsilon_0}
+\end{aligned}$$ 
+
+Now we insert the description of the materials into the Maxwell equation, only two fields remain 
+
+$$\begin{aligned}
+    \varepsilon \mathbf{\nabla}\cdot\mathbf{E} &=& \varrho\\
+    \mu \mathbf{\nabla}\cdot\mathbf{H} &=& 0 \\
+    \mathbf{\nabla}\times\mathbf{E} &=& - \mu \frac{\partial \mathbf{H}} {\partial t} \\ 
+    \mathbf{\nabla}\times\mathbf{H} &=& \mathbf{J}_{ext} + \varepsilon \frac{\partial \mathbf{E}} {\partial t} \,.
+\end{aligned}$$
+
+
+
+
+
+
+
+
+
 
 ## Eigenvectors propagating in $x_3$-direction
 
-Assuming no sources and currents present, {eq}`maxwell` simplifies to
+Assuming no sources and currents present, Maxwell's simplifies to
 
+$$    \begin{aligned} &\nabla\cdot \left(\varepsilon\vec{\mathcal{E}}\right) = 0 \\
+    & \nabla\cdot \left(\mu\vec{\mathcal{H}}\right) = 0  \\
+    & \nabla\times\vec{\mathcal{E}} = - \mu \frac{\partial \vec{\mathcal{H}}}{\partial t} \\
+    & \nabla\times\vec{\mathcal{H}} =  \varepsilon \frac{\partial \vec{\mathcal{E}}}{\partial t}  \end{aligned} 
 $$
-    &\nabla\cdot \left(\varepsilon\vec{\mathcal{E}}\right) = 0
 
-    &\nabla\cdot \left(\mu\vec{\mathcal{H}}\right) = 0
-
-    &
-    \nabla\times\vec{\mathcal{E}}
-    =
-    - \mu \frac{\partial \vec{\mathcal{H}}}{\partial t}
-
-    &
-    \nabla\times\vec{\mathcal{H}}
-    =
-    \varepsilon\frac{\partial \vec{\mathcal{E}}}{\partial t}
-$$ (maxwell_no_sources)
+Label:(maxwell_no_sources)
 
 By combining the latter two equations of {eq}`maxwell_no_sources`
 we get for the $\mathcal{E}$
