@@ -2,7 +2,7 @@ name: conda_env
 channels:
   - conda-forge
 dependencies:
-  - python
+  - python=3.11
   - pip
   - slepc4py=*=complex*
   - numpy
