@@ -1,5 +1,6 @@
 FROM ghcr.io/helgegehring/femwell:main
 
+USER root
 ARG NB_USER
 ARG NB_UID
 ENV USER ${NB_USER}
