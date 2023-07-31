@@ -1,9 +1,7 @@
 #
 name: docker
 
-on:
-  push:
-    branches: ['docker']
+on: push
 
 env:
   REGISTRY: ghcr.io
@@ -35,6 +33,6 @@ jobs:
         with:
           context: .
           file: .docker/Dockerfile
-          push: ${{ github.ref == 'refs/heads/docker' }}
+          push: ${{ github.ref == 'refs/heads/main' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
