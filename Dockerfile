@@ -1,6 +1,7 @@
 FROM ghcr.io/mamba-org/micromamba:1.4.9-lunar
 
-COPY  --chmod=777 . ${HOME}
+COPY . ${HOME}
+RUN chmod -R 777 .
 
 RUN micromamba install -y -n base -f environment.yml julia && micromamba clean --all --yes
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
