@@ -1,6 +1,8 @@
 FROM jupyter/scipy-notebook:latest
 
-COPY . ${HOME}
+COPY environment.yml ${HOME}
+COPY Project.toml ${HOME}
+COPY Manifest.toml ${HOME}
 
 RUN conda env update --file environment.yml --prune --quiet
 RUN conda install julia --quiet
