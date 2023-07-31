@@ -1,1 +1,1 @@
-FROM ghcr.io/helgegehring/femwell:docker
+FROM ghcr.io/helgegehring/femwell:main
