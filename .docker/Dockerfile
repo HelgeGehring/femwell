@@ -3,6 +3,7 @@ FROM mambaorg/micromamba:latest
 COPY . ${HOME}
 
 RUN micromamba install -y -n base -f environment.yml && micromamba clean --all --yes
+RUN mamba install pip
 RUN pip install --no-cache notebook jupyterlab
 RUN pip install .
 
