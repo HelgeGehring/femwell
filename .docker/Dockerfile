@@ -2,7 +2,7 @@ FROM mambaorg/micromamba:latest
 
 COPY . ${HOME}
 
-RUN mamba env update --file environment.yml --prune --quiet
+RUN micromamba install -y -n base -f environment.yaml && micromamba clean --all --yes
 RUN pip install --no-cache notebook jupyterlab
 RUN pip install .
 
