@@ -1,1 +1,1 @@
-FROM ghcr.io/helgegehring/femwell:465a061b89da20bd5606dd040c859e937c40f98df754e476d39d02008a921da8
+FROM ghcr.io/helgegehring/femwell:sha256:465a061b89da20bd5606dd040c859e937c40f98df754e476d39d02008a921da8
