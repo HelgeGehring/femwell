@@ -1,4 +1,4 @@
-FROM ghcr.io/mamba-org/micromamba:latest
+FROM ghcr.io/mamba-org/micromamba:1.4.9-lunar
 
 COPY  --chmod=777 . ${HOME}
 
