@@ -1,7 +1,6 @@
 FROM ghcr.io/mamba-org/micromamba:latest
 
-COPY . ${HOME}
-RUN chmod -R 777 .
+COPY  --chmod=777 . ${HOME}
 
 RUN micromamba install -y -n base -f environment.yml && micromamba clean --all --yes
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
