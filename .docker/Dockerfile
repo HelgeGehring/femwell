@@ -1,9 +1,9 @@
-FROM mambaorg/micromamba:latest
+FROM ghcr.io/mamba-org/micromamba:latest
 
 COPY . ${HOME}
 
 RUN micromamba install -y -n base -f environment.yml && micromamba clean --all --yes
-RUN mamba install pip
+ARG MAMBA_DOCKERFILE_ACTIVATE=1
 RUN pip install --no-cache notebook jupyterlab
 RUN pip install .
 
