@@ -35,6 +35,6 @@ jobs:
         with:
           context: .
           file: .docker/Dockerfile
-          push: ${{ github.ref == 'ref/heads/docker' }}
+          push: ${{ github.ref == 'refs/heads/docker' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
