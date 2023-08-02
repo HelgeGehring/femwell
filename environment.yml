@@ -2,7 +2,7 @@ name: conda_env
 channels:
   - conda-forge
 dependencies:
-  - python=3.10
+  - python
   - pip
   - slepc4py=*=complex*
   - numpy
@@ -14,4 +14,3 @@ dependencies:
       - meshio
       - tqdm
       - scikit-fem >=1.2.3
-      - git+https://github.com/HelgeGehring/femwell.git
