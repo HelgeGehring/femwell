@@ -60,6 +60,7 @@ tm_fraction(mode::Mode) = abs(
 )
 
 function calculate_modes(
+    model::DiscreteModel,
     ε::CellField;
     k0::Union{Number,Nothing} = nothing,
     λ::Union{Number,Nothing} = nothing,
@@ -74,7 +75,6 @@ function calculate_modes(
     end
     k0 = !isnothing(k0) ? k0 : 2π / λ
 
-    model = get_active_model(get_triangulation(ε))
     V1 = TestFESpace(
         model,
         ReferenceFE(nedelec, order),

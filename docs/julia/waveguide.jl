@@ -103,7 +103,7 @@ println(perturbed_neff(modes[1], ε_p ∘ τ))
 
 # %% tags=["remove-stderr"]
 
-modes_p = calculate_modes(ε ∘ τ + ε_p ∘ τ, λ = 1.55, num = 2, order = 1)
+modes_p = calculate_modes(model, ε ∘ τ + ε_p ∘ τ, λ = 1.55, num = 2, order = 1)
 println(n_eff(modes_p[1]))
 
 # %%
