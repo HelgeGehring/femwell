@@ -1,7 +1,7 @@
 import gdsfactory as gf
 from gdsfactory.generic_tech import LAYER
 from gdsfactory.pdk import LayerStack, get_layer_stack
-from gdsfactory.simulation.gmsh.xyz_mesh import xyz_mesh
+from gplugins.gmsh.xyz_mesh import xyz_mesh
 
 # Choose some component
 c = gf.component.Component()
@@ -57,16 +57,17 @@ filtered_layerstack.layers["clad"].thickness += sum(
 
 resolutions = {
     "core": {"resolution": 0.3},
-    "via2": {"resolution": 0.3},
-    "via1": {"resolution": 0.3},
-    "heater": {"resolution": 0.3},
+    "via2": {"resolution": 0.1},
+    "via1": {"resolution": 0.1},
+    "heater": {"resolution": 0.1},
 }
 geometry = xyz_mesh(
     component=c,
     layerstack=filtered_layerstack,
     resolutions=resolutions,
-    filename="mesh.msh",
-    default_characteristic_length=2,
+    filename="mesh.step",
+    default_characteristic_length=0.5,
+    global_3D_algorithm=10,
     verbosity=5,
     global_scaling=1e-6,
 )
