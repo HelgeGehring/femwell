@@ -10,74 +10,75 @@ $$\begin{aligned}
     k =\frac{2\pi}{\lambda}=\frac{2\pi f}{c} = \frac{\omega}{c}
 \end{aligned}$$
 
-## Maxwell's equations 
+## Maxwell's equations for dielectric materials
 
 Starting point to describe a light field are always Maxwell's equations. We here will look at Maxwell's equations in materials, which can be described by the dielectric constant. Derivations of these equations can be found in most standard textbooks on electrodynamics. 
 
 A general way to write the Maxwell's equations is 
 
 $$\begin{aligned}
-    \mathbf{\nabla}\cdot\mathbf{D} &= \varrho_{\text{ext}}\\
-    \mathbf{\nabla}\cdot\mathbf{B} &= 0 \\
-    \mathbf{\nabla}\times\mathbf{E} &= - \frac{\partial \mathbf{B}} {\partial t} \\ 
-    \mathbf{\nabla}\times\mathbf{H} &= \mathbf{J}_{ext} + \frac{\partial \mathbf{D}} {\partial t} 
+    \mathbf{\nabla}\cdot\mathbf{D}\left(\mathbf{r},t\right) &= \varrho_{\text{ext}}\left(\mathbf{r},t\right)\\
+    \mathbf{\nabla}\cdot\mathbf{B}\left(\mathbf{r},t\right) &= 0 \\
+    \mathbf{\nabla}\times\mathbf{E}\left(\mathbf{r},t\right) &= - \frac{\partial \mathbf{B}\left(\mathbf{r},t\right)} {\partial t} \\ 
+    \mathbf{\nabla}\times\mathbf{H}\left(\mathbf{r},t\right)&= \mathbf{J}_{ext}\left(\mathbf{r},t\right) + \frac{\partial \mathbf{D}\left(\mathbf{r},t\right)} {\partial t} 
 \end{aligned}$$ 
 
-with the four fields
+with the four fields (note that a bold letter indicates a vector)
 
--   $\mathbf{D}$: electric displacement
+-   $\mathbf{D}\left(\mathbf{r},t\right)$: electric displacement
 
--   $\mathbf{E}$: electric field
+-   $\mathbf{E}\left(\mathbf{r},t\right)$: electric field
 
--   $\mathbf{H}$: magnetic displacement
+-   $\mathbf{H}\left(\mathbf{r},t\right)$: magnetic displacement
 
--   $\mathbf{B}$: magnetic field
+-   $\mathbf{B}\left(\mathbf{r},t\right)$: magnetic field
 
 In the equations $\varrho_{\text{ext}}$ and $\mathbf{J}_{\text{ext}}$ are the external charge and current density. These are macroscopic equations, i.e., local average over microscopic quantities.
 
 The coupling to matter can be described in the macroscopic equations via the polarisation $\mathbf{P}$ and the magnetisation $\mathbf{M}$
 
 $$\begin{aligned}
-    \mathbf{D} &=& \varepsilon_0 \mathbf{E} + \mathbf{P}\\
-    \mathbf{H}&=& \frac{1}{\mu_0} \mathbf{B}- \mathbf{M}    
+    \mathbf{D}\left(\mathbf{r},t\right) &=& \varepsilon_0 \mathbf{E}\left(\mathbf{r},t\right) + \mathbf{P}\left(\mathbf{r},t\right)\\
+    \mathbf{H}\left(\mathbf{r},t\right) &=& \frac{1}{\mu_0} \mathbf{B}\left(\mathbf{r},t\right)- \mathbf{M}\left(\mathbf{r},t\right)    
 \end{aligned}$$ 
 
 with $\varepsilon_0$ the electric permittivity and $\mu_0$ the magnetic permeability. The polarisation $\mathbf{P}$ describes the dipole moment per unit cell of the material
 
 $$\begin{aligned}
-    \mathbf{\nabla}\cdot\mathbf{P} = - \varrho_{\text{int}} \notag
+    \mathbf{\nabla}\cdot\mathbf{P}\left(\mathbf{r},t\right) = - \varrho_{\text{int}}\left(\mathbf{r},t\right) \notag
 \end{aligned}$$ 
 
 Now putting these back in the Maxwell equations we obtain 
 
 $$\begin{aligned}
-    \mathbf{\nabla}\cdot\mathbf{D}= \mathbf{\nabla}\cdot\left(\varepsilon_0 \mathbf{E} + \mathbf{P} \right) 
-        \qquad \Rightarrow \qquad  \mathbf{\nabla}\cdot\mathbf{E} = \frac{1}{\varepsilon_0} \varrho\, , 
+    \mathbf{\nabla}\cdot\mathbf{D}\left(\mathbf{r},t\right)=& \mathbf{\nabla}\cdot\left(\varepsilon_0 \mathbf{E}\left(\mathbf{r},t\right) + \mathbf{P}\left(\mathbf{r},t\right) \right) \\
+        \Rightarrow 
+        \mathbf{\nabla}\cdot\mathbf{E}\left(\mathbf{r},t\right) =& \frac{1}{\varepsilon_0} \left(  \mathbf{\nabla}\cdot\mathbf{D}\left(\mathbf{r},t\right) -  \mathbf{\nabla}\cdot\mathbf{P}\left(\mathbf{r},t\right) \right)
+        = \frac{1}{\varepsilon_0} \left( \rho_{\text{ext}}\left(\mathbf{r},t\right)+\rho_{\text{int}}\left(\mathbf{r},t\right) \right)\varrho\,
+        = \frac{1}{\varepsilon_0} \rho\left(\mathbf{r},t\right) \,,
 \end{aligned}$$ 
 
 which constitutes a link between the electric field $\mathbf{E}$ and all polarization effects. Here $\rho=\rho_{\text{ext}}+\rho_{\text{int}}$ is the sum of the external and internal charges. 
 
-For most effects in light-matter interaction, it is sufficient to consider linear and isotropic materials. Then, a linear connection between polarisation and electric field can be given by the dielectric
-susceptibility $\chi$ constant (for anisotropic materials $\underline{\underline{\chi}}$ is a tensor) via 
+For most effects in light-matter interaction, it is sufficient to consider linear materials, i.e., the relation between the polarisation and the electric field is given by a constant. For isotropic materials these constant is called emph{dielectric susceptibility} $\chi$ constant, while for anisotropic materials $\underline{\underline{\chi}}$ is a tensor. For the purpose of modelling dielectric materials, we assume that the polarization has the same time dependence that the electric field. We will keep the dependence on the space coordinate to account for composities of materials to bet modelling in a device, i.e., we account for inhomogeneous materials. 
 
-$$\mathbf{P} = \varepsilon_0 \chi \mathbf{E} \,.$$ 
+$$\mathbf{P}\left(\mathbf{r},t\right) = \varepsilon_0 \chi\left(\mathbf{r}\right) \mathbf{E}\left(\mathbf{r},t\right) \,.$$ 
 
 With this we can write 
 
 $$\begin{aligned}
-    \mathbf{D}= \varepsilon_0 \mathbf{E} + \mathbf{P} = ( \varepsilon_0 + \varepsilon_0 \chi) \mathbf{E}  = \varepsilon_0 (1+\chi)\mathbf{E}=  \varepsilon_0 \varepsilon_r \mathbf{E}
+    \mathbf{D}\left(\mathbf{r},t\right)= \varepsilon_0 \mathbf{E}\left(\mathbf{r},t\right) + \mathbf{P}\left(\mathbf{r},t\right) = ( \varepsilon_0 + \varepsilon_0 \chi\left(\mathbf{r}\right)) \mathbf{E}\left(\mathbf{r},t\right)  = \varepsilon_0 (1+\chi\left(\mathbf{r}\right))\mathbf{E}\left(\mathbf{r},t\right)=  \varepsilon_0 \varepsilon_r\left(\mathbf{r}\right) \mathbf{E}\left(\mathbf{r},t\right)
 \end{aligned}$$ 
 
-using the dielectric displacement $\varepsilon=1+ \chi$, also called dielectric constant. The dielectric constant is often given to quantify the response of a material to an external field, hence, it
-is an important quantity. Note that for the magnetic field it holds analogously
+using the dielectric displacement $\varepsilon=1+ \chi$, also called dielectric constant. The dielectric constant is often given to quantify the response of a material to an external field, hence, it is an important quantity. Note that for the magnetic field, assuming again isotropic, linear materials, it holds analogously
 
-$$\mathbf{B} = \mu_0 \mu_r \mathbf{H}$$ 
+$$\mathbf{B}\left(\mathbf{r},t\right) = \mu_0 \mu_r\left(\mathbf{r}\right) \mathbf{H}\left(\mathbf{r},t\right)$$ 
 
-with the permeablitiy $\mu$ and for non-magnetic materials (as considered here) we have $\mu=1$. We summarize 
+with the permeablitiy $\mu_r$. For materials are non-magnetic, such that we have $\mu_R=1$. We summarize 
 
 $$\begin{aligned}
-    \varepsilon = \varepsilon_0 \varepsilon_r\\
-    \mu = \mu_0 \mu_r
+    \varepsilon\left(\mathbf{r}\right) = \varepsilon_0 \varepsilon_r\left(\mathbf{r}\right)\\
+    \mu\left(\mathbf{r}\right) = \mu_0 \mu_r\left(\mathbf{r}\right)
 \end{aligned}$$ 
 
 We remind that it holds that 
@@ -86,19 +87,41 @@ $$\begin{aligned}
     c^2=\frac{1}{\mu_0\varepsilon_0}
 \end{aligned}$$ 
 
-Now we insert the description of the materials into the Maxwell equation, only two fields remain 
+Now we insert the description of the materials into the Maxwell equation, only two fields remain.
 
 $$\begin{aligned}
-    \varepsilon \mathbf{\nabla}\cdot\mathbf{E} &=& \varrho\\
-    \mu \mathbf{\nabla}\cdot\mathbf{H} &=& 0 \\
-    \mathbf{\nabla}\times\mathbf{E} &=& - \mu \frac{\partial \mathbf{H}} {\partial t} \\ 
-    \mathbf{\nabla}\times\mathbf{H} &=& \mathbf{J}_{ext} + \varepsilon \frac{\partial \mathbf{E}} {\partial t} \,.
+    \mathbf{\nabla}\cdot \left( \varepsilon\left(\mathbf{r}\right)  \mathbf{E}\left(\mathbf{r},t\right) \right) &=& \varrho \left(\mathbf{r},t\right)\\
+     \mathbf{\nabla}\cdot \left( \mu \left(\mathbf{r}\right) \mathbf{H}\left(\mathbf{r},t\right) \right) &=& 0 \\
+    \mathbf{\nabla}\times\mathbf{E}\left(\mathbf{r},t\right) &=& - \mu \frac{\partial \mathbf{H}\left(\mathbf{r},t\right)} {\partial t} \\ 
+    \mathbf{\nabla}\times\mathbf{H}\left(\mathbf{r},t\right) &=& \mathbf{J}_{\text{ext}}\left(\mathbf{r},t\right) + \varepsilon \frac{\partial \mathbf{E}\left(\mathbf{r},t\right)} {\partial t} \,.
 \end{aligned}$$
 
+### Piecewise constant materials and boundary conditions
+It is instructive to condsider the well-known case of an interface $I$ between two dielectric materials, which appear in many devices. We assume an interface between two materials called $1$ with dielectric constant $\varepsilon_1$ and $2$ with dielectric constant $\varepsilon_2$. The surface is defined by the normal vector of the interface $\mathbf{n}_{I}$ and there are no external surface charges or currents. 
 
+All fields can then be split into the component parallel to the interface (hence perpendicular to the normal vector) and perpendicular to the interface (hence parallel to the normal vector). For example we consider the electric field: Define the normalized field vector $\hat{\mathbf{E}}=\mathbf{E}/E$ we split it into
 
+$$\begin{aligned}
+    \mathbf{E}\left(\mathbf{r},t\right) =& \left(\mathbf{n}_I \times \hat{\mathbf{E}} \right) \mathbf{E} +  \left(\mathbf{n}_I \cdot \hat{\mathbf{E}} \right) \mathbf{E}\\
+\end{aligned}$$
 
+Maxwell's equation now impose continuity conditions at surfaces:
 
+-   tangential component of $\mathbf{E}$ is continuous
+    $$ \mathbf{E}_{1,||} =     \mathbf{E}_{2,||}$$
+
+-   normal component of $\mathbf{D}$ is continuous
+    $$\mathbf{D}_{1,\text{perp}} = \mathbf{D}_{2,\text{perp}}  \quad \Leftrightarrow \quad  
+                \varepsilon_1 \mathbf{E}_{1,perp} = \varepsilon_2 \mathbf{E}_{2,perp}$$
+
+-   tangential component of $\mathbf{H}$ is continuous
+    $$\mathbf{H}_{1,parallel} =  \mathbf{H}_{2,parallel}$$
+
+-   normal component of $\mathbf{B}$ is continuous
+    $$\mathbf{B}_{1,perp} =  \mathbf{B}_{2,perp}  \quad \Leftrightarrow \quad   
+                \frac{1}{\mu_1}\mathbf{H}_{1,perp} =  \frac{1}{\mu_2}\mathbf{H}_{2,perp}$$
+
+In these equations we have used $\mathbf{D}=\varepsilon_0\varepsilon\mathbf{E}$ and $\mathbf{H}=\frac{1}{\mu_0}\mathbf{B}$.
 
 
 
