@@ -60,7 +60,7 @@ $$\begin{aligned}
 
 which constitutes a link between the electric field $\mathbf{E}$ and all polarization effects. Here $\rho=\rho_{\text{ext}}+\rho_{\text{int}}$ is the sum of the external and internal charges. 
 
-For most effects in light-matter interaction, it is sufficient to consider linear materials, i.e., the relation between the polarisation and the electric field is given by a constant. For isotropic materials these constant is called emph{dielectric susceptibility} $\chi$ constant, while for anisotropic materials $\underline{\underline{\chi}}$ is a tensor. For the purpose of modelling dielectric materials, we assume that the polarization has the same time dependence that the electric field. We will keep the dependence on the space coordinate to account for composities of materials to bet modelling in a device, i.e., we account for inhomogeneous materials. 
+For most effects in light-matter interaction, it is sufficient to consider linear materials, i.e., the relation between the polarisation and the electric field is given by a constant. For isotropic materials these constant is called *dielectric susceptibility* $\chi$ constant, while for anisotropic materials $\underline{\underline{\chi}}$ is a tensor. For the purpose of modelling dielectric materials, we assume that the polarization has the same time dependence that the electric field. We will keep the dependence on the space coordinate to account for composities of materials to bet modelling in a device, i.e., we account for inhomogeneous materials. 
 
 $$\mathbf{P}\left(\mathbf{r},t\right) = \varepsilon_0 \chi\left(\mathbf{r}\right) \mathbf{E}\left(\mathbf{r},t\right) \,.$$ 
 
@@ -97,34 +97,38 @@ $$\begin{aligned}
 \end{aligned}$$
 
 ### Piecewise constant materials and boundary conditions
-It is instructive to condsider the well-known case of an interface $I$ between two dielectric materials, which appear in many devices. We assume an interface between two materials called $1$ with dielectric constant $\varepsilon_1$ and $2$ with dielectric constant $\varepsilon_2$. The surface is defined by the normal vector of the interface $\mathbf{n}_{I}$ and there are no external surface charges or currents. 
+It is instructive to condsider the well-known case of an interface $I$ between two dielectric materials, which appear in many devices. We assume an interface between two materials called $1$ with dielectric constant $\varepsilon_1$ and $2$ with dielectric constant $\varepsilon_2$. The surface is defined by the normal vector of the interface $\mathbf{n}_{I}$ and there are no external surface charges or currents. For simplicity, we surpress the index  $\left(\mathbf{r},t\right)$ here. 
 
 All fields can then be split into the component parallel to the interface (hence perpendicular to the normal vector) and perpendicular to the interface (hence parallel to the normal vector). For example we consider the electric field: Define the normalized field vector $\hat{\mathbf{E}}=\mathbf{E}/E$ we split it into
 
 $$\begin{aligned}
-    \mathbf{E}\left(\mathbf{r},t\right) =& \left(\mathbf{n}_I \times \hat{\mathbf{E}} \right) \mathbf{E} +  \left(\mathbf{n}_I \cdot \hat{\mathbf{E}} \right) \mathbf{E}\\
+    \mathbf{E}=& \left(\mathbf{n}_I \times \hat{\mathbf{E}} \right) \mathbf{E} +  \left(\mathbf{n}_I \cdot \hat{\mathbf{E}} \right) \mathbf{E}\\
+     =&\mathbf{E}^{\parallel}_I + \mathbf{E}^{\perp}_I
 \end{aligned}$$
-
+ 
 Maxwell's equation now impose continuity conditions at surfaces:
 
--   tangential component of $\mathbf{E}$ is continuous
-    $$ \mathbf{E}_{1,||} =     \mathbf{E}_{2,||}$$
+tangential component of $\mathbf{E}$ is continuous 
 
--   normal component of $\mathbf{D}$ is continuous
-    $$\mathbf{D}_{1,\text{perp}} = \mathbf{D}_{2,\text{perp}}  \quad \Leftrightarrow \quad  
-                \varepsilon_1 \mathbf{E}_{1,perp} = \varepsilon_2 \mathbf{E}_{2,perp}$$
+$$ \mathbf{E}^{\parallel}_1 = \mathbf{E}^{\parallel}_2 $$
+    
+normal component of $\mathbf{D}$ is continuous
+ 
+$$\mathbf{D}^{\perp}_1 = \mathbf{D}^{\perp}_2  \quad \Leftrightarrow \quad  
+                \varepsilon_1 \mathbf{E}^{\perp}_1 = \varepsilon_2 \mathbf{E}^{\perp}_2$$
+   
+tangential component of $\mathbf{H}$ is continuous
 
--   tangential component of $\mathbf{H}$ is continuous
-    $$\mathbf{H}_{1,parallel} =  \mathbf{H}_{2,parallel}$$
+$$\mathbf{H}^{\parallel}_1 =  \mathbf{H}^{\parallel}_2$$
+  
+normal component of $\mathbf{B}$ is continuous
+   
+$$\mathbf{B}^{\perp}_1 =  \mathbf{B}^{\perp}_2  \quad \Leftrightarrow \quad   
+                \frac{1}{\mu_1}\mathbf{H}^{\perp}_1 =  \frac{1}{\mu_2}\mathbf{H}^{\perp}_2 $$
 
--   normal component of $\mathbf{B}$ is continuous
-    $$\mathbf{B}_{1,perp} =  \mathbf{B}_{2,perp}  \quad \Leftrightarrow \quad   
-                \frac{1}{\mu_1}\mathbf{H}_{1,perp} =  \frac{1}{\mu_2}\mathbf{H}_{2,perp}$$
+In these equations we have used $\mathbf{D}=\varepsilon_0\varepsilon\mathbf{E}$ and $\mathbf{H}=\frac{1}{\mu_0}\mathbf{B} $.
 
-In these equations we have used $\mathbf{D}=\varepsilon_0\varepsilon\mathbf{E}$ and $\mathbf{H}=\frac{1}{\mu_0}\mathbf{B}$.
-
-
-
+While the calculations can be done with keeping $\varepsilon(\mathbf{r})$, the boundary conditions can give a useful sanity check. They also indicate, that at boundaries a fine grid is required, while at areas of homogeneous materials larger grid can be chosen. 
 
 
 ## Eigenvectors propagating in $x_3$-direction
