@@ -3,7 +3,7 @@ module Thermal
 using Gridap
 using Gridap.Algebra
 
-export calculate_temperature, temperature, calculate_temperature_transient
+export calculate_temperature, temperature, calculate_temperature_transient, heat_flux
 
 struct Temperature
     temperature::FEFunction
