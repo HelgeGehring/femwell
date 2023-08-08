@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.8
+
+- Fix build-backend in pyproject.toml
+
 ## v0.1.7
 
 - Add __init__.py to femwell/maxwell
