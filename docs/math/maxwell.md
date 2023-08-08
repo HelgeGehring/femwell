@@ -54,7 +54,7 @@ $$\begin{aligned}
     \mathbf{\nabla}\cdot\mathbf{D}\left(\mathbf{r},t\right)=& \mathbf{\nabla}\cdot\left(\varepsilon_0 \mathbf{E}\left(\mathbf{r},t\right) + \mathbf{P}\left(\mathbf{r},t\right) \right) \\
         \Rightarrow 
         \mathbf{\nabla}\cdot\mathbf{E}\left(\mathbf{r},t\right) =& \frac{1}{\varepsilon_0} \left(  \mathbf{\nabla}\cdot\mathbf{D}\left(\mathbf{r},t\right) -  \mathbf{\nabla}\cdot\mathbf{P}\left(\mathbf{r},t\right) \right)
-        = \frac{1}{\varepsilon_0} \left( \rho_{\text{ext}}\left(\mathbf{r},t\right)+\rho_{\text{int}}\left(\mathbf{r},t\right) \right)\varrho\,
+        = \frac{1}{\varepsilon_0} \left( \rho_{\text{ext}}\left(\mathbf{r},t\right)+\rho_{\text{int}}\left(\mathbf{r},t\right) \right)\,
         = \frac{1}{\varepsilon_0} \rho\left(\mathbf{r},t\right) \,,
 \end{aligned}$$ 
 
