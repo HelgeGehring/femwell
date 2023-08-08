@@ -7,10 +7,11 @@ export calculate_temperature, temperature, calculate_temperature_transient
 
 struct Temperature
     temperature::FEFunction
+    thermal_conductivity::CellField
 end
 
 function calculate_temperature(
-    conductivity::CellField,
+    thermal_conductivity::CellField,
     power_density::CellField,
     temperatures = Dict{String,Float64};
     order::Int = 1,
@@ -19,7 +20,7 @@ function calculate_temperature(
     tags = collect(keys(temperatures))
     tags_temperatures = [temperatures[tag] for tag in tags]
 
-    model = get_active_model(get_triangulation(conductivity))
+    model = get_active_model(get_triangulation(thermal_conductivity))
     V = TestFESpace(
         model,
         ReferenceFE(lagrangian, Float64, order);
@@ -30,20 +31,22 @@ function calculate_temperature(
     Ω = Triangulation(model)
     dΩ = Measure(Ω, order)
 
-    a(u, v) = ∫(conductivity * ∇(v) ⋅ ∇(u))dΩ
+    a(u, v) = ∫(thermal_conductivity * ∇(v) ⋅ ∇(u))dΩ
     b(v) = ∫(v * power_density)dΩ
 
     op = AffineFEOperator(a, b, U, V)
     temperature = solve(solver, op)
 
-    return Temperature(temperature)
+    return Temperature(temperature, thermal_conductivity)
 end
 
 temperature(temperature::Temperature) = temperature.temperature
+heat_flux(temperature::Temperature) =
+    temperature.thermal_conductivity * ∇(temperature.temperature)
 
 function calculate_temperature_transient(
-    conductivity::CellField,
-    diffusitivity::CellField,
+    thermal_conductivity::CellField,
+    thermal_diffusitivity::CellField,
     power_density::Union{CellField,Float64},
     temperatures::Dict{String,Float64},
     T0::CellField,
@@ -63,7 +66,7 @@ function calculate_temperature_transient(
 
     tags_temperatures = [def_g(v) for (u, v) in temperatures_c]
 
-    model = get_active_model(get_triangulation(diffusitivity))
+    model = get_active_model(get_triangulation(thermal_diffusitivity))
     V = TestFESpace(
         model,
         ReferenceFE(lagrangian, Float64, order);
@@ -74,9 +77,9 @@ function calculate_temperature_transient(
 
     Ω = Triangulation(model)
     dΩ = Measure(Ω, order)
-    m₀(u, v) = ∫(conductivity / diffusitivity * u * v)dΩ
+    m₀(u, v) = ∫(thermal_conductivity / thermal_diffusitivity * u * v)dΩ
     b₀(v) = ∫(power_density * v)dΩ
-    a₀(u, v) = ∫(conductivity * (∇(u) ⋅ ∇(v)))dΩ
+    a₀(u, v) = ∫(thermal_conductivity * (∇(u) ⋅ ∇(v)))dΩ
     op_C = TransientConstantFEOperator(m₀, a₀, b₀, U, V)
 
     θ = 0.5
