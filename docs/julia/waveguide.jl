@@ -81,7 +81,7 @@ epsilons = ["core" => 1.9963^2, "box" => 1.444^2, "clad" => 1.0^2]
 #dΩ = Measure(Ω, 1)
 τ = CellField(get_face_tag(labels, num_cell_dims(model)), Ω)
 
-modes = calculate_modes(ε ∘ τ, λ = 1.55, num = 2, order = 1)
+modes = calculate_modes(model, ε ∘ τ, λ = 1.55, num = 2, order = 1)
 println(n_eff(modes[1]))
 write_mode_to_vtk("mode", modes[1])
 
