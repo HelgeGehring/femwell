@@ -139,9 +139,7 @@ $$    \begin{aligned} &\nabla\cdot \left(\varepsilon\vec{\mathcal{E}}\right) = 0
     & \nabla\cdot \left(\mu\vec{\mathcal{H}}\right) = 0  \\
     & \nabla\times\vec{\mathcal{E}} = - \mu \frac{\partial \vec{\mathcal{H}}}{\partial t} \\
     & \nabla\times\vec{\mathcal{H}} =  \varepsilon \frac{\partial \vec{\mathcal{E}}}{\partial t}  \end{aligned} 
-$$
-
-Label:(maxwell_no_sources)
+$$(maxwell_no_sources)
 
 By combining the latter two equations of {eq}`maxwell_no_sources`
 we get for the $\mathcal{E}$
