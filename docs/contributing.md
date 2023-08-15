@@ -9,21 +9,21 @@
 
 ## Variables
 
-| Variable                       | Description               |
-| ------------------------------ | ------------------------- |
-| $\mathbf{D}$                   | electric displacement     |
-| $\mathbf{E}$                   | electric field            |
-| $\mathbf{H}$                   | magnetic displacement     |
-| $\mathbf{B}$                   | magnetic field            |
-| $\mathbf{P}$                   | polarisation              |
-| $\mathbf{M}$                   | magnetisation             |
-| $\varepsilon_r$                | relative permittivity     |
-| $\mu_r$                        | relative permeability     |
-| $\underline{\underline{\chi}}$ | dielectric susceptibility |
-| $\lambda$                      | wavelength                |
-| $k$                            | propagation constant      |
-| $f$                            | frequency                 |
-| $\omega$                       | angular frequency         |
+| Variable                                | Description               |
+| --------------------------------------- | ------------------------- |
+| $\mathbf{D}$                            | electric displacement     |
+| $\mathbf{E}$                            | electric field            |
+| $\mathbf{H}$                            | magnetic displacement     |
+| $\mathbf{B}$                            | magnetic field            |
+| $\mathbf{P}$                            | polarisation              |
+| $\mathbf{M}$                            | magnetisation             |
+| $\underline{\underline{\varepsilon_r}}$ | relative permittivity     |
+| $\underline{\underline{\mu_r}}$         | relative permeability     |
+| $\underline{\underline{\chi}}$          | dielectric susceptibility |
+| $\lambda$                               | wavelength                |
+| $k$                                     | propagation constant      |
+| $f$                                     | frequency                 |
+| $\omega$                                | angular frequency         |
 
 ## Constants
 
