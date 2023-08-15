@@ -7,6 +7,7 @@ using PyCall
 GLMakie.inline!(true)
 
 solver = LinearFESolver(BackslashSolver())
+solver = LinearFESolver(LUSolver())
 
 model = GmshDiscreteModel("mesh.msh")
 Ω = Triangulation(model)
@@ -25,11 +26,14 @@ mu_r = 1
 k0 = 10
 
 labels = get_face_labeling(model)
+
+n1 = 1
+n2 = 1.2
 epsilons = [
-    "substrate" => 1.0^2,
-    "cladding" => 1^2,
-    "PML_substrate" => 1.0^2,
-    "PML_cladding" => 1^2,
+    "substrate" => n1^2,
+    "cladding" => n2^2,
+    "PML_substrate" => n1^2,
+    "PML_cladding" => n2^2,
 ]
 ε(tag) = Dict(get_tag_from_name(labels, u) => v for (u, v) in epsilons)[tag]
 τ = CellField(get_face_tag(labels, num_cell_dims(model)), Ω)
@@ -54,6 +58,7 @@ U = TrialFESpace(V, x -> VectorValue(0, 0, 0))
 println(num_free_dofs(V))
 
 op = AffineFEOperator(lhs_maxwell, input_form_rhs, U, V)
+
 sol = solve(solver, op)
 
 Base.real(x::VectorValue{3,ComplexF64}) = VectorValue(real.(x.data))
@@ -80,7 +85,7 @@ println(sum_in)
 println(sum_out)
 
 display(
-    plot([real(sol(Gridap.Point(0.5, 0.5, x)) ⋅ VectorValue(1, 0, 0)) for x = -2:0.01:2]),
+    plot([imag(sol(Gridap.Point(0.5, 0.5, x)) ⋅ VectorValue(1, 0, 0)) for x = -2:0.01:2]),
 )
 
 println(
@@ -91,3 +96,13 @@ println(
 println(minimum([abs((norm ∘ sol)(Gridap.Point(0.5, 0.5, x))) for x = -1:0.01:1]))
 println(maximum([abs((norm ∘ sol)(Gridap.Point(0.5, 0.5, x))) for x = -1:0.01:1]))
 println(maximum([abs((norm ∘ sol)(Gridap.Point(0.5, 0.5, x))) for x = -1:0.01:1]))
+
+transmission =
+    maximum([imag(sol(Gridap.Point(0.5, 0.5, x)) ⋅ VectorValue(1, 0, 0)) for x = -1:0.01:0])
+in_plus_reflection =
+    maximum([imag(sol(Gridap.Point(0.5, 0.5, x)) ⋅ VectorValue(1, 0, 0)) for x = 0:0.01:1])
+
+println(transmission / in_plus_reflection)
+
+reflection = abs((n1 - n2) / (n1 + n2))
+println((1 - reflection) / (1 + reflection))
