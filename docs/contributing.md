@@ -21,9 +21,10 @@
 | $\underline{\underline{\mu_r}}$         | relative permeability     |
 | $\underline{\underline{\chi}}$          | dielectric susceptibility |
 | $\lambda$                               | wavelength                |
-| $k$                                     | propagation constant      |
+| $k$                                     | wave number               |
 | $f$                                     | frequency                 |
 | $\omega$                                | angular frequency         |
+| $\boldsymbol\beta$                      | propagation constant      |
 
 ## Constants
 
