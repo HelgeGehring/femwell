@@ -2,7 +2,7 @@
 
 julia_version = "1.9.2"
 manifest_format = "2.0"
-project_hash = "b3314de92a60ab0e3a6efaa06b8c50e142af91c3"
+project_hash = "d79b8a9dd9d9c3612cba1c30bcf93a2f23c45cd7"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -572,7 +572,7 @@ version = "0.9.1"
 
 [[deps.Gridap]]
 deps = ["AbstractTrees", "BSON", "BlockArrays", "Combinatorics", "DataStructures", "DocStringExtensions", "FastGaussQuadrature", "FileIO", "FillArrays", "ForwardDiff", "JLD2", "JSON", "LineSearches", "LinearAlgebra", "NLsolve", "NearestNeighbors", "PolynomialBases", "QuadGK", "Random", "SparseArrays", "SparseMatricesCSR", "StaticArrays", "Test", "WriteVTK"]
-git-tree-sha1 = "31eb81cdfba7c5d1e00e70891b3257719a6237b4"
+path = "/home/helge/.julia/dev/Gridap"
 uuid = "56d4f2e9-7ea1-5844-9cf6-b9c51ca7ce8e"
 version = "0.17.17"
 
@@ -584,7 +584,7 @@ version = "0.2.7"
 
 [[deps.GridapGmsh]]
 deps = ["Gridap", "GridapDistributed", "Libdl", "Metis", "PartitionedArrays", "gmsh_jll"]
-git-tree-sha1 = "e39f162f663655158e2dc132124e1cea45c3afb4"
+path = "/home/helge/.julia/dev/GridapGmsh"
 uuid = "3025c34a-b394-11e9-2a55-3fee550c04c8"
 version = "0.6.1"
 
@@ -944,6 +944,12 @@ deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifac
 git-tree-sha1 = "6979eccb6a9edbbb62681e158443e79ecc0d056a"
 uuid = "f1f71cc9-e9ae-5b93-9b94-4fe0e1ad3748"
 version = "5.3.1+0"
+
+[[deps.MUMPS]]
+deps = ["Libdl", "LinearAlgebra", "MPI", "MUMPS_jll", "SparseArrays"]
+git-tree-sha1 = "385f671b43f45990a544d6a4c2f21f8b6c14de55"
+uuid = "55d2b088-9f4e-11e9-26c0-150b02ea6a46"
+version = "1.3.0"
 
 [[deps.MUMPS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "METIS_jll", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenBLAS32_jll", "OpenMPI_jll", "PARMETIS_jll", "Pkg", "SCALAPACK32_jll", "SCOTCH_jll", "TOML"]
