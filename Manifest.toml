@@ -956,6 +956,12 @@ git-tree-sha1 = "6979eccb6a9edbbb62681e158443e79ecc0d056a"
 uuid = "f1f71cc9-e9ae-5b93-9b94-4fe0e1ad3748"
 version = "5.3.1+0"
 
+[[deps.MUMPS]]
+deps = ["Libdl", "LinearAlgebra", "MPI", "MUMPS_jll", "SparseArrays"]
+git-tree-sha1 = "385f671b43f45990a544d6a4c2f21f8b6c14de55"
+uuid = "55d2b088-9f4e-11e9-26c0-150b02ea6a46"
+version = "1.3.0"
+
 [[deps.MUMPS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "METIS_jll", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenBLAS32_jll", "OpenMPI_jll", "PARMETIS_jll", "Pkg", "SCALAPACK32_jll", "SCOTCH_jll", "TOML"]
 git-tree-sha1 = "99f5791b81e59aad952d0629b066cde87a1e81f9"

@@ -4,6 +4,11 @@ using GridapGmsh
 using GridapMakie, GLMakie
 using PyCall
 
+import MUMPS
+using MPI, SparseArrays
+
+MPI.Init()
+
 GLMakie.inline!(true)
 
 solver = LinearFESolver(BackslashSolver())
@@ -57,9 +62,16 @@ V = TestFESpace(
 U = TrialFESpace(V, x -> VectorValue(0, 0, 0))
 println(num_free_dofs(V))
 
-op = AffineFEOperator(lhs_maxwell, input_form_rhs, U, V)
+#op = AffineFEOperator(lhs_maxwell, input_form_rhs, U, V)
 
-sol = solve(solver, op)
+#sol = solve(solver, op)
+
+assem = Gridap.FESpaces.SparseMatrixAssembler(U, V)
+A = assemble_matrix(lhs_maxwell, assem, U, V)
+B = assemble_vector(input_form_rhs, assem, U)
+x = MUMPS.solve(A, B)[:, 1]
+sol = FEFunction(U, x)
+
 
 Base.real(x::VectorValue{3,ComplexF64}) = VectorValue(real.(x.data))
 Base.imag(x::VectorValue{3,ComplexF64}) = VectorValue(imag.(x.data))
