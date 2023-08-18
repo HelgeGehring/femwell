@@ -572,7 +572,7 @@ version = "0.9.1"
 
 [[deps.Gridap]]
 deps = ["AbstractTrees", "BSON", "BlockArrays", "Combinatorics", "DataStructures", "DocStringExtensions", "FastGaussQuadrature", "FileIO", "FillArrays", "ForwardDiff", "JLD2", "JSON", "LineSearches", "LinearAlgebra", "NLsolve", "NearestNeighbors", "PolynomialBases", "QuadGK", "Random", "SparseArrays", "SparseMatricesCSR", "StaticArrays", "Test", "WriteVTK"]
-path = "/home/helge/.julia/dev/Gridap"
+git-tree-sha1 = "31eb81cdfba7c5d1e00e70891b3257719a6237b4"
 uuid = "56d4f2e9-7ea1-5844-9cf6-b9c51ca7ce8e"
 version = "0.17.17"
 
@@ -584,7 +584,7 @@ version = "0.2.7"
 
 [[deps.GridapGmsh]]
 deps = ["Gridap", "GridapDistributed", "Libdl", "Metis", "PartitionedArrays", "gmsh_jll"]
-path = "/home/helge/.julia/dev/GridapGmsh"
+git-tree-sha1 = "e39f162f663655158e2dc132124e1cea45c3afb4"
 uuid = "3025c34a-b394-11e9-2a55-3fee550c04c8"
 version = "0.6.1"
 
