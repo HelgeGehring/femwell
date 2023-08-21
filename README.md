@@ -50,11 +50,11 @@ Something missing? Feel free to open an [issue](https://github.com/HelgeGehring/
 
 ## Contributors
 
-- Helge Gehring (Google)
-- Simon Bilodeau (Google, Princton University)
+- Helge Gehring (Google, WWU Münster)
+- Simon Bilodeau (Google, Princeton University)
 - Joaquin Matres (Google)
 - Marc de Cea Falco (Google, Massachusetts Institute of Technology)
-- Lodovico Rossi (Princton University)
+- Lodovico Rossi (Princeton University)
 - Doris Reiter (Dortmund University)
 - Yannick Augenstein (Google, Karlsruhe Institute of Technology)
 
