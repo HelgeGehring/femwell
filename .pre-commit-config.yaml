@@ -24,3 +24,10 @@ repos:
     rev: "v1.0.34"
     hooks:
       - id: "julia-formatter"
+
+  - repo: https://github.com/FlamingTempura/bibtex-tidy
+    rev: v1.11.0
+    hooks:
+      - id: bibtex-tidy
+        args: [ '--months', '--space=4', '--sort',
+                '--duplicates', '--strip-enclosing-braces', '--sort-fields' ]
