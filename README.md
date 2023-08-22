@@ -57,6 +57,7 @@ Something missing? Feel free to open an [issue](https://github.com/HelgeGehring/
 - Lodovico Rossi (Princeton University)
 - Doris Reiter (Dortmund University)
 - Yannick Augenstein (Google, Karlsruhe Institute of Technology)
+- Niko Savola (Google, Aalto University)
 
 Happy about every form of contribution -
 pull requests, feature requests, issues, questions, ... :)
