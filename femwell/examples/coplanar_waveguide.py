@@ -50,7 +50,7 @@ def mesh_waveguide_1(filename, wsim, hclad, hsi, wcore, hcore, gap):
     combined = shapely.ops.unary_union([core_l, core_r, clad, silicon])
 
     polygons = OrderedDict(
-        boundary=LineString(combined.exterior),
+        surface=LineString(combined.exterior),
         interface=LineString(
             [
                 (-wsim / 2, -hcore / 2),
@@ -70,7 +70,9 @@ def mesh_waveguide_1(filename, wsim, hclad, hsi, wcore, hcore, gap):
         core_r_interface={"resolution": 0.003, "distance": 1},
     )
 
-    return mesh_from_OrderedDict(polygons, resolutions, filename=filename, default_resolution_max=1)
+    return mesh_from_OrderedDict(
+        polygons, resolutions, filename=filename, default_resolution_max=0.3
+    )
 
 
 def mesh_coax(filename, radius_inner, radius_outer):
@@ -99,6 +101,8 @@ if __name__ == "__main__":
     with tempfile.TemporaryDirectory() as tmpdirname:
         mesh_coax(radius_inner=0.512, radius_outer=2.23039, filename="mesh.msh")
         mesh_coax(radius_inner=0.512, radius_outer=2.23039, filename=tmpdirname + "/mesh.msh")
+        # mesh_waveguide_1(filename=tmpdirname + "/mesh.msh", wsim=10, hclad=1, hsi=1, wcore=1, hcore=.1, gap=.1)
+        # mesh_waveguide_1(filename="mesh.msh", wsim=10, hclad=5, hsi=5, wcore=1, hcore=.1, gap=.1)
         mesh = Mesh.load(tmpdirname + "/mesh.msh")
 
     basis0 = Basis(mesh, ElementTriP0(), intorder=4)
@@ -106,6 +110,10 @@ if __name__ == "__main__":
     epsilon[basis0.get_dofs(elements="isolator")] = 1.29
     epsilon[basis0.get_dofs(elements="isolator2")] = 1.29
     epsilon[basis0.get_dofs(elements="core")] = 1 + 1j * 5.8e7 * 1e20 / frequency
+    # epsilon[basis0.get_dofs(elements="silicon")] = 1.29
+    # epsilon[basis0.get_dofs(elements="clad")] = 1.29
+    # epsilon[basis0.get_dofs(elements="core_l")] = 1 + 1j * 5.8e7 * 1e20 / frequency
+    # epsilon[basis0.get_dofs(elements="core_r")] = 1 + 1j * 5.8e7 * 1e20 / frequency
     basis0.plot(np.real(epsilon), colorbar=True).show()
 
     conductors = ["isolator2___isolator"]
