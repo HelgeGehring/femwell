@@ -19,3 +19,6 @@ docs/_build
 
 .vscode/
 *.iml
+
+# julia
+Manifest.toml
