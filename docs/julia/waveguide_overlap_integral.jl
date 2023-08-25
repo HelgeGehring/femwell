@@ -22,12 +22,16 @@
 # In order to see how good the estimation of the overlap integral is and to see at which distance the coupling is too weak to be estimated precisely using this methodology,
 # we calculate the coupling as a function of the distance in the following.
 
-# %% tags=["hide-output"]
+# %% tags=["hide-input","hide-output"]
 using PyCall
 
-all_distances = 1:1.0:30
+all_distances = 1:1.0:2
 distances = Float64[]
 overlaps = Float64[]
+
+mode_1 = nothing
+mode_2 = nothing
+Ω = nothing
 
 for distance in all_distances
     println(distance)
@@ -82,6 +86,11 @@ for distance in all_distances
     labels = get_face_labeling(model)
     τ = CellField(get_face_tag(labels, num_cell_dims(model)), Ω)
 
+    fig = plot(Ω)
+    fig.axis.aspect = DataAspect()
+    wireframe!(Ω, color = :black, linewidth = 1)
+    display(fig)
+
     epsilons = ["core1" => 1.9963^2, "core2" => 1.444^2, "box" => 1.444^2, "clad" => 1.0^2]
     ε(tag) = Dict(get_tag_from_name(labels, u) => v for (u, v) in epsilons)[tag]
     @time modes_1 = calculate_modes(model, ε ∘ τ, λ = 1.55, num = 1, order = order)
@@ -103,22 +112,19 @@ for distance in all_distances
     push!(overlaps, abs(overlap_integral))
 
     if distance == last(all_distances)
-        f = Figure()
-        ax = Axis(
-            f[1, 1],
-            title = "Overlap integral between neighboring waveguides",
-            xlabel = "Distance [μm]",
-            ylabel = "Overlap integral [dB]",
-        )
-        lines!(ax, distances, 10 * log10.(overlaps))
-        plot!(ax, distances, 10 * log10.(overlaps))
-        display(f)
-
-        fig = plot(Ω)
-        fig.axis.aspect = DataAspect()
-        wireframe!(Ω, color = :black, linewidth = 1)
-        display(fig)
         plot_mode(modes_1[1])
         plot_mode(modes_2[1])
     end
 end
+
+# %% tags=["hide-input"]
+f = Figure()
+ax = Axis(
+    f[1, 1],
+    title = "Overlap integral between neighboring waveguides",
+    xlabel = "Distance [μm]",
+    ylabel = "Overlap integral [dB]",
+)
+lines!(ax, distances, 10 * log10.(overlaps))
+plot!(ax, distances, 10 * log10.(overlaps))
+display(f)
