@@ -77,16 +77,10 @@ for distance in all_distances
 
     CairoMakie.inline!(true)
 
-    # %% tags=["remove-stderr"]
     model = GmshDiscreteModel("mesh.msh")
     Ω = Triangulation(model)
     labels = get_face_labeling(model)
     τ = CellField(get_face_tag(labels, num_cell_dims(model)), Ω)
-    #fig = plot(Ω)
-    #fig.axis.aspect=DataAspect()
-    #wireframe!(Ω, color=:black, linewidth=1)
-    #display(fig)
-
 
     epsilons = ["core1" => 1.9963^2, "core2" => 1.444^2, "box" => 1.444^2, "clad" => 1.0^2]
     ε(tag) = Dict(get_tag_from_name(labels, u) => v for (u, v) in epsilons)[tag]
