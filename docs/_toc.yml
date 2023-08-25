@@ -41,6 +41,7 @@ parts:
     chapters:
     - file: julia/waveguide.jl
     - file: julia/waveguide_anisotropic.jl
+    - file: julia/waveguide_overlap_integral.jl
 
   - caption: Benchmarks
     chapters:
