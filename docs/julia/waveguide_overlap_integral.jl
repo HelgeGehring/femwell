@@ -27,7 +27,7 @@
 # %% tags=["hide-input","hide-output"]
 using PyCall
 
-all_distances = 1:1.0:2
+all_distances = 1:1.0:30
 distances = Float64[]
 overlaps = Float64[]
 
