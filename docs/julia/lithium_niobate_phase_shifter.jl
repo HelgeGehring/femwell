@@ -19,7 +19,7 @@
 
 # Reproducing {cite}`Han2022`
 
-# + tags=["hide-input"]
+# %% tags=["hide-input"]
 using PyCall
 
 py"""
@@ -64,6 +64,7 @@ mesh = from_meshio(
 )
 """
 
+# %% tags=["remove-stderr"]
 using Gridap
 using Gridap.Geometry
 using GridapGmsh
@@ -72,8 +73,6 @@ using Femwell.Maxwell.Electrostatic
 using GridapMakie, CairoMakie
 
 model = GmshDiscreteModel("mesh.msh")
-
-# %% tags=["remove-stderr"]
 Ω = Triangulation(model)
 labels = get_face_labeling(model)
 τ = CellField(get_face_tag(labels, num_cell_dims(model)), Ω)
