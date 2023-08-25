@@ -124,8 +124,8 @@ f = Figure()
 ax = Axis(
     f[1, 1],
     title = "Overlap integral between neighboring waveguides",
-    xlabel = "Distance [μm]",
-    ylabel = "Overlap integral [dB]",
+    xlabel = "Distance / μm",
+    ylabel = "Overlap integral / dB",
 )
 lines!(ax, distances, 10 * log10.(overlaps))
 plot!(ax, distances, 10 * log10.(overlaps))
