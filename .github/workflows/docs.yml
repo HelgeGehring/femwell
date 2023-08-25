@@ -32,7 +32,7 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.3.2
+          version: 1.3.4
           virtualenvs-create: false
           installer-parallel: true
       - name: Install dependencies
@@ -49,7 +49,7 @@ jobs:
       
       - uses: julia-actions/setup-julia@v1
         with:
-          version: '1.9.2'
+          version: '1.9.3'
       - uses: julia-actions/cache@v1
       - uses: julia-actions/julia-buildpkg@v1
       - uses: actions/cache@v3
