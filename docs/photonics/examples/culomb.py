@@ -52,12 +52,12 @@ polygons = OrderedDict(
 )
 
 resolutions = dict(
-    slab={"resolution": 0.1, "distance": 0.1},
-    core={"resolution": 0.1, "distance": 0.1},
+    slab={"resolution": 0.1, "distance": 4},
+    core={"resolution": 0.1, "distance": 4},
 )
 
 mesh = from_meshio(
-    mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=5)
+    mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=3)
 )
 
 basis = Basis(mesh, ElementTriP1(), intorder=4)
