@@ -21,6 +21,8 @@
 # As the modes decay exponentially outside the core after a certain distance, the overlap integral also decays in good approximation exponentially.
 # In order to see how good the estimation of the overlap integral is and to see at which distance the coupling is too weak to be estimated precisely using this methodology,
 # we calculate the coupling as a function of the distance in the following.
+#
+# For this example we chose two silicon nitride waveguides with a width of 1μm and a thickness of 0.3μm. Those waveguides are ontop of a silicon dioxide layer and air-clad.
 
 # %% tags=["hide-input","hide-output"]
 using PyCall
