@@ -103,7 +103,6 @@ voltages = 0:10:100
 voltages_neffs = []
 
 for voltage in voltages
-    println(voltage)
     epsilons = [
         "core" => 1.989,
         "env" => 1.445,
