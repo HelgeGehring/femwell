@@ -86,6 +86,7 @@ println(n_eff(modes[1]))
 write_mode_to_vtk("mode", modes[1])
 
 plot_mode(modes[1])
+plot_mode(modes[2])
 modes
 
 # %% [markdown]
