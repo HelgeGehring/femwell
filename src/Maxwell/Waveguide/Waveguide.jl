@@ -140,7 +140,7 @@ function plot_field(field)
     display(fig)
 end
 
-function plot_mode(mode::Mode)
+function plot_mode(mode::Mode; vectors = false)
     Ω = get_triangulation(mode.E)
     model = get_active_model(Ω)
     labels = get_face_labeling(model)
@@ -149,18 +149,70 @@ function plot_mode(mode::Mode)
     ∂Ω = BoundaryTriangulation(model, tags = boundary_tags)
 
     fig = Figure()
-    for (i, (title, vector)) in enumerate([
-        ("E_x", VectorValue(1, 0, 0)),
-        ("E_y", VectorValue(0, 1, 0)),
-        ("E_z", VectorValue(0, 0, 1im)),
-    ])
-        efield = real((E(mode) ⋅ vector)(get_cell_points(Measure(Ω, 1))))
-        minmax = max(abs(maximum(maximum.(efield))), abs(minimum(minimum.(efield))))
+    if !vectors
+        for (i, (title, vector)) in enumerate([
+            ("E_x", VectorValue(1, 0, 0)),
+            ("E_y", VectorValue(0, 1, 0)),
+            ("E_z", VectorValue(0, 0, 1im)),
+        ])
+            efield = real((E(mode) ⋅ vector)(get_cell_points(Measure(Ω, 1))))
+            colorrange = max(abs(maximum(maximum.(efield))), abs(minimum(minimum.(efield))))
 
-        ax = Axis(fig[1, i], title = title)
-        plt = plot!(ax, Ω, real((E(mode) ⋅ vector)), colorrange = (-minmax, minmax))
-        wireframe!(fig[1, i], ∂Ω, color = :black)
-        Colorbar(fig[2, i], plt, vertical = false)
+            ax = Axis(fig[1, i], title = title)
+            plt = plot!(
+                ax,
+                Ω,
+                real((E(mode) ⋅ vector)),
+                colorrange = (-colorrange, colorrange),
+            )
+            wireframe!(fig[1, i], ∂Ω, color = :black)
+            Colorbar(fig[2, i], plt, vertical = false)
+        end
+    else
+        efield_x =
+            getindex.(
+                real((E(mode) ⋅ VectorValue(1, 0, 0))(get_cell_points(Measure(Ω, 1)))),
+                1,
+            )
+        efield_y =
+            getindex.(
+                real((E(mode) ⋅ VectorValue(0, 1, 0))(get_cell_points(Measure(Ω, 1)))),
+                1,
+            )
+        colorrange_x =
+            max(abs(maximum(maximum.(efield_x))), abs(minimum(minimum.(efield_x))))
+        colorrange_y =
+            max(abs(maximum(maximum.(efield_y))), abs(minimum(minimum.(efield_y))))
+
+        efield_x /= sqrt(colorrange_x^2 + colorrange_y^2) * 1e6
+        efield_y /= sqrt(colorrange_x^2 + colorrange_y^2) * 1e6
+
+        cp = get_cell_points(Measure(Ω, 1))
+        x_1d = map(x -> x.data[1], getindex.(cp.cell_phys_point, 1))
+        y_1d = map(x -> x.data[2], getindex.(cp.cell_phys_point, 1))
+
+        arrows(
+            x_1d,
+            y_1d,
+            efield_y,
+            -efield_x,
+            #lengthscale=lengthscale,
+            #arrowcolor=strength_1d,
+            #linecolor=strength_1d
+        )
+
+        efield = real((E(mode) ⋅ VectorValue(0, 0, 1im))(get_cell_points(Measure(Ω, 1))))
+        colorrange = max(abs(maximum(maximum.(efield))), abs(minimum(minimum.(efield))))
+
+        ax = Axis(fig[1, 2], title = "E_z")
+        plt = plot!(
+            ax,
+            Ω,
+            real((E(mode) ⋅ VectorValue(0, 0, 1im))),
+            colorrange = (-colorrange, colorrange),
+        )
+        wireframe!(fig[1, 2], ∂Ω, color = :black)
+        Colorbar(fig[2, 2], plt, vertical = false)
     end
     display(fig)
 end
