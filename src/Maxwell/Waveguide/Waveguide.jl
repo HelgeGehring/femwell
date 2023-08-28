@@ -148,23 +148,20 @@ function plot_mode(mode::Mode)
         setdiff(unique(get_face_tag(labels, 1)), unique(get_face_tag(labels, 2)))
     ∂Ω = BoundaryTriangulation(model, tags = boundary_tags)
 
-    minmax = 0
-    for vector in [VectorValue(1, 0, 0), VectorValue(0, 1, 0), VectorValue(0, 0, 1)]
-        efield = real((E(mode) ⋅ vector)(get_cell_points(Measure(Ω, 1))))
-        minmax = max(minmax, abs(maximum(maximum.(efield))), abs(minimum(minimum.(efield))))
-    end
-
     fig = Figure()
-    ax = Axis(fig[1, 1])
-    plt = plot!(ax, Ω, real(mode.E[1] ⋅ VectorValue(1, 0)), colorrange = (-minmax, minmax))
-    wireframe!(fig[1, 1], ∂Ω, color = :black)
-    ax = Axis(fig[1, 2])
-    plt = plot!(ax, Ω, real(mode.E[1] ⋅ VectorValue(0, 1)), colorrange = (-minmax, minmax))
-    wireframe!(fig[1, 2], ∂Ω, color = :black)
-    ax = Axis(fig[1, 3])
-    plt = plot!(ax, Ω, real(mode.E[2]), colorrange = (-minmax, minmax))
-    wireframe!(fig[1, 3], ∂Ω, color = :black)
-    Colorbar(fig[1, 4], plt, vertical = true)
+    for (i, (title, vector)) in enumerate([
+        ("E_x", VectorValue(1, 0, 0)),
+        ("E_y", VectorValue(0, 1, 0)),
+        ("E_z", VectorValue(0, 0, 1im)),
+    ])
+        efield = real((E(mode) ⋅ vector)(get_cell_points(Measure(Ω, 1))))
+        minmax = max(abs(maximum(maximum.(efield))), abs(minimum(minimum.(efield))))
+
+        ax = Axis(fig[1, i], title = title)
+        plt = plot!(ax, Ω, real((E(mode) ⋅ vector)), colorrange = (-minmax, minmax))
+        wireframe!(fig[1, i], ∂Ω, color = :black)
+        Colorbar(fig[2, i], plt, vertical = false)
+    end
     display(fig)
 end
 
