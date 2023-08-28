@@ -96,20 +96,27 @@ function calculate_modes(
 
     μ_r = 1
     radius_factor(x) = (1 + x[1] / radius)^2
+    twothree = TensorValue([1 0 0; 0 1 0])
     lhs((u1, u2), (v1, v2)) =
         ∫(
             1 / μ_r * (curl(u1) ⊙ curl(v1) / k0^2 + ∇(u2) ⊙ v1) +
-            ε * radius_factor * (-u1 ⊙ v1 + u1 ⊙ ∇(v2) - u2 * v2 * k0^2),
+            radius_factor * (
+                -u1 ⋅ twothree ⋅ ε ⋅ transpose(twothree) ⋅ v1 +
+                u1 ⋅ twothree ⋅ ε ⋅ transpose(twothree) ⋅ ∇(v2) -
+                u2 * VectorValue(0, 0, 1) ⋅ ε ⋅ VectorValue(0, 0, 1) * v2 * k0^2
+            ),
         )dΩ
     rhs((u1, u2), (v1, v2)) = ∫(-1 / μ_r * u1 ⊙ v1 / k0^2)dΩ
 
     epsilons = ε(get_cell_points(Measure(Ω, 1)))
-    k0_guess = isnothing(k0_guess) ? k0^2 * maximum(real(epsilons))[1] * 1.1 : k0_guess
+    k0_guess =
+        isnothing(k0_guess) ? k0^2 * maximum(maximum.(maximum.(real.(epsilons)))) * 1.1 :
+        k0_guess
 
     assem = Gridap.FESpaces.SparseMatrixAssembler(U, V)
     A = assemble_matrix(lhs, assem, U, V)
     B = assemble_matrix(rhs, assem, U, V)
-    if all(map(x -> imag(x[1]) == 0, epsilons))
+    if all(imag(A.nzval) .== 0) && all(imag(B.nzval) .== 0)
         A, B = real(A), real(B)
     end
     vals, vecs = eigs(A, B, sigma = k0_guess, nev = num)
@@ -138,8 +145,10 @@ function plot_mode(mode::Mode)
     display(fig)
 end
 
-Base.real(x::VectorValue{3,ComplexF64}) = VectorValue(real.(x.data))
-Base.imag(x::VectorValue{3,ComplexF64}) = VectorValue(imag.(x.data))
+Base.real(x::VectorValue{D,ComplexF64}) where {D} = VectorValue(real.(x.data))
+Base.imag(x::VectorValue{D,ComplexF64}) where {D} = VectorValue(imag.(x.data))
+Base.real(x::TensorValue) = TensorValue(real.(x.data))
+Base.imag(x::TensorValue) = TensorValue(imag.(x.data))
 
 function write_mode_to_vtk(filename::String, mode::Mode)
     writevtk(

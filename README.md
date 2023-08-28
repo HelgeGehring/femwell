@@ -50,10 +50,14 @@ Something missing? Feel free to open an [issue](https://github.com/HelgeGehring/
 
 ## Contributors
 
-- Helge Gehring (Google): Maintainer
-- Simon Bilodeau (Google): Meshes everything, Analytical PN model
-- Joaquin Matres (Google): Code simplifications
-- Marc de Cea Falco (Google): Documentation improvements
+- Helge Gehring (Google, WWU Münster)
+- Simon Bilodeau (Google, Princeton University)
+- Joaquin Matres (Google)
+- Marc de Cea Falco (Google, Massachusetts Institute of Technology)
+- Lodovico Rossi (Princeton University)
+- Doris Reiter (Dortmund University)
+- Yannick Augenstein (Google, Karlsruhe Institute of Technology)
+- Niko Savola (Google, Aalto University)
 
 Happy about every form of contribution -
 pull requests, feature requests, issues, questions, ... :)

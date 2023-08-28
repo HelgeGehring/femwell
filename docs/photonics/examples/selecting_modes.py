@@ -221,8 +221,7 @@ modes_sorted[0].show(modes_sorted[0].E.real, direction="x")
 bbox = [-2, 0, 0, 0.4]
 
 elements = inside_bbox(bbox)
-modes_sorted = modes.sorted(key=lambda mode: mode.calculate_power(elements=elements))
-
+modes_sorted = modes.sorted(key=lambda mode: -mode.calculate_power(elements=elements).real)
 modes_sorted[0].show(modes_sorted[0].E.real, direction="x")
 
 # %%

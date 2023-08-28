@@ -11,6 +11,7 @@ logo: ../logo_inline.svg
 execute:
   execute_notebooks: cache
   timeout: -1
+  allow_errors: false
 
 # Define the name of the latex output file for PDF builds
 latex:

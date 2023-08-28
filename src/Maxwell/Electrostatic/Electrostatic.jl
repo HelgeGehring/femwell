@@ -3,8 +3,9 @@ module Electrostatic
 using Gridap
 using Gridap.Algebra
 using GridapPETSc
+using GridapMakie, CairoMakie
 
-export compute_potential, current_density, power_density, potential
+export compute_potential, current_density, power_density, potential, plot_potential
 
 struct Potential
     potential::FEFunction
@@ -47,5 +48,11 @@ power_density(potential::Potential) =
     potential.conductivity *
     (norm ∘ ∇(potential.potential)) *
     (norm ∘ ∇(potential.potential))
+
+function plot_potential(potential::Potential)
+    fig, _, plt = plot(get_triangulation(potential.potential), potential.potential)
+    Colorbar(fig[1, 2], plt)
+    display(fig)
+end
 
 end

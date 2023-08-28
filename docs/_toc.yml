@@ -40,6 +40,9 @@ parts:
   - caption: Julia Examples
     chapters:
     - file: julia/waveguide.jl
+    - file: julia/waveguide_anisotropic.jl
+    - file: julia/waveguide_overlap_integral.jl
+    - file: julia/lithium_niobate_phase_shifter.jl
 
   - caption: Benchmarks
     chapters:
@@ -49,5 +52,6 @@ parts:
   - caption: About Femwell
     chapters:
     - file: contributors
+    - file: contributing
     - file: changelog
     - file: execution_statistics
