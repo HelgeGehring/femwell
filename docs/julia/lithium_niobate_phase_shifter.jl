@@ -25,15 +25,8 @@ using PyCall
 py"""
 from collections import OrderedDict
 
-import matplotlib.pyplot as plt
-import numpy as np
 from shapely.geometry import box
-from skfem import Basis, ElementDG, ElementTriP0, ElementTriP1
-from skfem.io import from_meshio
-from tqdm import tqdm
 
-from femwell.culomb import solve_coulomb
-from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
 
 core_width = 1.532
@@ -59,9 +52,7 @@ resolutions = dict(
     core={"resolution": 0.1, "distance": 4},
 )
 
-mesh = from_meshio(
-    mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=3)
-)
+mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=3)
 """
 
 # %% tags=["remove-stderr"]
