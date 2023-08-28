@@ -15,9 +15,13 @@
 # ---
 
 # %% [markdown]
-# # Lithium niobate phase-shifter
+# # Microstrip Waveguide
 
-# Reproducing {cite}`Han2022`
+# %% [markdown]
+# ```{caution}
+# **This example is under construction**
+# As Julia-Dicts are not ordered, the mesh might become incorrect when adjusted (for now, better do the meshing in python)
+# ```
 
 # %% tags=["hide-input"]
 using PyCall
@@ -36,24 +40,33 @@ from shapely.geometry import box, LineString
 
 from femwell.mesh import mesh_from_OrderedDict
 
+cell_height = 1e-3
+
 core = box(-$microstrip_w, $microstrip_h, $microstrip_w, $microstrip_h+$microstrip_t)
 si = box(-$microstrip_L, 0, $microstrip_L, $microstrip_h)
-air = box(-$microstrip_L, $microstrip_h, $microstrip_L, $microstrip_h*3)
+air = box(-$microstrip_L, $microstrip_h, $microstrip_L, cell_height)
 
 bottom = LineString(((-$microstrip_L, 0), ($microstrip_L, 0)))
+top = LineString(((-$microstrip_L, cell_height), ($microstrip_L, cell_height)))
+left = LineString(((-$microstrip_L, 0), (-$microstrip_L, cell_height)))
+right = LineString((($microstrip_L, 0), ($microstrip_L, cell_height)))
 
 polygons = OrderedDict(
     bottom=bottom,
+    top=top,
+    left=left,
+    right=right,
     core=core,
     si=si,
     air=air
 )
 
 resolutions = dict(
-    core={"resolution": .1e-6, "distance": 4e-6},
+    core={"resolution": .2e-6, "distance": 4e-6},
+    si={"resolution": 4e-6, "distance": 4e-6},
 )
 
-mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=5e-6)
+mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=40e-6)
 """
 
 # %% tags=["remove-stderr"]
@@ -78,10 +91,11 @@ modes = calculate_modes(
     ε ∘ τ,
     λ = 3e8 / 1e9,
     order = 1,
-    metallic_boundaries = ["bottom"],
+    metallic_boundaries = ["top", "left", "right", "core___si", "core___air"],
 )
 
-plot_mode(modes[1])
+write_mode_to_vtk("mode.vtu", modes[1])
+plot_mode(modes[1], vertical = true, same_range = false)
 modes
 
 # %% tags=["hide-input"]

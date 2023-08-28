@@ -27,17 +27,20 @@ n_eff(mode::Mode) = mode.k / mode.k0
 ω(mode::Mode) = mode.k0 * ustrip(c_0)
 frequency(mode::Mode) = 2π * ω(mode)
 λ(mode::Mode) = 2π / mode.k
-E(mode::Mode) = mode.E[1] ⋅ TensorValue([1 0 0; 0 1 0]) + mode.E[2] * VectorValue(0, 0, 1)
+E(mode::Mode) =
+    mode.E[1] ⋅ TensorValue([1.0 0.0 0.0; 0.0 1.0 0.0]) +
+    mode.E[2] * VectorValue(0.0, 0.0, 1.0)
 H(mode::Mode) =
     -1im / ustrip(μ_0) / ω(mode) * (
-        (1im * mode.k * mode.E[1] - ∇(mode.E[2])) ⋅ TensorValue([0 1 0; -1 0 0]) +
-        ∇(mode.E[1]) ⊙ TensorValue(0, -1, 1, 0) * VectorValue(0, 0, 1)
+        (1im * mode.k * mode.E[1] - ∇(mode.E[2])) ⋅
+        TensorValue([0.0 1.0 0.0; -1.0 0.0 0.0]) +
+        ∇(mode.E[1]) ⊙ TensorValue(0.0, -1.0, 1.0, 0.0) * VectorValue(0.0, 0.0, 1.0)
     )
 overlap(mode1::Mode, mode2::Mode) =
     0.5 * sum(
         ∫(
             (cross(conj(E(mode1)), H(mode2)) + cross(E(mode2), conj(H(mode1)))) ⋅
-            VectorValue(0, 0, 1),
+            VectorValue(0.0, 0.0, 1.0),
         )Measure(mode1),
     )
 coupling_coefficient(mode1::Mode, mode2::Mode, delta_epsilon) =
@@ -140,7 +143,7 @@ function plot_field(field)
     display(fig)
 end
 
-function plot_mode(mode::Mode; vectors = false)
+function plot_mode(mode::Mode; vertical = false, vectors = false, same_range = false)
     Ω = get_triangulation(mode.E)
     model = get_active_model(Ω)
     labels = get_face_labeling(model)
@@ -150,55 +153,47 @@ function plot_mode(mode::Mode; vectors = false)
 
     fig = Figure()
     if !vectors
-        for (i, (title, vector)) in enumerate([
+        fields = [
             ("E_x", VectorValue(1, 0, 0)),
             ("E_y", VectorValue(0, 1, 0)),
             ("E_z", VectorValue(0, 0, 1im)),
-        ])
+        ]
+
+        colorranges = Float64[]
+        for (i, (title, vector)) in enumerate(fields)
             efield = real((E(mode) ⋅ vector)(get_cell_points(Measure(Ω, 1))))
             colorrange = max(abs(maximum(maximum.(efield))), abs(minimum(minimum.(efield))))
+            push!(colorranges, colorrange)
+        end
 
-            ax = Axis(fig[1, i], title = title)
+        for (i, (title, vector)) in enumerate(fields)
+            colorrange = same_range ? maximum(colorranges) : colorranges[i]
+
+            x = !vertical + i * vertical
+            y = vertical + i * !vertical
+
+            ax = Axis(fig[x, y], title = title)
             plt = plot!(
                 ax,
                 Ω,
                 real((E(mode) ⋅ vector)),
                 colorrange = (-colorrange, colorrange),
             )
-            wireframe!(fig[1, i], ∂Ω, color = :black)
-            Colorbar(fig[2, i], plt, vertical = false)
+            wireframe!(fig[x, y], ∂Ω, color = :black)
+            Colorbar(fig[x+!vertical, y+vertical], plt, vertical = vertical)
         end
     else
-        efield_x =
-            getindex.(
-                real((E(mode) ⋅ VectorValue(1, 0, 0))(get_cell_points(Measure(Ω, 1)))),
-                1,
-            )
-        efield_y =
-            getindex.(
-                real((E(mode) ⋅ VectorValue(0, 1, 0))(get_cell_points(Measure(Ω, 1)))),
-                1,
-            )
-        colorrange_x =
-            max(abs(maximum(maximum.(efield_x))), abs(minimum(minimum.(efield_x))))
-        colorrange_y =
-            max(abs(maximum(maximum.(efield_y))), abs(minimum(minimum.(efield_y))))
+        cellpoints = get_cell_points(Measure(Ω, 1))
+        xmin = minimum(map(x -> x.data[1], getindex.(cellpoints.cell_phys_point, 1)))
+        xmax = maximum(map(x -> x.data[1], getindex.(cellpoints.cell_phys_point, 1)))
+        ymin = minimum(map(x -> x.data[2], getindex.(cellpoints.cell_phys_point, 1)))
+        ymax = maximum(map(x -> x.data[2], getindex.(cellpoints.cell_phys_point, 1)))
 
-        efield_x /= sqrt(colorrange_x^2 + colorrange_y^2) * 1e6
-        efield_y /= sqrt(colorrange_x^2 + colorrange_y^2) * 1e6
-
-        cp = get_cell_points(Measure(Ω, 1))
-        x_1d = map(x -> x.data[1], getindex.(cp.cell_phys_point, 1))
-        y_1d = map(x -> x.data[2], getindex.(cp.cell_phys_point, 1))
-
-        arrows(
-            x_1d,
-            y_1d,
-            efield_y,
-            -efield_x,
-            #lengthscale=lengthscale,
-            #arrowcolor=strength_1d,
-            #linecolor=strength_1d
+        streamplot(
+            (x, y) ->
+                Point2(collect(real(∇(mode.E[1] ⋅ mode.E[1]))(Gridap.Point(x, y)).data)),
+            xmin .. xmax,
+            ymin .. ymax,
         )
 
         efield = real((E(mode) ⋅ VectorValue(0, 0, 1im))(get_cell_points(Measure(Ω, 1))))
