@@ -138,6 +138,7 @@ class MeshTracker:
             shapely_xy_curves (shapely.geometry.LineString): curve
         """
         segments = []
+        points = set()
         for shapely_xy_curve in (
             shapely_xy_curves.geoms if hasattr(shapely_xy_curves, "geoms") else [shapely_xy_curves]
         ):
@@ -151,7 +152,10 @@ class MeshTracker:
                     segments.append(gmsh_segment)
                 else:
                     segments.append(-gmsh_segment)
+                points.add(self.gmsh_points[self.get_point_index(Point(shapely_xy_point1))])
+                points.add(self.gmsh_points[self.get_point_index(Point(shapely_xy_point2))])
         self.model.add_physical(segments, f"{label}")
+        self.model.add_physical(list(points), f"{label}_points")
 
     def add_xy_surface(self, shapely_xy_polygons, label=None, physical=True):
         """

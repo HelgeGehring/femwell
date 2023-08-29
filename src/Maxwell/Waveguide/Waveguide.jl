@@ -72,7 +72,7 @@ function calculate_modes(
     num::Int = 1,
     radius::Real = Inf,
     k0_guess::Union{Number,Nothing} = nothing,
-    metallic_boundaries = Int[],
+    metallic_boundaries = String[],
 )
     if count(isnothing, [k0, λ]) != 1
         throw(ArgumentError("Exactly one of k0,λ must be defined"))
