@@ -65,11 +65,11 @@ polygons = OrderedDict(
 )
 
 resolutions = dict(
-    core={"resolution": .2e-6, "distance": 40e-6},
-    si={"resolution": 4e-6, "distance": 4e-6},
+    core={"resolution": .4e-6, "distance": 40e-6},
+    #si={"resolution": 2e-6, "distance": 40e-6},
 )
 
-mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=400e-6)
+mesh_from_OrderedDict(polygons, resolutions, filename="mesh.msh", default_resolution_max=40e-6)
 """
 
 # %% tags=["remove-stderr"]
@@ -101,7 +101,7 @@ modes = calculate_modes(
     ε ∘ τ,
     λ = 3e8 / f0,
     order = 1,
-    metallic_boundaries = ["bottom", "top", "left", "right"],
+    metallic_boundaries = ["bottom", "bottom_points", "top", "top_points", "left", "right"],
 )
 
 write_mode_to_vtk("mode.vtu", modes[1])
