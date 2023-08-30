@@ -41,6 +41,7 @@ jobs:
           poetry install --no-interaction
           mamba install slepc4py=*=complex* -y
           mamba install julia
+          pip install juliacall
           pip install jupyter-book
           pip install --upgrade jupytext
           pip install sphinx=="5.3.0"
