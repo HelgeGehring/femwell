@@ -14,7 +14,7 @@
 
 # # Modes of a rectangular waveguide
 
-# + tags=["remove-stderr", "hide-input"]
+# + tags=["remove-stderr", "hide-input", "thebe-init"]
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt

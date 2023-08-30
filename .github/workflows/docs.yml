@@ -52,6 +52,7 @@ jobs:
           version: '1.9.3'
       - uses: julia-actions/cache@v1
         with:
+          cache-name: ${{ runner.os }}-${{ steps.get-date.outputs.date }}
           cache-compiled: "true"
       - uses: julia-actions/julia-buildpkg@v1
       - name: Install dependencies

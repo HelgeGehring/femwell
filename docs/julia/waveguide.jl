@@ -23,7 +23,7 @@
 # As Julia-Dicts are not ordered, the mesh might become incorrect when adjusted (for now, better do the meshing in python)
 # ```
 
-# %% tags=["hide-output"]
+# %% tags=["hide-output", "thebe-init"]
 using PyCall
 np = pyimport("numpy")
 shapely = pyimport("shapely")
@@ -52,7 +52,7 @@ mesh = mesh_from_OrderedDict(
     filename = "mesh.msh",
 )
 
-# %% tags=["remove-stderr", "hide-output"]
+# %% tags=["remove-stderr", "hide-output", "thebe-init"]
 using Gridap
 using Gridap.Geometry
 using Gridap.Visualization
