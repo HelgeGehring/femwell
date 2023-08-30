@@ -41,7 +41,6 @@ jobs:
           poetry install --no-interaction
           mamba install slepc4py=*=complex* -y
           mamba install julia
-          pip install juliacall
           pip install jupyter-book
           pip install --upgrade jupytext
           pip install sphinx=="5.3.0"
@@ -53,6 +52,9 @@ jobs:
           version: '1.9.3'
       - uses: julia-actions/cache@v1
       - uses: julia-actions/julia-buildpkg@v1
+      - name: Install dependencies
+        run: |
+          pip install juliacall
       - uses: actions/cache@v3
         with:
           path: |
