@@ -64,7 +64,7 @@ jobs:
             ${{ runner.os }}-${{ steps.get-date.outputs.date }}
       - name: Make docs
         run: |
-          PYTHON_JULIAPKG_PROJECT=~/work/femwell/femwell/ jupyter-book build docs/
+          PYTHON_JULIAPKG_PROJECT=~/work/femwell/ jupyter-book build docs/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
