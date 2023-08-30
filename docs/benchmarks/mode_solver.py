@@ -34,7 +34,8 @@ from skfem.io.meshio import from_meshio
 from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
 
-jl.eval("using Pkg")
+jl.seval("using Pkg")
+jl.seval("println(Pkg.status())")
 # print(jl.eval('Pkg.activate("~/work/femwell/femwell/")'))
 julia_script = [
     "using Gridap",

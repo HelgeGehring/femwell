@@ -62,6 +62,9 @@ using GridapMakie, CairoMakie
 
 using Femwell.Maxwell.Waveguide
 
+using Pkg
+println(Pkg.status())
+
 CairoMakie.inline!(true)
 
 # %% tags=["remove-stderr"]
