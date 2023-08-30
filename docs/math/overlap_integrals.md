@@ -14,12 +14,14 @@ $$
      \vec{\mathcal{E}}_\nu \times \vec{\mathcal{H}}_\mu^*
 \mathrm{d}A
 $$
+
 whereas the modes are normalized to
-$$
+$
 \left<\nu\,\right|\left.\nu\right> = 1
-$$
+$
 
 The coupling of the power from one mode to another is given by the squared overlap integral as
+
 $$
 P_{\text{out},\mu}/P_{\text{in},\nu}
 =
@@ -35,6 +37,7 @@ $$
 $$
 
 This leads to
+
 $$
 \left| \nu \right>_w
 =
