@@ -53,7 +53,7 @@ slab_width = 18
 box_thickness = 10
 clad_thickness = 3
 
-slab_thicknesses = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7][:1]
+slab_thicknesses = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
 neff_values_paper = [
     3.412022,
     3.412126,
@@ -63,7 +63,7 @@ neff_values_paper = [
     3.413132,
     3.413571,
     3.414100,
-][:1]
+]
 neff_values_femwell_slepc = []
 neff_values_femwell_scipy = []
 neff_values_julia = []
