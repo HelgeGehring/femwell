@@ -51,8 +51,8 @@ jobs:
         with:
           version: '1.9.3'
       - uses: julia-actions/cache@v1
-        #with:
-        #  cache-compiled: "true"
+        with:
+          cache-compiled: "true"
       - uses: julia-actions/julia-buildpkg@v1
       - name: Install dependencies
         run: |
