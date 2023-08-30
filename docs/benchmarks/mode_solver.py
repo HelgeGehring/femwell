@@ -88,7 +88,7 @@ for slab_thickness in slab_thicknesses:
 
     julia_script = [
         "using Pkg",
-        'Pkg.activate("../../")',
+        'Pkg.activate(".")',
         "using Gridap",
         "using Gridap.Geometry",
         "using GridapGmsh",
