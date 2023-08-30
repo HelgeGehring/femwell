@@ -20,7 +20,7 @@
 # thus this should be the maximum derivation for our simulations.
 # The results are presented here:
 
-# + tags=["remove-stderr", "hide-input"]
+# + tags=["remove-stderr", "hide-input", "hide-output"]
 from collections import OrderedDict
 
 import numpy as np
@@ -135,6 +135,7 @@ for slab_thickness in slab_thicknesses:
     neff_values_femwell_scipy.append(np.real(modes[0].n_eff))
 
 
+# + tags=["remove-stderr", "hide-input"]
 pd.DataFrame(
     {
         "slab_thickness": slab_thicknesses,
