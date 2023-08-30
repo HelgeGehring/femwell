@@ -109,6 +109,8 @@ for slab_thickness in slab_thicknesses:
         "modes = calculate_modes(model, ε ∘ τ,  λ = 1.15, order = 1)",
         "neffs = [real(n_eff(mode)) for mode in modes]",
     ]
+    for line in julia_script:
+        jl.seval(line)
 
     neff_values_julia.append(jl.neffs[0])
 
