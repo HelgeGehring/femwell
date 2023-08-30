@@ -34,6 +34,21 @@ from skfem.io.meshio import from_meshio
 from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
 
+jl.eval("using Pkg")
+print(jl.eval('Pkg.activate(".")'))
+julia_script = [
+    "using Gridap",
+    "using Gridap.Geometry",
+    "using GridapGmsh",
+    "using Femwell.Maxwell.Waveguide",
+    "using GridapMakie, CairoMakie",
+    "import PhysicalConstants.CODATA2018: c_0, μ_0, ε_0",
+    "import Unitful: ustrip",
+]
+
+for line in julia_script:
+    jl.seval(line)
+
 core_width = 3
 core_thickness = 1
 slab_width = 18
@@ -87,15 +102,6 @@ for slab_thickness in slab_thicknesses:
     jl.refractive_indices = refractive_indices
 
     julia_script = [
-        "using Pkg",
-        'Pkg.activate(".")',
-        "using Gridap",
-        "using Gridap.Geometry",
-        "using GridapGmsh",
-        "using Femwell.Maxwell.Waveguide",
-        "using GridapMakie, CairoMakie",
-        "import PhysicalConstants.CODATA2018: c_0, μ_0, ε_0",
-        "import Unitful: ustrip",
         'model = GmshDiscreteModel("mesh.msh")',
         "Ω = Triangulation(model)",
         "labels = get_face_labeling(model)",
@@ -105,9 +111,6 @@ for slab_thickness in slab_thicknesses:
         "modes = calculate_modes(model, ε ∘ τ,  λ = 1.15, order = 1)",
         "neffs = [real(n_eff(mode)) for mode in modes]",
     ]
-
-    for line in julia_script:
-        jl.seval(line)
 
     neff_values_julia.append(jl.neffs[0])
 
