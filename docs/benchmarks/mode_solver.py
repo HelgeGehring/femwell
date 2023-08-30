@@ -35,7 +35,7 @@ from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
 
 jl.eval("using Pkg")
-print(jl.eval('Pkg.activate("../../")'))
+# print(jl.eval('Pkg.activate("../../")'))
 julia_script = [
     "using Gridap",
     "using Gridap.Geometry",
