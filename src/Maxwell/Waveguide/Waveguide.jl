@@ -8,6 +8,7 @@ using GridapMakie, CairoMakie
 import PhysicalConstants.CODATA2018: c_0, μ_0, ε_0
 import Unitful: ustrip
 
+export Mode
 export calculate_modes
 export E, H, power, overlap, te_fraction, tm_fraction, coupling_coefficient, perturbed_neff
 export frequency, n_eff, ω, λ
