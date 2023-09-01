@@ -23,6 +23,8 @@ $
 The coupling of the power from one mode to another is given by the squared overlap integral as
 
 $$
+\eta
+=
 P_{\text{out},\mu}/P_{\text{in},\nu}
 =
 \left| \left<\nu\,\right|\left.\mu\right> \right|^2
@@ -50,15 +52,13 @@ with $c_{i\nu} = \phantom{\langle}_s\left< i \right| \left. \nu \right>_w$.
 The minimum transmission from the mode of a single waveguide to the mode of the same single waveguide  through this waveguide array can be calculated as (as for infinite long propagation the phase of the coefficients can be arbitrary)
 
 $$
-\max_i \left|c_{\nu,i}\right|^2 - (1-\max_i \left|c_{\nu,i}\right|^2)
+\left( \max_i \left|c_{\nu,i}\right|^2 - (1-\max_i \left|c_{\nu,i}\right|^2) \right)^2
 =
-2 \max_i \left|c_{\nu,i}\right|^2 - 1
+\left( 2 \max_i \left|c_{\nu,i}\right|^2 - 1 \right)^2
 $$
 
 in case $\max_i \left|c_{\nu,i}\right|^2 > \frac{1}{2}$, otherwise, the transmission can go down to $0$.
 
 $$
-1-(2 \max_i \left|c_{\nu,i}\right|^2 - 1)
-=
-2 - 2 \max_i \left|c_{\nu,i}\right|^2
+1-\left( 2 \max_i \left|c_{\nu,i}\right|^2 - 1 \right)^2
 $$
