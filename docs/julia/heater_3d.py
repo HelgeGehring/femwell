@@ -71,3 +71,18 @@ geometry = xyz_mesh(
     verbosity=5,
     global_scaling=1e-6,
 )
+
+"""
+for k, layer in filtered_layerstack.layers.items():
+    geometry = xyz_mesh(
+        component=c,
+        layerstack=filtered_layerstack,
+        resolutions=resolutions,
+        filename=f"layer_{k}.step",
+        default_characteristic_length=0.5,
+        global_3D_algorithm=10,
+        verbosity=5,
+        global_scaling=1e-6,
+        keep_layers=[k]
+    )
+"""
