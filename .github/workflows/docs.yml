@@ -43,8 +43,7 @@ jobs:
           mamba install julia
           pip install jupytext[myst] nbconvert ipykernel
           npm install myst
-          pip list
-      
+          pip list    
       - uses: julia-actions/setup-julia@v1
         with:
           version: '1.9.3'
@@ -67,12 +66,12 @@ jobs:
 
       - name: Execute notebooks
         run: |
-          jupytext --to ipynb docs/**/*.py --execute
-          jupytext --to ipynb docs/**/*.jl --execute
+          PYTHON_JULIAPKG_PROJECT=~/work/femwell/femwell PYTHON_JULIAPKG_OFFLINE=yes jupytext --to ipynb docs/**/*.py --execute
+          PYTHON_JULIAPKG_PROJECT=~/work/femwell/femwell PYTHON_JULIAPKG_OFFLINE=yes jupytext --to ipynb docs/**/*.jl --execute
       - name: Make docs
         run: |
           cd docs
-          PYTHON_JULIAPKG_PROJECT=~/work/femwell/femwell PYTHON_JULIAPKG_OFFLINE=yes npm exec -c "myst build --html"
+          npm exec -c "myst build --html"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
