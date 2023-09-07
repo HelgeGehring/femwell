@@ -41,10 +41,7 @@ jobs:
           poetry install --no-interaction
           mamba install slepc4py=*=complex* -y
           mamba install julia
-          pip install jupyter-book
-          pip install --upgrade jupytext
-          pip install sphinx=="5.3.0"
-          pip install docutils=="0.17.1"
+          npm install myst
           pip list
       
       - uses: julia-actions/setup-julia@v1
@@ -68,7 +65,8 @@ jobs:
             ${{ runner.os }}-${{ steps.get-date.outputs.date }}
       - name: Make docs
         run: |
-          PYTHON_JULIAPKG_PROJECT=~/work/femwell/femwell PYTHON_JULIAPKG_OFFLINE=yes jupyter-book build docs/
+          cd docs
+          PYTHON_JULIAPKG_PROJECT=~/work/femwell/femwell PYTHON_JULIAPKG_OFFLINE=yes npm exec myst build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2

@@ -20,30 +20,30 @@ parts:
     
   - caption: Examples
     chapters:
-    - file: photonics/examples/waveguide_modes.py
-    - file: photonics/examples/leaky_waveguide.py
-    - file: photonics/examples/bent_waveguide.py
-    - file: photonics/examples/vary_width.py
-    - file: photonics/examples/vary_wavelength.py
-    - file: photonics/examples/selecting_modes.py
-    - file: photonics/examples/fiber_overlap.py
-    - file: photonics/examples/metal_heater_phase_shifter.py
-    - file: photonics/examples/metal_heater_phase_shifter_transient.py
-    - file: photonics/examples/si_heater_phase_shifter.py
-    - file: photonics/examples/culomb.py
-    - file: photonics/examples/leaky_mode.py
-    - file: photonics/examples/bragg_filter.py
-    - file: photonics/examples/grating_coupler.py
-    - file: photonics/examples/coupled_mode_theory.py
-    - file: photonics/examples/depletion_waveguide.py
-    - file: photonics/examples/refinement.py
+    - file: photonics/examples/waveguide_modes
+    - file: photonics/examples/leaky_waveguide
+    - file: photonics/examples/bent_waveguide
+    - file: photonics/examples/vary_width
+    - file: photonics/examples/vary_wavelength
+    - file: photonics/examples/selecting_modes
+    - file: photonics/examples/fiber_overlap
+    - file: photonics/examples/metal_heater_phase_shifter
+    - file: photonics/examples/metal_heater_phase_shifter_transient
+    - file: photonics/examples/si_heater_phase_shifter
+    - file: photonics/examples/culomb
+    - file: photonics/examples/leaky_mode
+    - file: photonics/examples/bragg_filter
+    - file: photonics/examples/grating_coupler
+    - file: photonics/examples/coupled_mode_theory
+    - file: photonics/examples/depletion_waveguide
+    - file: photonics/examples/refinement
 
   - caption: Julia Examples
     chapters:
-    - file: julia/waveguide.jl
-    - file: julia/waveguide_anisotropic.jl
-    - file: julia/waveguide_overlap_integral.jl
-    - file: julia/lithium_niobate_phase_shifter.jl
+    - file: julia/waveguide
+    - file: julia/waveguide_anisotropic
+    - file: julia/waveguide_overlap_integral
+    - file: julia/lithium_niobate_phase_shifter
 
   - caption: Benchmarks
     chapters:

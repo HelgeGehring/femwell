@@ -23,3 +23,7 @@ docs/_build
 
 # julia
 Manifest.toml
+
+#docs
+package-lock.json
+node_modules

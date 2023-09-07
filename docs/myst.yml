@@ -1,0 +1,18 @@
+# See docs at: https://mystmd.org/guide/frontmatter
+version: 1
+project:
+  title: FEMWELL
+  # description:
+  keywords: []
+  authors: []
+  github: https://github.com/HelgeGehring/femwell
+  # bibliography: []
+site:
+  template: book-theme
+  title: FEMWELL
+  logo: ../logo.svg
+  nav: []
+  actions:
+    - title: Learn way More
+      url: https://mystmd.org/guide
+  domains: []
