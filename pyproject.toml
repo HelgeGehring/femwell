@@ -40,8 +40,6 @@ flake8 = "*"
 
 [tool.poetry.group.docs.dependencies]
 tqdm = "*"
-jupytext = ">=1.15.1"
-# myst-parser = "*"
 pandas = "*"
 
 [tool.black]
