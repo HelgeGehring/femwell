@@ -67,6 +67,7 @@ jobs:
       - name: Execute notebooks
         run: |
           jupytext --to ipynb docs/**/*.py --execute
+          jupytext --to ipynb docs/**/*.jl --execute
       - name: Make docs
         run: |
           cd docs
