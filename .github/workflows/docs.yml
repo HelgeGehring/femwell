@@ -63,6 +63,10 @@ jobs:
           key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ github.run_id }}
           restore-keys: |
             ${{ runner.os }}-${{ steps.get-date.outputs.date }}
+
+      - name: Execute notebooks
+        run: |
+          jupytext --to ipynb docs/**/*.py --execut
       - name: Make docs
         run: |
           cd docs
