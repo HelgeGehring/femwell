@@ -41,6 +41,7 @@ jobs:
           poetry install --no-interaction
           mamba install slepc4py=*=complex* -y
           mamba install julia
+          pip install jupytext[myst]
           npm install myst
           pip list
       
