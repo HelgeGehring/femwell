@@ -93,9 +93,9 @@ voltages = np.linspace(0, 100, 5)
 voltages_neffs = []
 
 for voltage in tqdm(voltages):
-    epsilon = basis_epsilon_r.zeros() + 1.445
-    epsilon[basis_epsilon_r.get_dofs(elements="core")] = 1.989
-    epsilon[basis_epsilon_r.get_dofs(elements="slab")] = (
+    refractive_index = basis_epsilon_r.zeros() + 1.445
+    refractive_index[basis_epsilon_r.get_dofs(elements="core")] = 1.989
+    refractive_index[basis_epsilon_r.get_dofs(elements="slab")] = (
         2.211
         + 0.5
         * 2.211**3
@@ -105,10 +105,9 @@ for voltage in tqdm(voltages):
         ]
         * voltage
     )
-    epsilon **= 2
-    # basis_epsilon_r.plot(epsilon, colorbar=True).show()
+    # basis_epsilon_r.plot(refractive_index, colorbar=True).show()
 
-    modes = compute_modes(basis_epsilon_r, epsilon, wavelength=1.55, order=1)
+    modes = compute_modes(basis_epsilon_r, refractive_index**2, wavelength=1.55, order=1)
     voltages_neffs.append(modes[0].n_eff)
 
     # from mode_solver import plot_mode
