@@ -63,14 +63,14 @@ mesh = from_meshio(
 basis = Basis(mesh, ElementTriP1(), intorder=4)
 basis_epsilon_r = basis.with_element(ElementTriP0())
 
-epsilon = basis_epsilon_r.zeros() + 3.9
-epsilon[basis_epsilon_r.get_dofs(elements="slab")] = 28.4
-epsilon[basis_epsilon_r.get_dofs(elements="core")] = 7.5
+epsilon_dc = basis_epsilon_r.zeros() + 3.9
+epsilon_dc[basis_epsilon_r.get_dofs(elements="slab")] = 28.4
+epsilon_dc[basis_epsilon_r.get_dofs(elements="core")] = 7.5
 # basis.plot(epsilon).show()
 
 basis_u, u = solve_coulomb(
     basis_epsilon_r,
-    epsilon,
+    epsilon_dc,
     {"electrode_left___slab": 1, "electrode_right___slab": 0},
 )
 
@@ -85,7 +85,7 @@ fig, ax = plt.subplots()
 for subdomain in basis_epsilon_r.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
     basis_epsilon_r.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
 basis_grad = basis_u.with_element(ElementDG(basis_u.elem))
-e_x = basis_u.project(-basis_epsilon_r.interpolate(epsilon) * basis_u.interpolate(u).grad[0])
+e_x = basis_u.project(-basis_epsilon_r.interpolate(epsilon_dc) * basis_u.interpolate(u).grad[0])
 basis_u.plot(e_x, ax=ax, shading="gouraud", colorbar=True)
 plt.show()
 
@@ -93,9 +93,9 @@ voltages = np.linspace(0, 100, 5)
 voltages_neffs = []
 
 for voltage in tqdm(voltages):
-    refractive_index = basis_epsilon_r.zeros() + 1.445
-    refractive_index[basis_epsilon_r.get_dofs(elements="core")] = 1.989
-    refractive_index[basis_epsilon_r.get_dofs(elements="slab")] = (
+    refractive_index_optical = basis_epsilon_r.zeros() + 1.445
+    refractive_index_optical[basis_epsilon_r.get_dofs(elements="core")] = 1.989
+    refractive_index_optical[basis_epsilon_r.get_dofs(elements="slab")] = (
         2.211
         + 0.5
         * 2.211**3
@@ -107,7 +107,7 @@ for voltage in tqdm(voltages):
     )
     # basis_epsilon_r.plot(refractive_index, colorbar=True).show()
 
-    modes = compute_modes(basis_epsilon_r, refractive_index**2, wavelength=1.55, order=1)
+    modes = compute_modes(basis_epsilon_r, refractive_index_optical**2, wavelength=1.55)
     voltages_neffs.append(modes[0].n_eff)
 
     # from mode_solver import plot_mode
