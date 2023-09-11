@@ -71,7 +71,7 @@ plot_domains(mesh)
 plt.show()
 
 # %% [markdown]
-# Low we define the epsilon!
+# Now we define the epsilon!
 # We add an PML on the right hand-side by adding an imaginary part to the epsilon.
 
 # %%
