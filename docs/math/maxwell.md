@@ -1,4 +1,4 @@
-# Background on simulations for the electromagnetic field
+# Electromagnetic field simulations
 
 ### Some useful relations
 
@@ -96,7 +96,7 @@ $$\begin{aligned}
     \mathbf{\nabla}\times\mathbf{H}\left(\mathbf{r},t\right) &=& \mathbf{J}_{\text{ext}}\left(\mathbf{r},t\right) + \varepsilon \frac{\partial \mathbf{E}\left(\mathbf{r},t\right)} {\partial t} \,.
 \end{aligned}$$
 
-### Piecewise constant materials and boundary conditions
+### Interface between piecewise constant materials 
 It is instructive to condsider the well-known case of an interface $I$ between two dielectric materials, which appear in many devices. We assume an interface between two materials called $1$ with dielectric constant $\varepsilon_1$ and $2$ with dielectric constant $\varepsilon_2$. The surface is defined by the normal vector of the interface $\mathbf{n}_{I}$ and there are no external surface charges or currents. For simplicity, we surpress the dependencies $\left(\mathbf{r},t\right)$ here. 
 
 All fields can then be split into the component parallel to the interface (hence perpendicular to the normal vector) and perpendicular to the interface (hence parallel to the normal vector). For example we consider the electric field: Define the normalized field vector $\hat{\mathbf{E}}=\mathbf{E}/E$ we split it into
@@ -128,7 +128,7 @@ $$\mathbf{B}^{\perp}_1 =  \mathbf{B}^{\perp}_2  \quad \Leftrightarrow \quad
 
 In these equations we have used $\mathbf{D}=\varepsilon_0\varepsilon\mathbf{E}$ and $\mathbf{H}=\frac{1}{\mu_0}\mathbf{B} $.
 
-While the calculations can be done with keeping $\varepsilon(\mathbf{r})$, the boundary conditions can give a useful sanity check. They also indicate, that at boundaries a fine grid is required, while at areas of homogeneous materials larger grid can be chosen. 
+These equations sometimes referd to as boundary conditions. It should be noted, that here boundary refers to the behaviour of the fields at the interface between two materials in contrast to boundary conditions at theedge of a simulation box.While the calculations can be done with keeping $\varepsilon(\mathbf{r})$, the boundary conditions can give a useful sanity check. They also indicate, that at interface a fine grid is required, while at areas of homogeneous materials larger grid can be chosen. 
 
 
 ## Eigenvectors propagating in $x_3$-direction
