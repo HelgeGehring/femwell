@@ -30,7 +30,7 @@ parts:
     - file: photonics/examples/metal_heater_phase_shifter.py
     - file: photonics/examples/metal_heater_phase_shifter_transient.py
     - file: photonics/examples/si_heater_phase_shifter.py
-    - file: photonics/examples/culomb.py
+    - file: photonics/examples/coulomb.py
     - file: photonics/examples/leaky_mode.py
     - file: photonics/examples/bragg_filter.py
     - file: photonics/examples/grating_coupler.py

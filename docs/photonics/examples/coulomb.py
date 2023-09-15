@@ -26,7 +26,7 @@ from skfem import Basis, ElementDG, ElementTriP0, ElementTriP1
 from skfem.io import from_meshio
 from tqdm import tqdm
 
-from femwell.culomb import solve_coulomb
+from femwell.coulomb import solve_coulomb
 from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
 
