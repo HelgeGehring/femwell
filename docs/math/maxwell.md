@@ -128,7 +128,7 @@ $$\mathbf{B}^{\perp}_1 =  \mathbf{B}^{\perp}_2  \quad \Leftrightarrow \quad
 
 In these equations we have used $\mathbf{D}=\varepsilon_0\varepsilon\mathbf{E}$ and $\mathbf{H}=\frac{1}{\mu_0}\mathbf{B} $.
 
-These equations sometimes referd to as boundary conditions. It should be noted, that here boundary refers to the behaviour of the fields at the interface between two materials in contrast to boundary conditions at theedge of a simulation box.While the calculations can be done with keeping $\varepsilon(\mathbf{r})$, the boundary conditions can give a useful sanity check. They also indicate, that at interface a fine grid is required, while at areas of homogeneous materials larger grid can be chosen. 
+These equations sometimes referd to as boundary conditions. It should be noted, that here boundary refers to the behaviour of the fields at the interface between two materials in contrast to boundary conditions at the edge of a simulation box.While the calculations can be done with keeping $\varepsilon(\mathbf{r})$, the boundary conditions can give a useful sanity check. They also indicate, that at interface a fine grid is required, while at areas of homogeneous materials larger grid can be chosen. 
 
 
 ## Eigenvectors propagating in $x_3$-direction
