@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.9
+- Improvements on the Docs
+- Fix Typo: Culomb -> Coulomb
+
 ## v0.1.8
 
 - Fix build-backend in pyproject.toml
