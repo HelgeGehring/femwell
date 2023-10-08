@@ -35,20 +35,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import shapely
 import shapely.affinity
-from scipy.constants import epsilon_0, speed_of_light
-from shapely.ops import clip_by_rect
-from skfem import Basis, ElementDG, ElementTriP0, ElementTriP1
-from skfem.io.meshio import from_meshio
-
-from femwell.maxwell.waveguide import compute_modes
-from femwell.visualization import plot_domains, plot_subdomain_boundaries
-
 from meshwell.model import Model
 from meshwell.polysurface import PolySurface
-
-from femwell.coulomb import solve_coulomb
-
-from skfem.helpers import dot
+from scipy.constants import epsilon_0, speed_of_light
+from shapely.ops import clip_by_rect
 from skfem import (
     Basis,
     BilinearForm,
@@ -66,6 +56,12 @@ from skfem import (
     condense,
     solve,
 )
+from skfem.helpers import dot
+from skfem.io.meshio import from_meshio
+
+from femwell.coulomb import solve_coulomb
+from femwell.maxwell.waveguide import compute_modes
+from femwell.visualization import plot_domains, plot_subdomain_boundaries
 
 # -
 
@@ -82,6 +78,7 @@ delta_voltage = 1
 # <div class="alert alert-success">
 # Note: below we use meshwell instead of femwell's built-in backend. You can install meshwell with `pip install meshwell`
 # </div>
+
 
 def parallel_plate_capacitor_mesh(
     width,
@@ -162,10 +159,7 @@ plot_subdomain_boundaries(mesh)
 
 
 # +
-def potential(mesh, 
-              dV=delta_voltage, 
-              dielectric_epsilon=16
-              ):
+def potential(mesh, dV=delta_voltage, dielectric_epsilon=16):
     basis_epsilon = Basis(mesh, ElementTriP0())
     epsilon = basis_epsilon.ones()
 
@@ -201,16 +195,12 @@ for subdomain in basis_epsilon.mesh.subdomains.keys() - {"gmsh:bounding_entities
 basis_grad = basis_u.with_element(ElementDG(basis_u.elem))
 
 fig, ax = plt.subplots()
-e_x = basis_u.project(
-    -basis_epsilon.interpolate(epsilon) * basis_u.interpolate(u).grad[0]
-)
+e_x = basis_u.project(-basis_epsilon.interpolate(epsilon) * basis_u.interpolate(u).grad[0])
 basis_u.plot(e_x, ax=ax, shading="gouraud", colorbar=True)
 plt.show()
 
 fig, ax = plt.subplots()
-e_y = basis_u.project(
-    -basis_epsilon.interpolate(epsilon) * basis_u.interpolate(u).grad[1]
-)
+e_y = basis_u.project(-basis_epsilon.interpolate(epsilon) * basis_u.interpolate(u).grad[1])
 basis_u.plot(e_y, ax=ax, shading="gouraud", colorbar=True)
 plt.show()
 
@@ -274,9 +264,16 @@ for dielectric_epsilon in [1, 3.9, 16]:
 colors = ["tab:blue", "tab:orange", "tab:green"]
 
 for dielectric_epsilon, color in zip([1, 3.9, 16], colors):
-
-    plt.plot(widths, np.array(Cs_dict[dielectric_epsilon]), color=color, linestyle="-", label=dielectric_epsilon)
-    plt.plot(widths, np.array(widths) * dielectric_epsilon / separation, color=color, linestyle="--")
+    plt.plot(
+        widths,
+        np.array(Cs_dict[dielectric_epsilon]),
+        color=color,
+        linestyle="-",
+        label=dielectric_epsilon,
+    )
+    plt.plot(
+        widths, np.array(widths) * dielectric_epsilon / separation, color=color, linestyle="--"
+    )
     plt.xlabel("Width (a.u.)")
     plt.ylabel(r"Capacitance per unit length / $\epsilon_0$ (a.u.)")
 
@@ -288,7 +285,13 @@ colors = ["tab:blue", "tab:orange", "tab:green"]
 for dielectric_epsilon, color in zip([1, 3.9, 16], colors):
     reference = np.array(widths) * dielectric_epsilon / separation
 
-    plt.plot(widths, np.array(Cs_dict[dielectric_epsilon]) / reference, color=color, linestyle="-", label=dielectric_epsilon)
+    plt.plot(
+        widths,
+        np.array(Cs_dict[dielectric_epsilon]) / reference,
+        color=color,
+        linestyle="-",
+        label=dielectric_epsilon,
+    )
     plt.xlabel("Width (a.u.)")
     plt.ylabel(r"Relative error in capacitance per unit length / $\epsilon_0$ (a.u.)")
 
