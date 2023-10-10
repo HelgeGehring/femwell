@@ -3,7 +3,7 @@
 #   jupytext:
 #     text_representation:
 #       extension: .py
-#       format_name: light
+#       format_name: percent
 #       format_version: '1.5'
 #       jupytext_version: 1.15.2
 #   kernelspec:
@@ -12,6 +12,7 @@
 #     name: python3
 # ---
 
+# %% [markdown]
 # # Lumped capacitor
 #
 # The capacitance $C$ of a system given a potential difference $\Delta V$ between two conductors can be calculated from
@@ -28,7 +29,7 @@
 #
 # First, we parametrize a simple geometry:
 
-# +
+# %%
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
@@ -63,8 +64,7 @@ from femwell.coulomb import solve_coulomb
 from femwell.maxwell.waveguide import compute_modes
 from femwell.visualization import plot_domains, plot_subdomain_boundaries
 
-# -
-
+# %%
 # Define some parameters for the capacitor:
 
 dielectric_epsilon = 16
@@ -73,6 +73,7 @@ metal_thickness = 1
 delta_voltage = 1
 
 
+# %% [markdown]
 # Make a mesh
 #
 # <div class="alert alert-success">
@@ -155,10 +156,11 @@ plt.show()
 plot_subdomain_boundaries(mesh)
 
 
+# %% [markdown]
 # Since the electric field inside a metal is zero, we define the voltage on the boundary of the metal, and exclude the metal from the mesh:
 
 
-# +
+# %%
 def potential(mesh, dV=delta_voltage, dielectric_epsilon=16):
     basis_epsilon = Basis(mesh, ElementTriP0())
     epsilon = basis_epsilon.ones()
@@ -180,8 +182,8 @@ def potential(mesh, dV=delta_voltage, dielectric_epsilon=16):
 
 
 basis_u, u, basis_epsilon, epsilon = potential(mesh, dV=delta_voltage)
-# -
 
+# %%
 fig, ax = plt.subplots()
 for subdomain in basis_epsilon.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
     basis_epsilon.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
@@ -189,7 +191,7 @@ basis_u.plot(u, ax=ax, shading="gouraud", colorbar=True)
 # basis_vec.plot(-u_grad, ax=ax)
 plt.show()
 
-# +
+# %%
 for subdomain in basis_epsilon.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
     basis_epsilon.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True)
 basis_grad = basis_u.with_element(ElementDG(basis_u.elem))
@@ -205,9 +207,7 @@ basis_u.plot(e_y, ax=ax, shading="gouraud", colorbar=True)
 plt.show()
 
 
-# -
-
-
+# %%
 def capacitance(
     width=2,
     separation=separation,
@@ -241,7 +241,7 @@ def capacitance(
     return C
 
 
-# +
+# %% tags=["hide-stderr"]
 import tqdm
 
 widths = np.linspace(1, 50, 11)
@@ -279,7 +279,7 @@ for dielectric_epsilon, color in zip([1, 3.9, 16], colors):
 
 plt.legend(title="Dielectric")
 
-# +
+# %%
 colors = ["tab:blue", "tab:orange", "tab:green"]
 
 for dielectric_epsilon, color in zip([1, 3.9, 16], colors):
@@ -296,6 +296,7 @@ for dielectric_epsilon, color in zip([1, 3.9, 16], colors):
     plt.ylabel(r"Relative error in capacitance per unit length / $\epsilon_0$ (a.u.)")
 
 plt.legend(title="Dielectric")
-# -
 
+
+# %% [markdown]
 # The solver reproduces the parallel-plate capacitor result. For small widths, there is a greater discrepancy between the theoretical parallel plate and the simulated due to the higher relative impact of fringe fields. There is also a constant offset that persists at large widths due to the fringe field contribution. The relative importance of the fringe fields is reduced with increasing dielectric constant which forces more field lines between the two electrodes, as expected.
