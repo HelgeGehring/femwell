@@ -65,6 +65,9 @@ function calculate_temperature_transient(
     end
 
     tags_temperatures = [def_g(v) for (u, v) in temperatures_c]
+    if isempty(tags_temperatures)
+        tags_temperatures = x -> 0
+    end
 
     model = get_active_model(get_triangulation(thermal_diffusitivity))
     V = TestFESpace(
