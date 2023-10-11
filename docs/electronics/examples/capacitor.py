@@ -242,7 +242,7 @@ def capacitance(
     return C
 
 
-# %% tags=["hide-stderr"]
+# %% tags=["remove-stderr"]
 import tqdm
 
 widths = np.linspace(1, 50, 11)
