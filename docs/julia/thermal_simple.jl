@@ -15,7 +15,7 @@
 # ---
 
 # %% [markdown]
-# # Mode solving
+# # Match theoretical model for electro-optic simulation
 
 # %% tags=["hide-input", "thebe-init"]
 using Gridap
@@ -23,6 +23,11 @@ using Gridap.Geometry
 
 using Femwell.Maxwell.Electrostatic
 using Femwell.Thermal
+
+# %% [markdown]
+# We start with setting up a square domain.
+# For the boundary conditions, we tag the left and the right side of the model.
+# Furthermore, we create a function which returns 1 indipendent of the tag which is the parameter to descrie the constants of the simplified model.
 
 # %% tags=["hide-output"]
 domain = (0, 1, 0, 1)
@@ -36,6 +41,13 @@ tags = get_face_tag(labels, num_cell_dims(model))
 dΩ = Measure(Ω, 1)
 τ = CellField(tags, Ω)
 constant = tag -> 1
+
+# %% [markdown]
+# ## Electrostatic
+# The first step ist to calculate the potential.
+# For this we solve the electrostatic equation $Δϕ = 0$ and define the voltage at two oppositing boundaries to 0V at $x=0$ and 1V at $x=1$.
+# The theoretical solution of this function is a linear function.
+# $$ ϕ(x)=x $$
 
 # %% tags=["hide-input"]
 p0 = compute_potential(constant ∘ τ, Dict("left" => 0.0, "right" => 1.0))
@@ -65,7 +77,7 @@ T_transient = calculate_temperature_transient(
     Dict("boundary" => 0.0),
     temperature(T0),
     1e-4,
-    1.e-3,
+    1e-3,
 )
 sums = [(t, ∑(∫(u)dΩ) / ∑(∫(1)dΩ)) for (u, t) in T_transient]
 println(sums)

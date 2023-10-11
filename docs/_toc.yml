@@ -45,6 +45,7 @@ parts:
     - file: julia/waveguide_anisotropic.jl
     - file: julia/waveguide_overlap_integral.jl
     - file: julia/lithium_niobate_phase_shifter.jl
+    - file: photonics/examples/thermal_simple.jl
 
   - caption: Benchmarks
     chapters:
