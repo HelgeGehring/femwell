@@ -30,38 +30,16 @@
 # First, we parametrize a simple geometry:
 
 # %%
-from collections import OrderedDict
-
 import matplotlib.pyplot as plt
 import numpy as np
 import shapely
-import shapely.affinity
 from meshwell.model import Model
 from meshwell.polysurface import PolySurface
-from scipy.constants import epsilon_0, speed_of_light
-from shapely.ops import clip_by_rect
-from skfem import (
-    Basis,
-    BilinearForm,
-    ElementDG,
-    ElementTriN1,
-    ElementTriN2,
-    ElementTriP0,
-    ElementTriP1,
-    ElementTriP2,
-    ElementVector,
-    Functional,
-    InteriorFacetBasis,
-    LinearForm,
-    Mesh,
-    condense,
-    solve,
-)
+from skfem import Basis, ElementDG, ElementTriP0, Functional
 from skfem.helpers import dot
 from skfem.io.meshio import from_meshio
 
 from femwell.coulomb import solve_coulomb
-from femwell.maxwell.waveguide import compute_modes
 from femwell.visualization import plot_domains, plot_subdomain_boundaries
 
 # %%
