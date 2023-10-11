@@ -81,7 +81,7 @@ delta_voltage = 1
 # </div>
 
 
-# %%
+# %% tags=["remove-stderr"]
 def parallel_plate_capacitor_mesh(
     width,
     separation=separation,
