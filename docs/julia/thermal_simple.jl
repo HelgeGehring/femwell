@@ -29,7 +29,7 @@ using Femwell.Thermal
 # For the boundary conditions, we tag the left and the right side of the model.
 # Furthermore, we create a function which returns 1 indipendent of the tag which is the parameter to descrie the constants of the simplified model.
 
-# %% tags=["hide-output"]
+# %% tags=["hide-output", "remove-stderr"]
 domain = (0, 1, 0, 1)
 partition = (20, 20)
 model = CartesianDiscreteModel(domain, partition)
