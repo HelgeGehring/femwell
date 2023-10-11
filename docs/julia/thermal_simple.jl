@@ -48,12 +48,14 @@ constant = tag -> 1
 # For this we solve the electrostatic equation $Δϕ = 0$ and define the voltage at two oppositing boundaries to 0V at $x=0$ and 1V at $x=1$.
 # The theoretical solution of this function is a linear function.
 # $$ ϕ(x)=x $$
+# This would mean the average of the potential over the domain should be
+# $$ \int ϕ dA = 0.5 $$
 
 # %% tags=["hide-input"]
 p0 = compute_potential(constant ∘ τ, Dict("left" => 0.0, "right" => 1.0))
 
 average_potential = ∑(∫(potential(p0))dΩ) / ∑(∫(1)dΩ)
-println(average_potential)
+println("The computed value for the average potential is $average_potential")
 
 # %% tags=["hide-input"]
 T0 = calculate_temperature(constant ∘ τ, power_density(p0), Dict("boundary" => 0.0))
