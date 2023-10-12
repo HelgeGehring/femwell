@@ -76,7 +76,7 @@ println("The computed value for the average potential is $average_potential")
 average_current_density = ∑(∫(current_density(p0))dΩ) / ∑(∫(1)dΩ)
 println("The computed value for the average current density is $average_current_density")
 
-# %% tags=["hide-input"]
+# %% tags=[]
 T0 = calculate_temperature(constant ∘ τ, power_density(p0), Dict("boundary" => 0.0))
 
 # %% tags=["hide-input"]
@@ -91,7 +91,7 @@ writevtk(
 )
 # Dict{String,Float64}()
 
-# %% tags=["hide-input"]
+# %% tags=[]
 T_transient = calculate_temperature_transient(
     constant ∘ τ,
     constant ∘ τ,
@@ -104,7 +104,7 @@ T_transient = calculate_temperature_transient(
 sums = [(t, ∑(∫(u)dΩ) / ∑(∫(1)dΩ)) for (u, t) in T_transient]
 println(sums)
 
-# %% tags=["hide-input"]
+# %% tags=[]
 T_transient = calculate_temperature_transient(
     constant ∘ τ,
     constant ∘ τ,
