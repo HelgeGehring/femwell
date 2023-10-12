@@ -52,7 +52,9 @@ constant = tag -> 1
 #   ϕ(x)=x
 # $$
 # This would mean the average of the potential over the domain should be
-# $$ \int ϕ dA / \int 1 dA = 0.5 $$
+# $$
+#   \int ϕ dA / \int 1 dA = 0.5
+# $$
 
 # %% tags=[]
 p0 = compute_potential(constant ∘ τ, Dict("left" => 0.0, "right" => 1.0))
