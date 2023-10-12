@@ -35,29 +35,33 @@ domain = (0, 1.0, 0, 1.0)
 partition = (20, 20)
 model = simplexify(CartesianDiscreteModel(domain, partition))
 labels = get_face_labeling(model)
-add_tag!(labels, "left", [7])
-add_tag!(labels, "right", [8])
+add_tag!(labels, "left", [1, 3, 7])
+add_tag!(labels, "right", [2, 4, 8])
 tags = get_face_tag(labels, num_cell_dims(model))
 Ω = Triangulation(model)
 dΩ = Measure(Ω, 1)
 τ = CellField(tags, Ω)
-constant = tag -> 1
+constant_7 = tag -> 42
+constant_42 = tag -> 42
 
 # %% [markdown]
 # ## Electrostatic
-# The first step ist to calculate the potential (assuming the electrical conductivity to be k=1).
+# The first step ist to calculate the potential (assuming the electrical conductivity to be k=42).
 # For this we solve the electrostatic equation $Δϕ = 0$ and define the voltage at two oppositing boundaries to 0V at $x=0$ and 1V at $x=1$.
 # The theoretical solution of this function is a linear function.
+#
 # $$
 #   ϕ(x)=x
 # $$
+#
 # This would mean the average of the potential over the domain should be
+#
 # $$
 #   \int ϕ dA / \int 1 dA = 0.5
 # $$
 
 # %% tags=[]
-p0 = compute_potential(constant ∘ τ, Dict("left" => 0.0, "right" => 1.0))
+p0 = compute_potential(constant_42 ∘ τ, Dict("left" => 0.0, "right" => 1.0))
 fig, _, plt = plot(Ω, potential(p0), colormap = :cool)
 Colorbar(fig[1, 2], plt)
 display(fig)
@@ -68,27 +72,39 @@ println("The computed value for the average potential is $average_potential")
 
 # %% [markdown]
 # The current density can be calculated as
+#
 # $$
-# i = \frac{1}{k} \frac{\mathrm{d}ϕ}{\mathrm{d}ϕ} = 1 
+# i = k \frac{\mathrm{d}ϕ}{\mathrm{d}ϕ} = 42
 # $$
-# and thus the averaged current density over the domain to be also 1.
+#
+# and thus the averaged current density over the domain is 42.
 
 average_current_density = ∑(∫(current_density(p0))dΩ) / ∑(∫(1)dΩ)
 println("The computed value for the average current density is $average_current_density")
 
 
 # %% [markdown]
-# Using this value, we can caluclate the average power density to
+# Using this value, we can caluclate the average power density as
+#
 # $$
 # p = k i^2
 # $$
-# and thus the averaged power density over the domain to be also 1.
+#
+# and thus the averaged power density over the domain is also 42.
 
 average_power_density = ∑(∫(power_density(p0))dΩ) / ∑(∫(1)dΩ)
 println("The computed value for the average current density is $average_power_density")
 
+# ## Thermal steady scatter
+# Now we calculate the thermal steady state based on the previously calculated locally applied power.
+# For this we chose the thermal conductivity to be $k_{thermal}=7$ and set the boundaries to 0.
+#
+# $$
+#   -\nabla(k_{thermal}\nabla T) = Q
+# $$
+
 # %% tags=[]
-T0 = calculate_temperature(constant ∘ τ, power_density(p0), Dict("boundary" => 0.0))
+T0 = calculate_temperature(constant_7 ∘ τ, power_density(p0), Dict("boundary" => 0.0))
 
 # %% tags=["hide-input"]
 writevtk(
@@ -100,8 +116,6 @@ writevtk(
         "temperature" => temperature(T0),
     ],
 )
-# Dict{String,Float64}()
-
 # %% tags=[]
 T_transient = calculate_temperature_transient(
     constant ∘ τ,
