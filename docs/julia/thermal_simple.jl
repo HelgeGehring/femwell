@@ -152,12 +152,12 @@ display(lines(sums))
 
 # %% tags=[]
 T_transient = calculate_temperature_transient(
-    constant ∘ τ,
-    constant ∘ τ,
+    constant_21 ∘ τ,
+    constant_42 ∘ τ,
     power_density(p0),
     Dict{String,Float64}(),
     temperature(T0) * 0,
-    1e-5,
+    1e-2,
     1.0,
 )
 sums = [(t, ∑(∫(u)dΩ) / ∑(∫(1)dΩ)) for (u, t) in T_transient]
