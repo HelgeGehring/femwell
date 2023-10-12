@@ -103,6 +103,7 @@ println("The computed value for the average current density is $average_power_de
 
 # %% tags=[]
 T0 = calculate_temperature(constant_21 ∘ τ, power_density(p0), Dict("boundary" => 0.0))
+T_average = ∑(∫(temperature(T0))dΩ) / ∑(∫(1)dΩ)
 fig, _, plt = plot(Ω, temperature(T0), colormap = :hot)
 Colorbar(fig[1, 2], plt)
 display(fig)
@@ -130,10 +131,23 @@ T_transient = calculate_temperature_transient(
     power_density(p0),
     Dict("boundary" => 0.0),
     temperature(T0),
-    1e-4,
+    1e-5,
     1e-3,
 )
-sums = [(t, ∑(∫(u)dΩ) / ∑(∫(1)dΩ)) for (u, t) in T_transient]
+sums = [(t, ∑(∫(u)dΩ) / ∑(∫(1)dΩ) / T_average) for (u, t) in T_transient]
+display(lines(sums))
+
+# %% tags=[]
+T_transient = calculate_temperature_transient(
+    constant_21 ∘ τ,
+    constant_42 ∘ τ,
+    power_density(p0) * 0,
+    Dict("boundary" => 0.0),
+    temperature(T0),
+    1e-5,
+    2e-2,
+)
+sums = [(t, ∑(∫(u)dΩ) / ∑(∫(1)dΩ) / T_average) for (u, t) in T_transient]
 display(lines(sums))
 
 # %% tags=[]
@@ -143,9 +157,8 @@ T_transient = calculate_temperature_transient(
     power_density(p0),
     Dict{String,Float64}(),
     temperature(T0) * 0,
-    1e-1,
+    1e-5,
     1.0,
 )
 sums = [(t, ∑(∫(u)dΩ) / ∑(∫(1)dΩ)) for (u, t) in T_transient]
-println(sums)
 display(lines(sums))
