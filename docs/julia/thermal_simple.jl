@@ -17,7 +17,7 @@
 # %% [markdown]
 # # Match theoretical model for electro-optic simulation
 
-# %% tags=["hide-input", "thebe-init"]
+# %% tags=["hide-input", "thebe-init", "remove-stderr"]
 using Gridap
 using Gridap.Geometry
 using GridapMakie, CairoMakie
@@ -31,7 +31,7 @@ using Femwell.Thermal
 # Furthermore, we create a function which returns 1 indipendent of the tag which is the parameter to descrie the constants of the simplified model.
 
 # %% tags=["hide-output", "remove-stderr"]
-domain = (0, 1.0, 0, 1.0)
+domain = (-1.0, 1.0, -1.0, 1.0)
 partition = (20, 20)
 model = simplexify(CartesianDiscreteModel(domain, partition))
 labels = get_face_labeling(model)
@@ -41,7 +41,7 @@ tags = get_face_tag(labels, num_cell_dims(model))
 Ω = Triangulation(model)
 dΩ = Measure(Ω, 1)
 τ = CellField(tags, Ω)
-constant_7 = tag -> 42
+constant_21 = tag -> 21
 constant_42 = tag -> 42
 
 # %% [markdown]
@@ -57,11 +57,11 @@ constant_42 = tag -> 42
 # This would mean the average of the potential over the domain should be
 #
 # $$
-#   \int ϕ dA / \int 1 dA = 0.5
+#   \int ϕ dA / \int 1 dA = 0
 # $$
 
 # %% tags=[]
-p0 = compute_potential(constant_42 ∘ τ, Dict("left" => 0.0, "right" => 1.0))
+p0 = compute_potential(constant_42 ∘ τ, Dict("left" => -1.0, "right" => 1.0))
 fig, _, plt = plot(Ω, potential(p0), colormap = :cool)
 Colorbar(fig[1, 2], plt)
 display(fig)
@@ -97,14 +97,20 @@ println("The computed value for the average current density is $average_power_de
 
 # ## Thermal steady scatter
 # Now we calculate the thermal steady state based on the previously calculated locally applied power.
-# For this we chose the thermal conductivity to be $k_{thermal}=7$ and set the boundaries to 0.
+# For this we chose the thermal conductivity to be $k_{thermal}=21$ and set the boundaries to 0.
 #
 # $$
 #   -\nabla(k_{thermal}\nabla T) = Q
 # $$
+#
+# being solved by 
+#
+# $$
+#   T = \frac{-x^2 - y^2}{2}
+# $$
 
 # %% tags=[]
-T0 = calculate_temperature(constant_7 ∘ τ, power_density(p0), Dict("boundary" => 0.0))
+T0 = calculate_temperature(constant_21 ∘ τ, power_density(p0), Dict("boundary" => 0.0))
 
 # %% tags=["hide-input"]
 writevtk(
