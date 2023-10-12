@@ -48,7 +48,9 @@ constant = tag -> 1
 # The first step ist to calculate the potential (assuming the electrical resistivity / conductivity to be ρ=1).
 # For this we solve the electrostatic equation $Δϕ = 0$ and define the voltage at two oppositing boundaries to 0V at $x=0$ and 1V at $x=1$.
 # The theoretical solution of this function is a linear function.
-# $$ ϕ(x)=x $$
+# $$
+#   ϕ(x)=x
+# $$
 # This would mean the average of the potential over the domain should be
 # $$ \int ϕ dA / \int 1 dA = 0.5 $$
 
@@ -64,7 +66,9 @@ println("The computed value for the average potential is $average_potential")
 
 # %% [markdown]
 # The current density can be calculated as
-# $$ i = ρ \frac{\mathrm{d}ϕ}{\mathrm{d}ϕ} = 1 $$
+# $$
+# i = ρ \frac{\mathrm{d}ϕ}{\mathrm{d}ϕ} = 1 
+# $$
 # and thus the averaged current density over the domain to be also 1.
 
 average_current_density = ∑(∫(current_density(p0))dΩ) / ∑(∫(1)dΩ)
