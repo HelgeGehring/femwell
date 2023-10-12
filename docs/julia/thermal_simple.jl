@@ -92,9 +92,11 @@ println("The computed value for the average current density is $average_current_
 #
 # and thus the averaged power density over the domain is also 42.
 
+# %% tags=[]
 average_power_density = ∑(∫(power_density(p0))dΩ) / ∑(∫(1)dΩ)
 println("The computed value for the average current density is $average_power_density")
 
+# %% [markdown]
 # ## Thermal steady scatter
 # Now we calculate the thermal steady state based on the previously calculated locally applied power.
 # For this we chose the thermal conductivity to be $k_{thermal}=21$ and set the boundaries to 0.
