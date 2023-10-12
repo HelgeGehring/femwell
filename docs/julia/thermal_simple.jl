@@ -97,22 +97,15 @@ average_power_density = ∑(∫(power_density(p0))dΩ) / ∑(∫(1)dΩ)
 println("The computed value for the average current density is $average_power_density")
 
 # %% [markdown]
-# ## Thermal steady scatter
+# ## Thermal steady state simulation
 # Now we calculate the thermal steady state based on the previously calculated locally applied power.
 # For this we chose the thermal conductivity to be $k_{thermal}=21$ and set the boundaries to 0.
-#
-# $$
-#   -\nabla(k_{thermal}\nabla T) = Q
-# $$
-#
-# being solved by 
-#
-# $$
-#   T = \frac{-x^2 - y^2}{2}
-# $$
 
 # %% tags=[]
 T0 = calculate_temperature(constant_21 ∘ τ, power_density(p0), Dict("boundary" => 0.0))
+fig, _, plt = plot(Ω, temperature(T0), colormap = :hot)
+Colorbar(fig[1, 2], plt)
+display(fig)
 
 # %% tags=["hide-input"]
 writevtk(
@@ -124,18 +117,24 @@ writevtk(
         "temperature" => temperature(T0),
     ],
 )
+
+# %% [markdown]
+# ## Thermal transient state simulation
+# For the simulation of the transient starting with the steady state solution we expect the temperature not to change.
+# Also, we don't expect it to depend on the thermal thermal diffusitivity.
+
 # %% tags=[]
 T_transient = calculate_temperature_transient(
-    constant ∘ τ,
-    constant ∘ τ,
-    power_density(p0) * 0,
+    constant_21 ∘ τ,
+    constant_42 ∘ τ,
+    power_density(p0),
     Dict("boundary" => 0.0),
     temperature(T0),
     1e-4,
     1e-3,
 )
 sums = [(t, ∑(∫(u)dΩ) / ∑(∫(1)dΩ)) for (u, t) in T_transient]
-println(sums)
+display(lines(sums))
 
 # %% tags=[]
 T_transient = calculate_temperature_transient(
@@ -149,3 +148,4 @@ T_transient = calculate_temperature_transient(
 )
 sums = [(t, ∑(∫(u)dΩ) / ∑(∫(1)dΩ)) for (u, t) in T_transient]
 println(sums)
+display(lines(sums))
