@@ -45,7 +45,7 @@ constant = tag -> 1
 
 # %% [markdown]
 # ## Electrostatic
-# The first step ist to calculate the potential (assuming the electrical resistivity / conductivity to be ρ=1).
+# The first step ist to calculate the potential (assuming the electrical conductivity to be k=1).
 # For this we solve the electrostatic equation $Δϕ = 0$ and define the voltage at two oppositing boundaries to 0V at $x=0$ and 1V at $x=1$.
 # The theoretical solution of this function is a linear function.
 # $$
@@ -69,12 +69,23 @@ println("The computed value for the average potential is $average_potential")
 # %% [markdown]
 # The current density can be calculated as
 # $$
-# i = ρ \frac{\mathrm{d}ϕ}{\mathrm{d}ϕ} = 1 
+# i = \frac{1}{k} \frac{\mathrm{d}ϕ}{\mathrm{d}ϕ} = 1 
 # $$
 # and thus the averaged current density over the domain to be also 1.
 
 average_current_density = ∑(∫(current_density(p0))dΩ) / ∑(∫(1)dΩ)
 println("The computed value for the average current density is $average_current_density")
+
+
+# %% [markdown]
+# Using this value, we can caluclate the average power density to
+# $$
+# p = k i^2
+# $$
+# and thus the averaged power density over the domain to be also 1.
+
+average_power_density = ∑(∫(power_density(p0))dΩ) / ∑(∫(1)dΩ)
+println("The computed value for the average current density is $average_power_density")
 
 # %% tags=[]
 T0 = calculate_temperature(constant ∘ τ, power_density(p0), Dict("boundary" => 0.0))
