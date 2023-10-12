@@ -20,6 +20,7 @@
 # %% tags=["hide-input", "thebe-init"]
 using Gridap
 using Gridap.Geometry
+using GridapMakie, CairoMakie
 
 using Femwell.Maxwell.Electrostatic
 using Femwell.Thermal
@@ -30,12 +31,12 @@ using Femwell.Thermal
 # Furthermore, we create a function which returns 1 indipendent of the tag which is the parameter to descrie the constants of the simplified model.
 
 # %% tags=["hide-output", "remove-stderr"]
-domain = (0, 1, 0, 1)
+domain = (0, 1.0, 0, 1.0)
 partition = (20, 20)
-model = CartesianDiscreteModel(domain, partition)
+model = simplexify(CartesianDiscreteModel(domain, partition))
 labels = get_face_labeling(model)
-add_tag!(labels, "left", [1, 2, 5])
-add_tag!(labels, "right", [3, 4, 6])
+add_tag!(labels, "left", [7])
+add_tag!(labels, "right", [8])
 tags = get_face_tag(labels, num_cell_dims(model))
 Ω = Triangulation(model)
 dΩ = Measure(Ω, 1)
@@ -53,7 +54,11 @@ constant = tag -> 1
 
 # %% tags=[]
 p0 = compute_potential(constant ∘ τ, Dict("left" => 0.0, "right" => 1.0))
+fig, _, plt = plot(Ω, potential(p0), colormap = :cool)
+Colorbar(fig[1, 2], plt)
+display(fig)
 
+# %% tags=[]
 average_potential = ∑(∫(potential(p0))dΩ) / ∑(∫(1)dΩ)
 println("The computed value for the average potential is $average_potential")
 
