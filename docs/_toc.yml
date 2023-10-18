@@ -46,6 +46,7 @@ parts:
     - file: julia/waveguide_overlap_integral.jl
     - file: julia/lithium_niobate_phase_shifter.jl
     - file: julia/thermal_simple.jl
+    - file: julia/heater_3d.jl
 
   - caption: Benchmarks
     chapters:
