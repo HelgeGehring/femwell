@@ -45,8 +45,6 @@ tqdm = "*"
 jupytext = "*"
 # myst-parser = "*"
 pandas = "*"
-gdsfactory = "*"
-gplugins = "*"
 
 [tool.black]
 line-length = 100
