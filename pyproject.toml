@@ -39,6 +39,7 @@ pytest = "*"
 flake8 = "*"
 
 [tool.poetry.group.docs.dependencies]
+python = ">=3.10"
 tqdm = "*"
 # sphinx-book-theme = "*"
 jupytext = "*"
