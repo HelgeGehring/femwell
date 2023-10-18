@@ -21,7 +21,9 @@ c.show()
 wafer = c << gf.components.bbox(bbox=waveguide.bbox, layer=LAYER.WAFER)
 
 # Generate a new component and layerstack with new logical layers
-layerstack = get_layer_stack()
+layerstack = get_layer_stack().filtered(
+    ("box", "clad", "heater", "via2", "core", "metal3", "metal2", "via1")
+)
 c = get_component_with_net_layers(
     c,
     layerstack,
@@ -29,34 +31,8 @@ c = get_component_with_net_layers(
     delimiter="#",
 )
 
-# FIXME: .filtered returns all layers
-# filtered_layerstack = layerstack.filtered_from_layerspec(layerspecs=c.get_layers())
-filtered_layerstack = LayerStack(
-    layers={
-        k: layerstack.layers[k]
-        for k in (
-            # "via1",
-            "box",
-            "clad",
-            # "metal2",
-            "metal3#e1",
-            "heater",
-            "via2",
-            "core",
-            "metal3#e2",
-            "metal3",
-            "metal2",
-            "via1"
-            # "metal3",
-            # "via_contact",
-            # "metal1"
-        )
-    }
-)
-print(layerstack.layers.keys())
-
-filtered_layerstack.layers["clad"].thickness += sum(
-    filtered_layerstack.layers[name].thickness for name in ["via2", "metal3"]
+layerstack.layers["clad"].thickness += sum(
+    layerstack.layers[name].thickness for name in ["via2", "metal3"]
 )
 
 resolutions = {
@@ -68,7 +44,7 @@ resolutions = {
 geometry = get_mesh(
     type="3D",
     component=c,
-    layer_stack=filtered_layerstack,
+    layer_stack=layerstack,
     resolutions=resolutions,
     filename="mesh.msh",
     default_characteristic_length=2,
@@ -76,18 +52,3 @@ geometry = get_mesh(
     verbosity=5,
     global_scaling=1e-6,
 )
-
-"""
-for k, layer in filtered_layerstack.layers.items():
-    geometry = xyz_mesh(
-        component=c,
-        layerstack=filtered_layerstack,
-        resolutions=resolutions,
-        filename=f"layer_{k}.step",
-        default_characteristic_length=0.5,
-        global_3D_algorithm=10,
-        verbosity=5,
-        global_scaling=1e-6,
-        keep_layers=[k]
-    )
-"""
