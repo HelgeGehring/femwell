@@ -8,6 +8,8 @@ using GridapPETSc
 using Femwell.Maxwell.Electrostatic
 using Femwell.Thermal
 
+run(`python docs/julia/heater_3d.py`)
+
 
 model = GmshDiscreteModel("mesh.msh")
 Ω = Triangulation(model)
