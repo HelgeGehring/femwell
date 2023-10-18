@@ -29,7 +29,7 @@ using Femwell.Maxwell.Electrostatic
 using Femwell.Thermal
 
 dir = @__DIR__
-#read(`python $dir/heater_3d_mesh.py`)
+read(`python $dir/heater_3d_mesh.py`)
 
 
 model = GmshDiscreteModel("mesh.msh")
