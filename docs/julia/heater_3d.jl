@@ -18,7 +18,7 @@
 # # 3D thermal phase shifter
 
 # %%
-using GLMakie
+using CairoMakie
 
 using Gridap
 using GridapGmsh
