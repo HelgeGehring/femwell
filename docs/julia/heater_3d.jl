@@ -17,7 +17,7 @@
 # %% [markdown]
 # # 3D thermal phase shifter
 
-# %%
+# %% tags=["remove-stderr"]
 using CairoMakie
 
 using Gridap
