@@ -1,3 +1,23 @@
+# ---
+# jupyter:
+#   jupytext:
+#     custom_cell_magics: kql
+#     formats: jl:percent,ipynb
+#     text_representation:
+#       extension: .jl
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.11.2
+#   kernelspec:
+#     display_name: base
+#     language: julia
+#     name: julia-1.9
+# ---
+
+# %% [markdown]
+# # 3D thermal phase shifter
+
+# %%
 using GLMakie
 
 using Gridap
@@ -8,7 +28,7 @@ using GridapPETSc
 using Femwell.Maxwell.Electrostatic
 using Femwell.Thermal
 
-run(`python docs/julia/heater_3d.py`)
+run(`python docs/julia/heater_3d_mesh.py`)
 
 
 model = GmshDiscreteModel("mesh.msh")
