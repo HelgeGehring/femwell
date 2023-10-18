@@ -47,7 +47,7 @@ heat_flux(temperature::Temperature) =
 function calculate_temperature_transient(
     thermal_conductivity::CellField,
     thermal_diffusitivity::CellField,
-    power_density::Union{CellField,Float64},
+    power_density::Union{Function,CellField,Float64},
     temperatures::Dict{String,Float64},
     T0::CellField,
     Δt::Float64,
@@ -78,12 +78,20 @@ function calculate_temperature_transient(
     )
     U = TransientTrialFESpace(V, tags_temperatures)
 
+
     Ω = Triangulation(model)
     dΩ = Measure(Ω, order)
     m₀(u, v) = ∫(thermal_conductivity / thermal_diffusitivity * u * v)dΩ
-    b₀(v) = ∫(power_density * v)dΩ
     a₀(u, v) = ∫(thermal_conductivity * (∇(u) ⋅ ∇(v)))dΩ
-    op_C = TransientConstantFEOperator(m₀, a₀, b₀, U, V)
+
+    if typeof(power_density) == Function
+        println("function!")
+        b₀(t, v) = ∫(power_density(t) * v)dΩ
+        op_C = TransientConstantMatrixFEOperator(m₀, a₀, b₀, U, V)
+    else
+        b₀(v) = ∫(power_density * v)dΩ
+        op_C = TransientConstantFEOperator(m₀, a₀, b₀, U, V)
+    end
 
     θ = 0.5
     ode_solver = ThetaMethod(solver, Δt, θ)

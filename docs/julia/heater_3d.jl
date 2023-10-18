@@ -28,7 +28,8 @@ using GridapPETSc
 using Femwell.Maxwell.Electrostatic
 using Femwell.Thermal
 
-run(`python docs/julia/heater_3d_mesh.py`)
+dir = @__DIR__
+read(`python $dir/heater_3d_mesh.py`)
 
 
 model = GmshDiscreteModel("mesh.msh")
