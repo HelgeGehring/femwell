@@ -29,7 +29,7 @@ using Femwell.Maxwell.Electrostatic
 using Femwell.Thermal
 
 dir = @__DIR__
-read(`python $dir/heater_3d_mesh.py`)
+#read(`python $dir/heater_3d_mesh.py`)
 
 
 model = GmshDiscreteModel("mesh.msh")
@@ -143,7 +143,11 @@ GridapPETSc.with(args = split(options)) do
 
     Ω_w = Triangulation(model, tags = "core")
     dΩ_w = Measure(Ω_w, 1)
-    sums = [(t, ∑(∫(u)dΩ_w)) for (u, t) in uₕₜ]
-    lines(sums)
+    sums = [(t, ∑(∫(u)dΩ_w) / ∑(∫(1)dΩ_w)) for (u, t) in uₕₜ]
 
+    figure = Figure()
+    ax = Axis(figure[1, 1], ylabel = "Temperature / K", xlabel = "time / ms")
+
+    t, s = getindex.(sums, 1), getindex.(sums, 2)
+    lines!(ax, t * 1e3, s)
 end

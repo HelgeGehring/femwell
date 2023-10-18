@@ -89,8 +89,8 @@ function calculate_temperature_transient(
         b₀(t, v) = ∫(power_density(t) * v)dΩ
         op_C = TransientConstantMatrixFEOperator(m₀, a₀, b₀, U, V)
     else
-        b₀(v) = ∫(power_density * v)dΩ
-        op_C = TransientConstantFEOperator(m₀, a₀, b₀, U, V)
+        b(v) = ∫(power_density * v)dΩ
+        op_C = TransientConstantFEOperator(m₀, a₀, b, U, V)
     end
 
     θ = 0.5
