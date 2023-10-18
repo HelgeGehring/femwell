@@ -32,7 +32,7 @@ scikit-fem = ">=8.1.0"
 gmsh = "*"
 pygmsh = "*"
 matplotlib = "*"
-meshwell = ">=1.0.3"
+meshwell = ">=1.0.2"
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
