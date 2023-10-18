@@ -150,4 +150,5 @@ GridapPETSc.with(args = split(options)) do
 
     t, s = getindex.(sums, 1), getindex.(sums, 2)
     lines!(ax, t * 1e3, s)
+    display(figure)
 end
