@@ -20,6 +20,8 @@
 # %% tags=["remove-stderr"]
 using CairoMakie
 
+CairoMakie.inline!(true)
+
 using Gridap
 using GridapGmsh
 using Gridap.Geometry
