@@ -26,6 +26,7 @@ jobs:
             miniforge-version: latest
             activate-environment: env
             use-mamba: true
+            python-version: "3.12"
       - name: Add conda to system path
         run: |
           echo $CONDA/bin >> $GITHUB_PATH
