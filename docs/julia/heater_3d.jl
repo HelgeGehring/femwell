@@ -34,7 +34,7 @@ run(`python $dir/heater_3d_mesh.py`)
 # %% [markdown]
 # Let's start with defining the constants for the simulation:
 
-# %% 
+# %% tags=["hide-output"]
 electrical_conductivity = [
     "core" => 1e-6,
     "box" => 1e-13,
@@ -70,12 +70,12 @@ thermal_diffisitivities = [
     "metal3" => 28 / 598 / 5240,
     "metal3#e1" => 28 / 598 / 5240,
     "metal3#e2" => 28 / 598 / 5240,
-];
+]
 # %% [markdown]
 # First we load the mesh, get the labels, define a CellField to evaluate the constants on
 # and create functions which work on the tags
 
-# %% tags=["remove-stderr"]
+# %% tags=["remove-stderr", "hide-output"]
 model = GmshDiscreteModel("mesh.msh")
 Ω = Triangulation(model)
 
