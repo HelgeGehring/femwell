@@ -29,7 +29,7 @@ using Femwell.Maxwell.Electrostatic
 using Femwell.Thermal
 
 dir = @__DIR__
-run(`python $dir/heater_3d_mesh.py > /dev/null`)
+run(`python $dir/heater_3d_mesh.py`)
 
 
 model = GmshDiscreteModel("mesh.msh")
@@ -135,6 +135,8 @@ GridapPETSc.with(args = split(options)) do
         2e-4,
         solver = PETScLinearSolver(),
     )
+
+    stophere
 
     #createpvd("poisson_transient_solution") do pvd
     #    for (uₕ, t) in uₕₜ
