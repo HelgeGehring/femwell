@@ -139,49 +139,12 @@ writevtk(
 )
 
 
+# %% [markdown]
+# Now let's get to the transient simulation.
+# We'll simulate the heatup by starting with zero temperature offset and the power density based on the electrical simulation.
+# For the cooldown simulation we start with the steady state temperature profile and no heating.
 
-uₕₜ = calculate_temperature_transient(
-    ϵ_conductivities ∘ τ,
-    ϵ_diffisitivities ∘ τ,
-    power_density(p0),
-    boundary_temperatures,
-    temperature(T0) * 0,
-    2e-7,
-    2e-4,
-)
-
-#createpvd("poisson_transient_solution") do pvd
-#    for (uₕ, t) in uₕₜ
-#        pvd[t] = createvtk(
-#            Ω,
-#            "poisson_transient_solution_$t" * ".vtu",
-#            cellfields = ["u" => uₕ],
-#        )
-#    end
-#end
-sums_heatup = [(t, ∑(∫(u)dΩ_w) / silicon_volume) for (u, t) in uₕₜ]
-
-uₕₜ = calculate_temperature_transient(
-    ϵ_conductivities ∘ τ,
-    ϵ_diffisitivities ∘ τ,
-    power_density(p0) * 0,
-    boundary_temperatures,
-    temperature(T0),
-    2e-7,
-    2e-4,
-)
-
-#createpvd("poisson_transient_solution") do pvd
-#    for (uₕ, t) in uₕₜ
-#        pvd[t] = createvtk(
-#            Ω,
-#            "poisson_transient_solution_$t" * ".vtu",
-#            cellfields = ["u" => uₕ],
-#        )
-#    end
-#end
-sums_cooldown = [(t, ∑(∫(u)dΩ_w) / silicon_volume) for (u, t) in uₕₜ]
-
+# %% tags=["remove-stderr"]
 figure = Figure()
 ax = Axis(
     figure[1, 1],
@@ -189,10 +152,34 @@ ax = Axis(
     xlabel = "time / ms",
 )
 
-t, s = getindex.(sums_heatup, 1), getindex.(sums_heatup, 2)
-lines!(ax, t * 1e3, s)
-t, s = getindex.(sums_cooldown, 1), getindex.(sums_cooldown, 2)
-lines!(ax, t * 1e3, s)
+for (label, power_factor, temperature_factor) in [("heatup", 1, 0), ("cooldown", 0, 1)]
+    uₕₜ = calculate_temperature_transient(
+        ϵ_conductivities ∘ τ,
+        ϵ_diffisitivities ∘ τ,
+        power_density(p0) * power_factor,
+        boundary_temperatures,
+        temperature(T0) * temperature_factor,
+        2e-7,
+        2e-4,
+    )
+
+    #createpvd("poisson_transient_solution_$label") do pvd
+    #    for (uₕ, t) in uₕₜ
+    #        pvd[t] = createvtk(
+    #            Ω,
+    #            "poisson_transient_solution_$t" * ".vtu",
+    #            cellfields = ["u" => uₕ],
+    #        )
+    #    end
+    #end
+
+    sums = [(t, ∑(∫(u)dΩ_w) / silicon_volume) for (u, t) in uₕₜ]
+
+    t, s = getindex.(sums, 1), getindex.(sums, 2)
+    lines!(ax, t * 1e3, s, label = label)
+end
+
+axislegend(position = :rc)
 display(figure)
 
 
