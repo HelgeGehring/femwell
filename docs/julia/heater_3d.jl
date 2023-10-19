@@ -97,7 +97,11 @@ T0 = calculate_temperature(
 Ω_w = Triangulation(model, tags = "core")
 dΩ_w = Measure(Ω_w, 1)
 
-println("Average Temperature: ", ∑(∫(temperature(T0))dΩ_w) / ∑(∫(1)dΩ_w), " K")
+println(
+    "Average Temperature of silicon waveguide: ",
+    ∑(∫(temperature(T0))dΩ_w) / ∑(∫(1)dΩ_w),
+    " K",
+)
 
 writevtk(
     Ω,
@@ -145,12 +149,40 @@ uₕₜ = calculate_temperature_transient(
 #        )
 #    end
 #end
-sums = [(t, ∑(∫(u)dΩ_w) / ∑(∫(1)dΩ_w)) for (u, t) in uₕₜ]
+sums_heatup = [(t, ∑(∫(u)dΩ_w) / ∑(∫(1)dΩ_w)) for (u, t) in uₕₜ]
+
+uₕₜ = calculate_temperature_transient(
+    ϵ_conductivities ∘ τ,
+    ϵ_diffisitivities ∘ τ,
+    power_density(p0) * 0,
+    temperatures,
+    temperature(T0),
+    2e-7,
+    2e-4,
+    #solver = PETScLinearSolver(),
+)
+
+#createpvd("poisson_transient_solution") do pvd
+#    for (uₕ, t) in uₕₜ
+#        pvd[t] = createvtk(
+#            Ω,
+#            "poisson_transient_solution_$t" * ".vtu",
+#            cellfields = ["u" => uₕ],
+#        )
+#    end
+#end
+sums_cooldown = [(t, ∑(∫(u)dΩ_w) / ∑(∫(1)dΩ_w)) for (u, t) in uₕₜ]
 
 figure = Figure()
-ax = Axis(figure[1, 1], ylabel = "Temperature / K", xlabel = "time / ms")
+ax = Axis(
+    figure[1, 1],
+    ylabel = "Average silicon waveguide temperature / K",
+    xlabel = "time / ms",
+)
 
-t, s = getindex.(sums, 1), getindex.(sums, 2)
+t, s = getindex.(sums_heatup, 1), getindex.(sums_heatup, 2)
+lines!(ax, t * 1e3, s)
+t, s = getindex.(sums_cooldown, 1), getindex.(sums_cooldown, 2)
 lines!(ax, t * 1e3, s)
 display(figure)
 # end
