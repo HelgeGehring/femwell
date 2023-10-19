@@ -147,8 +147,6 @@ GridapPETSc.with(args = split(options)) do
     #end
     sums = [(t, ∑(∫(u)dΩ_w) / ∑(∫(1)dΩ_w)) for (u, t) in uₕₜ]
 
-    dontplottransient
-
     figure = Figure()
     ax = Axis(figure[1, 1], ylabel = "Temperature / K", xlabel = "time / ms")
 
