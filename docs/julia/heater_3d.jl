@@ -104,6 +104,8 @@ GridapPETSc.with(args = split(options)) do
         ],
     )
 
+    dontdotransient
+
     thermal_diffisitivities = [
         "core" => 90 / 711 / 2330,
         "box" => 1.38 / 709 / 2203,
