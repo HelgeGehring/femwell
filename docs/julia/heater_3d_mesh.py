@@ -49,6 +49,6 @@ geometry = get_mesh(
     filename="mesh.msh",
     default_characteristic_length=2,
     # global_3D_algorithm=10,
-    verbosity=5,
+    # verbosity=5,
     global_scaling=1e-6,
 )
