@@ -94,6 +94,11 @@ GridapPETSc.with(args = split(options)) do
         solver = PETScLinearSolver(),
     )
 
+    Ω_w = Triangulation(model, tags = "core")
+    dΩ_w = Measure(Ω_w, 1)
+
+    println("Average Temperature: ", ∑(∫(temperature(T0))dΩ_w) / ∑(∫(1)dΩ_w), " K")
+
     writevtk(
         Ω,
         "results",
@@ -140,9 +145,6 @@ GridapPETSc.with(args = split(options)) do
     #        )
     #    end
     #end
-
-    Ω_w = Triangulation(model, tags = "core")
-    dΩ_w = Measure(Ω_w, 1)
     sums = [(t, ∑(∫(u)dΩ_w) / ∑(∫(1)dΩ_w)) for (u, t) in uₕₜ]
 
     dontplottransient
