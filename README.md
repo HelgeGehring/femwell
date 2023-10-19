@@ -58,6 +58,8 @@ Something missing? Feel free to open an [issue](https://github.com/HelgeGehring/
 - Doris Reiter (Dortmund University)
 - Yannick Augenstein (Google, Karlsruhe Institute of Technology)
 - Niko Savola (Google, Aalto University)
+- Rouven Glauert (Idalab)
+- Markus DeMartini (Google)
 
 Happy about every form of contribution -
 pull requests, feature requests, issues, questions, ... :)
