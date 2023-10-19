@@ -126,8 +126,8 @@ GridapPETSc.with(args = split(options)) do
         power_density(p0),
         temperatures,
         temperature(T0) * 0,
-        .5e-5,
-        3e-4,
+        2e-6,
+        2e-4,
         solver = PETScLinearSolver(),
     )
 
