@@ -20,8 +20,6 @@
 # %% tags=["remove-stderr"]
 using CairoMakie
 
-CairoMakie.inline!(true)
-
 using Gridap
 using GridapGmsh
 using Gridap.Geometry
@@ -128,8 +126,8 @@ GridapPETSc.with(args = split(options)) do
         power_density(p0),
         temperatures,
         temperature(T0) * 0,
-        .5e-6,
-        3e-5,
+        .5e-5,
+        3e-4,
         solver = PETScLinearSolver(),
     )
 
@@ -152,5 +150,5 @@ GridapPETSc.with(args = split(options)) do
 
     t, s = getindex.(sums, 1), getindex.(sums, 2)
     lines!(ax, t * 1e3, s)
-    #display(figure)
+    display(figure)
 end
