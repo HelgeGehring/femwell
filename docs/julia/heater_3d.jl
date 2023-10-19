@@ -71,6 +71,9 @@ thermal_diffisitivities = [
     "metal3#e1" => 28 / 598 / 5240,
     "metal3#e2" => 28 / 598 / 5240,
 ]
+# %% [markdown]
+# First we load the mesh, get the labels, define a CellField to evaluate the constants on
+# and create functions which work on the tags
 
 # %% tags=["remove-stderr"]
 model = GmshDiscreteModel("mesh.msh")
@@ -80,38 +83,32 @@ labels = get_face_labeling(model)
 tags = get_face_tag(labels, num_cell_dims(model))
 τ = CellField(tags, Ω)
 
-
-#options = "-ksp_type cg -pc_type mg -ksp_monitor"
-#GridapPETSc.with(args = split(options)) do
-
-
 electrical_conductivity =
     Dict(get_tag_from_name(labels, u) => v for (u, v) in electrical_conductivity)
 ϵ_electrical_conductivity(tag) = electrical_conductivity[tag]
-
-boundary_conditions = Dict(["metal3#e1___None" => 0.4, "metal3#e2___None" => 0.0])
-
-p0 = compute_potential(
-    ϵ_electrical_conductivity ∘ τ,
-    boundary_conditions,
-    order = 1,
-    # solver = PETScLinearSolver(),
-)
-
 
 thermal_conductivities =
     Dict(get_tag_from_name(labels, u) => v for (u, v) in thermal_conductivities)
 ϵ_conductivities(tag) = thermal_conductivities[tag]
 
+thermal_diffisitivities =
+    Dict(get_tag_from_name(labels, u) => v for (u, v) in thermal_diffisitivities)
+ϵ_diffisitivities(tag) = thermal_diffisitivities[tag]
+
+
+
+
+# %% tags=["remove-stderr"]
+
+boundary_conditions = Dict(["metal3#e1___None" => 0.4, "metal3#e2___None" => 0.0])
+
+p0 = compute_potential(ϵ_electrical_conductivity ∘ τ, boundary_conditions)
+
+
+
 temperatures = Dict("box___None" => 0.0)
 
-T0 = calculate_temperature(
-    ϵ_conductivities ∘ τ,
-    power_density(p0),
-    temperatures,
-    order = 1,
-    # solver = PETScLinearSolver(),
-)
+T0 = calculate_temperature(ϵ_conductivities ∘ τ, power_density(p0), temperatures)
 
 Ω_w = Triangulation(model, tags = "core")
 dΩ_w = Measure(Ω_w, 1)
@@ -133,9 +130,6 @@ writevtk(
 )
 
 
-thermal_diffisitivities =
-    Dict(get_tag_from_name(labels, u) => v for (u, v) in thermal_diffisitivities)
-ϵ_diffisitivities(tag) = thermal_diffisitivities[tag]
 
 uₕₜ = calculate_temperature_transient(
     ϵ_conductivities ∘ τ,
@@ -145,7 +139,6 @@ uₕₜ = calculate_temperature_transient(
     temperature(T0) * 0,
     2e-7,
     2e-4,
-    #solver = PETScLinearSolver(),
 )
 
 #createpvd("poisson_transient_solution") do pvd
@@ -167,7 +160,6 @@ uₕₜ = calculate_temperature_transient(
     temperature(T0),
     2e-7,
     2e-4,
-    #solver = PETScLinearSolver(),
 )
 
 #createpvd("poisson_transient_solution") do pvd
@@ -193,4 +185,19 @@ lines!(ax, t * 1e3, s)
 t, s = getindex.(sums_cooldown, 1), getindex.(sums_cooldown, 2)
 lines!(ax, t * 1e3, s)
 display(figure)
-# end
+
+
+# %% [markdown]
+# For more complex examples we'd need a iterative solver, i.e. 
+#
+# ```julia
+#   GridapPETSc.with(args = split("-ksp_type cg -pc_type mg -ksp_monitor")) do
+#       # Here the code
+#   end
+# ```
+# 
+# And then add to each of the calculate-calls the sovler parameter:
+#
+# ```julia
+#   solver = PETScLinearSolver()
+# ```
