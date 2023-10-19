@@ -1,5 +1,33 @@
 # Changelog
 
+## v0.1.10
+- Add backward compatability for "Fix Typo: Culomb -> Coulomb" until the end of the year
+
+## v0.1.9
+- Improvements on the Docs
+- Fix Typo: Culomb -> Coulomb
+
+## v0.1.8
+
+- Fix build-backend in pyproject.toml
+
+## v0.1.7
+
+- Add __init__.py to femwell/maxwell
+
+## v0.1.6
+
+- Add build-backend to pyproject.toml
+
+## v0.1.5
+
+- Add function to calculate intensities
+- Add function to plot intensities
+
+## v0.1.4
+
+- Fix meshing if a LineString is cut by the geometry
+
 ## v0.1.3
 
 - Update minimum version of scikit-fem

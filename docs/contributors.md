@@ -14,8 +14,8 @@ He worked during his bachelor's studies as a software engineer at [DEOS](https:/
 For his bachelor's thesis he investigated the quantum dynamics of quantum dots via large-scale simulations on supercomputers.
 Subsequently, he switched to applied physics and worked on integrated photonics for his master's thesis, during which he had a research stay at the University of Oxford, UK.
 Afterwards, he started his doctoral studies at the University of Münster where he combined photonic circuits with 3D micro-structures to enable low-loss ultra-broadband fiber-to-chip interfacing.
-He took a break from his doctoral studies to spend a year as a resident at [X, the moonshot factory](https://x.company) (formerly known as Google X).
-Helge received a scholarship for his B.Sc. and M.Sc. degrees and a fellowship for his doctoral studies from the Studienstiftung des deutschen Volkes which funds his current research.
+Helge received a scholarship for his B.Sc. and M.Sc. degrees and a fellowship for his doctoral studies from the Studienstiftung des deutschen Volkes.
+He took a break from his doctoral studies to spend a year as a resident at [X, the moonshot factory](https://x.company) (formerly known as Google X) and recently returned full-time to X.
 ```
 
 ## Simon Bilodeau

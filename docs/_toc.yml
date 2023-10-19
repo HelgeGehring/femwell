@@ -12,6 +12,7 @@ parts:
       - file: math/maxwell
         sections:
         - file: math/waveguide_port
+        - file: math/overlap_integrals
       - file: math/thermal
       - file: math/dispersion
       - file: math/coupled_mode_theory
@@ -29,7 +30,7 @@ parts:
     - file: photonics/examples/metal_heater_phase_shifter.py
     - file: photonics/examples/metal_heater_phase_shifter_transient.py
     - file: photonics/examples/si_heater_phase_shifter.py
-    - file: photonics/examples/culomb.py
+    - file: photonics/examples/coulomb.py
     - file: photonics/examples/leaky_mode.py
     - file: photonics/examples/bragg_filter.py
     - file: photonics/examples/grating_coupler.py
@@ -37,6 +38,16 @@ parts:
     - file: photonics/examples/depletion_waveguide.py
     - file: photonics/examples/refinement.py
     - file: photonics/examples/propagation_loss.py
+    - file: electronics/examples/capacitor.py
+
+  - caption: Julia Examples
+    chapters:
+    - file: julia/waveguide.jl
+    - file: julia/waveguide_anisotropic.jl
+    - file: julia/waveguide_overlap_integral.jl
+    - file: julia/lithium_niobate_phase_shifter.jl
+    - file: julia/thermal_simple.jl
+    - file: julia/heater_3d.jl
 
   - caption: Benchmarks
     chapters:
@@ -46,5 +57,6 @@ parts:
   - caption: About Femwell
     chapters:
     - file: contributors
+    - file: contributing
     - file: changelog
     - file: execution_statistics

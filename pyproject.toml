@@ -1,3 +1,7 @@
+[build-system]
+requires = ["poetry-core>=1.6.0"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
 name = "femwell"
 version = "0.0.1"
@@ -28,13 +32,14 @@ scikit-fem = ">=8.1.0"
 gmsh = "*"
 pygmsh = "*"
 matplotlib = "*"
-shapely = ">=2.0.0"
+meshwell = ">=1.0.2"
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
 flake8 = "*"
 
 [tool.poetry.group.docs.dependencies]
+python = ">=3.10"
 tqdm = "*"
 # sphinx-book-theme = "*"
 jupytext = "*"

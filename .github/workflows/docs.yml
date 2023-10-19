@@ -2,6 +2,7 @@ name: docs
 
 on:
   push:
+  pull_request:
   schedule:
     - cron: "1 9 * * *"
 
@@ -17,21 +18,21 @@ jobs:
         run: |
           echo "date=$(/bin/date --date='TZ="America/Los_Angeles"' -u "+%Y%m%d")" >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Mambaforge
         uses: conda-incubator/setup-miniconda@v2
         with:
-            miniforge-variant: Mambaforge
             miniforge-version: latest
             activate-environment: env
             use-mamba: true
+            python-version: "3.12"
       - name: Add conda to system path
         run: |
           echo $CONDA/bin >> $GITHUB_PATH
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.3.2
+          version: 1.6.1
           virtualenvs-create: false
           installer-parallel: true
       - name: Install dependencies
@@ -39,13 +40,26 @@ jobs:
           sudo apt-get install -y libglu1-mesa
           poetry install --no-interaction
           mamba install slepc4py=*=complex* -y
+          mamba install julia
           pip install jupyter-book
           pip install --upgrade jupytext
           pip install sphinx=="5.3.0"
           pip install docutils=="0.17.1"
-          pip uninstall -y scikit-fem
-          pip install --upgrade git+https://github.com/kinnala/scikit-fem.git
+          pip install gdsfactory gplugins
           pip list
+      
+      - uses: julia-actions/setup-julia@v1
+        with:
+          version: '1.9.3'
+      - uses: julia-actions/cache@v1
+        with:
+          cache-name: ${{ runner.os }}-${{ steps.get-date.outputs.date }}
+          cache-compiled: "true"
+      - uses: julia-actions/julia-buildpkg@v1
+      - name: Install dependencies
+        run: |
+          pip install juliacall
+          julia -e 'using Pkg; Pkg.add("PythonCall")'
       - uses: actions/cache@v3
         with:
           path: |
@@ -55,7 +69,7 @@ jobs:
             ${{ runner.os }}-${{ steps.get-date.outputs.date }}
       - name: Make docs
         run: |
-          jupyter-book build docs/
+          PYTHON_JULIAPKG_PROJECT=~/work/femwell/femwell PYTHON_JULIAPKG_OFFLINE=yes jupyter-book build docs/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2

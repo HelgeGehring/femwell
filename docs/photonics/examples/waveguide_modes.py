@@ -14,7 +14,7 @@
 
 # # Modes of a rectangular waveguide
 
-# + tags=["remove-stderr", "hide-input"]
+# + tags=["remove-stderr", "hide-input", "thebe-init"]
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
@@ -85,14 +85,26 @@ for mode in modes:
     print(f"Effective refractive index: {mode.n_eff:.4f}")
     mode.show(mode.E.real, colorbar=True, direction="x")
 
-powers_in_waveguide = []
-confinement_factors_waveguide = []
+# -
+
+# The intensity can be plotted directly from the mode object
+# +
+
+fig, ax = plt.subplots()
+modes[0].plot_intensity(ax=ax)
+plt.title("Normalized Intensity")
+plt.tight_layout()
+plt.show()
+
 # -
 
 # Now, let's calculate with the modes:
 # What percentage of the mode is within the core for the calculated modes?
 
 # +
+powers_in_waveguide = []
+confinement_factors_waveguide = []
+
 for mode in modes:
     powers_in_waveguide.append(mode.calculate_power(elements="core"))
     confinement_factors_waveguide.append(mode.calculate_confinement_factor(elements="core"))

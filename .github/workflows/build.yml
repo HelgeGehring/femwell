@@ -17,20 +17,27 @@ jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.12"
+      - uses: julia-actions/setup-julia@v1
+        with:
+          version: '1.9.2'
+      - uses: julia-actions/cache@v1
+      - name: Install JuliaFormatter and format
+        run: |
+          julia  -e 'using Pkg; Pkg.add(PackageSpec(name="JuliaFormatter"))'
       - uses: pre-commit/action@v3.0.0
 
   flake8-lint:
     runs-on: ubuntu-latest
     name: Lint
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: flake8 Lint
         uses: py-actions/flake8@v2
         with:
@@ -41,14 +48,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Mambaforge
         uses: conda-incubator/setup-miniconda@v2
         with:
-            miniforge-variant: Mambaforge
             miniforge-version: latest
             activate-environment: env
             use-mamba: true
+            python-version: "3.12"
       - name: Add conda to system path
         run: |
           echo $CONDA/bin >> $GITHUB_PATH

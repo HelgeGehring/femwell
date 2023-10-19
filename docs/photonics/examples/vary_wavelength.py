@@ -55,7 +55,7 @@ def n_silicon_dioxide(wavelength):
 
 # -
 
-# Low we define the geometry, we use a box for the core with a height of 500nm and a width of 1000nm.
+# Now we define the geometry, we use a box for the core with a height of 500nm and a width of 1000nm.
 # Everything below the waveguide is defined as the box and the waveguide is surrounded by the clad.
 
 # +

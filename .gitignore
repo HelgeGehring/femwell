@@ -9,6 +9,9 @@ docs/_build
 *.msh
 *.xdmf
 *.vtk
+*.vtu
+*.pvd
+*.step
 
 *.png
 *.gif
@@ -17,3 +20,6 @@ docs/_build
 
 .vscode/
 *.iml
+
+# julia
+Manifest.toml

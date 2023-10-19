@@ -1,0 +1,32 @@
+name = "Femwell"
+uuid = "eef17a47-74e3-4e6a-8870-28d70ff13c97"
+authors = ["Helge"]
+version = "0.0.0-DEV"
+
+[deps]
+Arpack = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
+Gridap = "56d4f2e9-7ea1-5844-9cf6-b9c51ca7ce8e"
+GridapGmsh = "3025c34a-b394-11e9-2a55-3fee550c04c8"
+GridapMakie = "41f30b06-6382-4b60-a5f7-79d86b35bf5d"
+GridapPETSc = "bcdc36c2-0c3e-11ea-095a-c9dadae499f1"
+IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
+JuliaFormatter = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
+LsqFit = "2fda8390-95c7-5789-9bda-21331edee243"
+MPI = "da04e1cc-30fd-572f-bb4f-1f8673147195"
+MUMPS = "55d2b088-9f4e-11e9-26c0-150b02ea6a46"
+PhysicalConstants = "5ad8b20f-a522-5ce9-bfc9-ddf1d5bda6ab"
+Pickle = "fbb45041-c46e-462f-888f-7c521cafbc2c"
+PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
+Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+
+[compat]
+Arpack = "=0.5.3"
+julia = "1.9"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
