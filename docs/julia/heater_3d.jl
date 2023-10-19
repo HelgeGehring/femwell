@@ -104,8 +104,6 @@ GridapPETSc.with(args = split(options)) do
         ],
     )
 
-    dontdotransient
-
     thermal_diffisitivities = [
         "core" => 90 / 711 / 2330,
         "box" => 1.38 / 709 / 2203,
@@ -146,6 +144,8 @@ GridapPETSc.with(args = split(options)) do
     Ω_w = Triangulation(model, tags = "core")
     dΩ_w = Measure(Ω_w, 1)
     sums = [(t, ∑(∫(u)dΩ_w) / ∑(∫(1)dΩ_w)) for (u, t) in uₕₜ]
+
+    dontplottransient
 
     figure = Figure()
     ax = Axis(figure[1, 1], ylabel = "Temperature / K", xlabel = "time / ms")
