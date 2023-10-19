@@ -95,30 +95,39 @@ thermal_diffisitivities =
     Dict(get_tag_from_name(labels, u) => v for (u, v) in thermal_diffisitivities)
 ϵ_diffisitivities(tag) = thermal_diffisitivities[tag]
 
-
-
+# %% [markdown]
+# The next step is to define the boundary conditions, this can be done simply via julia-dicts:
 
 # %% tags=["remove-stderr"]
-
 boundary_conditions = Dict(["metal3#e1___None" => 0.4, "metal3#e2___None" => 0.0])
+boundary_temperatures = Dict("box___None" => 0.0)
 
+# %% [markdown]
+# Now we're ready to do the simulations! First we simulate the electrical potential,
+# then we go on with the temperature
+
+# %% tags=["remove-stderr"]
 p0 = compute_potential(ϵ_electrical_conductivity ∘ τ, boundary_conditions)
+T0 = calculate_temperature(ϵ_conductivities ∘ τ, power_density(p0), boundary_temperatures)
 
+# %% [markdown]
+# Yay, now we have both fields simulated! Let's get the average temperature of the silicon waveguide.
 
-
-temperatures = Dict("box___None" => 0.0)
-
-T0 = calculate_temperature(ϵ_conductivities ∘ τ, power_density(p0), temperatures)
-
+# %% tags=["remove-stderr"]
 Ω_w = Triangulation(model, tags = "core")
 dΩ_w = Measure(Ω_w, 1)
+silicon_volume = ∑(∫(1)dΩ_w)
 
 println(
     "Average Temperature of silicon waveguide: ",
-    ∑(∫(temperature(T0))dΩ_w) / ∑(∫(1)dΩ_w),
+    ∑(∫(temperature(T0))dΩ_w) / silicon_volume,
     " K",
 )
 
+# %% [markdown]
+# And we write the fields to a file for visualisation using paraview:
+
+# %% tags=["remove-stderr"]
 writevtk(
     Ω,
     "results",
@@ -135,7 +144,7 @@ uₕₜ = calculate_temperature_transient(
     ϵ_conductivities ∘ τ,
     ϵ_diffisitivities ∘ τ,
     power_density(p0),
-    temperatures,
+    boundary_temperatures,
     temperature(T0) * 0,
     2e-7,
     2e-4,
@@ -150,13 +159,13 @@ uₕₜ = calculate_temperature_transient(
 #        )
 #    end
 #end
-sums_heatup = [(t, ∑(∫(u)dΩ_w) / ∑(∫(1)dΩ_w)) for (u, t) in uₕₜ]
+sums_heatup = [(t, ∑(∫(u)dΩ_w) / silicon_volume) for (u, t) in uₕₜ]
 
 uₕₜ = calculate_temperature_transient(
     ϵ_conductivities ∘ τ,
     ϵ_diffisitivities ∘ τ,
     power_density(p0) * 0,
-    temperatures,
+    boundary_temperatures,
     temperature(T0),
     2e-7,
     2e-4,
@@ -171,7 +180,7 @@ uₕₜ = calculate_temperature_transient(
 #        )
 #    end
 #end
-sums_cooldown = [(t, ∑(∫(u)dΩ_w) / ∑(∫(1)dΩ_w)) for (u, t) in uₕₜ]
+sums_cooldown = [(t, ∑(∫(u)dΩ_w) / silicon_volume) for (u, t) in uₕₜ]
 
 figure = Figure()
 ax = Axis(
