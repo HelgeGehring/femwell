@@ -133,10 +133,8 @@ GridapPETSc.with(args = split(options)) do
         temperature(T0) * 0,
         2e-6,
         2e-4,
-        solver = PETScLinearSolver(),
+        #solver = PETScLinearSolver(),
     )
-
-    stophere
 
     #createpvd("poisson_transient_solution") do pvd
     #    for (uₕ, t) in uₕₜ
