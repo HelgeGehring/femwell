@@ -70,7 +70,7 @@ thermal_diffisitivities = [
     "metal3" => 28 / 598 / 5240,
     "metal3#e1" => 28 / 598 / 5240,
     "metal3#e2" => 28 / 598 / 5240,
-]
+];
 # %% [markdown]
 # First we load the mesh, get the labels, define a CellField to evaluate the constants on
 # and create functions which work on the tags
