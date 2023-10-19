@@ -37,6 +37,7 @@ parts:
     - file: photonics/examples/coupled_mode_theory.py
     - file: photonics/examples/depletion_waveguide.py
     - file: photonics/examples/refinement.py
+    - file: photonics/examples/propagation_loss.py
     - file: electronics/examples/capacitor.py
 
   - caption: Julia Examples
