@@ -84,13 +84,11 @@ function calculate_temperature_transient(
     m₀(u, v) = ∫(thermal_conductivity / thermal_diffusitivity * u * v)dΩ
     a₀(u, v) = ∫(thermal_conductivity * (∇(u) ⋅ ∇(v)))dΩ
 
-    if typeof(power_density) == Function
+    op_C = if typeof(power_density) <: Function
         println("function!")
-        b₀(t, v) = ∫(power_density(t) * v)dΩ
-        op_C = TransientConstantMatrixFEOperator(m₀, a₀, b₀, U, V)
+        TransientConstantMatrixFEOperator(m₀, a₀, (t, v) -> ∫(power_density(t) * v)dΩ, U, V)
     else
-        b(v) = ∫(power_density * v)dΩ
-        op_C = TransientConstantFEOperator(m₀, a₀, b, U, V)
+        TransientConstantFEOperator(m₀, a₀, v -> ∫(power_density * v)dΩ, U, V)
     end
 
     θ = 0.5

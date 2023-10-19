@@ -61,7 +61,7 @@ GridapPETSc.with(args = split(options)) do
         Dict(get_tag_from_name(labels, u) => v for (u, v) in electrical_conductivity)
     ϵ_electrical_conductivity(tag) = electrical_conductivity[tag]
 
-    boundary_conditions = Dict(["metal3#e1___None" => 1, "metal3#e2___None" => 0.0])
+    boundary_conditions = Dict(["metal3#e1___None" => 0.4, "metal3#e2___None" => 0.0])
 
     p0 = compute_potential(
         ϵ_electrical_conductivity ∘ τ,
@@ -125,23 +125,23 @@ GridapPETSc.with(args = split(options)) do
     uₕₜ = calculate_temperature_transient(
         ϵ_conductivities ∘ τ,
         ϵ_diffisitivities ∘ τ,
-        power_density(p0) * 0,
+        power_density(p0),
         temperatures,
-        temperature(T0),
+        temperature(T0) * 0,
         .5e-6,
-        2e-5,
+        3e-5,
         solver = PETScLinearSolver(),
     )
 
-    createpvd("poisson_transient_solution") do pvd
-        for (uₕ, t) in uₕₜ
-            pvd[t] = createvtk(
-                Ω,
-                "poisson_transient_solution_$t" * ".vtu",
-                cellfields = ["u" => uₕ],
-            )
-        end
-    end
+    #createpvd("poisson_transient_solution") do pvd
+    #    for (uₕ, t) in uₕₜ
+    #        pvd[t] = createvtk(
+    #            Ω,
+    #            "poisson_transient_solution_$t" * ".vtu",
+    #            cellfields = ["u" => uₕ],
+    #        )
+    #    end
+    #end
 
     Ω_w = Triangulation(model, tags = "core")
     dΩ_w = Measure(Ω_w, 1)
@@ -152,5 +152,5 @@ GridapPETSc.with(args = split(options)) do
 
     t, s = getindex.(sums, 1), getindex.(sums, 2)
     lines!(ax, t * 1e3, s)
-    display(figure)
+    #display(figure)
 end
