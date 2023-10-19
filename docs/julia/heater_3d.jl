@@ -17,7 +17,7 @@
 # %% [markdown]
 # # 3D thermal phase shifter
 
-# %% tags=["remove-stderr"]
+# %% tags=["remove-stderr", "hide-input", "hide-output"]
 using CairoMakie
 
 using Gridap
@@ -31,18 +31,10 @@ using Femwell.Thermal
 dir = @__DIR__
 run(`python $dir/heater_3d_mesh.py`)
 
+# %% [markdown]
+# Let's start with defining the constants for the simulation:
 
-model = GmshDiscreteModel("mesh.msh")
-Ω = Triangulation(model)
-
-labels = get_face_labeling(model)
-tags = get_face_tag(labels, num_cell_dims(model))
-τ = CellField(tags, Ω)
-
-
-#options = "-ksp_type cg -pc_type mg -ksp_monitor"
-#GridapPETSc.with(args = split(options)) do
-
+# %% 
 electrical_conductivity = [
     "core" => 1e-6,
     "box" => 1e-13,
@@ -55,6 +47,44 @@ electrical_conductivity = [
     "metal3#e1" => 3.77e7,
     "metal3#e2" => 3.77e7,
 ]
+thermal_conductivities = [
+    "core" => 90,
+    "box" => 1.38,
+    "clad" => 1.38,
+    "heater" => 28,
+    "via2" => 28,
+    "metal2" => 28,
+    "via1" => 28,
+    "metal3" => 28,
+    "metal3#e1" => 28,
+    "metal3#e2" => 28,
+]
+thermal_diffisitivities = [
+    "core" => 90 / 711 / 2330,
+    "box" => 1.38 / 709 / 2203,
+    "clad" => 1.38 / 709 / 2203,
+    "heater" => 28 / 598 / 5240,
+    "via2" => 28 / 598 / 5240,
+    "metal2" => 28 / 598 / 5240,
+    "via1" => 28 / 598 / 5240,
+    "metal3" => 28 / 598 / 5240,
+    "metal3#e1" => 28 / 598 / 5240,
+    "metal3#e2" => 28 / 598 / 5240,
+]
+
+# %% tags=["remove-stderr"]
+model = GmshDiscreteModel("mesh.msh")
+Ω = Triangulation(model)
+
+labels = get_face_labeling(model)
+tags = get_face_tag(labels, num_cell_dims(model))
+τ = CellField(tags, Ω)
+
+
+#options = "-ksp_type cg -pc_type mg -ksp_monitor"
+#GridapPETSc.with(args = split(options)) do
+
+
 electrical_conductivity =
     Dict(get_tag_from_name(labels, u) => v for (u, v) in electrical_conductivity)
 ϵ_electrical_conductivity(tag) = electrical_conductivity[tag]
@@ -68,18 +98,7 @@ p0 = compute_potential(
     # solver = PETScLinearSolver(),
 )
 
-thermal_conductivities = [
-    "core" => 90,
-    "box" => 1.38,
-    "clad" => 1.38,
-    "heater" => 28,
-    "via2" => 28,
-    "metal2" => 28,
-    "via1" => 28,
-    "metal3" => 28,
-    "metal3#e1" => 28,
-    "metal3#e2" => 28,
-]
+
 thermal_conductivities =
     Dict(get_tag_from_name(labels, u) => v for (u, v) in thermal_conductivities)
 ϵ_conductivities(tag) = thermal_conductivities[tag]
@@ -113,18 +132,7 @@ writevtk(
     ],
 )
 
-thermal_diffisitivities = [
-    "core" => 90 / 711 / 2330,
-    "box" => 1.38 / 709 / 2203,
-    "clad" => 1.38 / 709 / 2203,
-    "heater" => 28 / 598 / 5240,
-    "via2" => 28 / 598 / 5240,
-    "metal2" => 28 / 598 / 5240,
-    "via1" => 28 / 598 / 5240,
-    "metal3" => 28 / 598 / 5240,
-    "metal3#e1" => 28 / 598 / 5240,
-    "metal3#e2" => 28 / 598 / 5240,
-]
+
 thermal_diffisitivities =
     Dict(get_tag_from_name(labels, u) => v for (u, v) in thermal_diffisitivities)
 ϵ_diffisitivities(tag) = thermal_diffisitivities[tag]
