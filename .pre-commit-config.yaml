@@ -29,5 +29,3 @@ repos:
     rev: v1.11.0
     hooks:
       - id: bibtex-tidy
-        args: [ '--months', '--space=4', '--sort',
-                '--duplicates', '--strip-enclosing-braces', '--sort-fields' ]

@@ -23,3 +23,6 @@ docs/_build
 
 # julia
 Manifest.toml
+
+# bibtex-tidy
+*.bib.original
