@@ -125,6 +125,8 @@ GridapPETSc.with(args = split(options)) do
         Dict(get_tag_from_name(labels, u) => v for (u, v) in thermal_diffisitivities)
     ϵ_diffisitivities(tag) = thermal_diffisitivities[tag]
 
+    dontplottransient
+
     uₕₜ = calculate_temperature_transient(
         ϵ_conductivities ∘ τ,
         ϵ_diffisitivities ∘ τ,
@@ -147,7 +149,7 @@ GridapPETSc.with(args = split(options)) do
     #end
     sums = [(t, ∑(∫(u)dΩ_w) / ∑(∫(1)dΩ_w)) for (u, t) in uₕₜ]
 
-    dontplottransient
+    #
 
     figure = Figure()
     ax = Axis(figure[1, 1], ylabel = "Temperature / K", xlabel = "time / ms")
