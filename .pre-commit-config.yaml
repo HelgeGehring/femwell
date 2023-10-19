@@ -11,7 +11,7 @@ repos:
         args: [--profile, black]
 
   - repo: https://github.com/psf/black
-    rev: 23.7.0
+    rev: 23.10.0
     hooks:
       - id: black
 
@@ -21,7 +21,7 @@ repos:
       - id: poetry-check
 
   - repo: "https://github.com/domluna/JuliaFormatter.jl"
-    rev: "v1.0.35"
+    rev: "v1.0.40"
     hooks:
       - id: "julia-formatter"
 
