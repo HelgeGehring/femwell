@@ -39,7 +39,7 @@ resolutions = {
     "core": {"resolution": 0.3},
     "via2": {"resolution": 0.2},
     "via1": {"resolution": 0.2},
-    "heater": {"resolution": 0.2},
+    "heater": {"resolution": 0.5},
 }
 geometry = get_mesh(
     type="3D",
