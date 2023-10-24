@@ -78,6 +78,7 @@ thermal_diffisitivities = [
 # %% tags=["remove-stderr", "hide-output"]
 model = GmshDiscreteModel("mesh.msh")
 Ω = Triangulation(model)
+dΩ = Measure(Ω, 1)
 
 labels = get_face_labeling(model)
 tags = get_face_tag(labels, num_cell_dims(model))
