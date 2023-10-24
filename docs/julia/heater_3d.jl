@@ -99,15 +99,23 @@ thermal_diffisitivities =
 # The next step is to define the boundary conditions, this can be done simply via julia-dicts:
 
 # %% tags=["remove-stderr", "hide-output"]
-boundary_conditions = Dict(["metal3#e1___None" => 0.4, "metal3#e2___None" => 0.0])
+boundary_potentials = Dict(["metal3#e1___None" => 0.4, "metal3#e2___None" => 0.0])
 boundary_temperatures = Dict("box___None" => 0.0)
 
 # %% [markdown]
 # Now we're ready to do the simulations! First we simulate the electrical potential,
 # then we go on with the temperature
 
-# %% tags=["remove-stderr", "hide-output"]
-p0 = compute_potential(ϵ_electrical_conductivity ∘ τ, boundary_conditions)
+# %% tags=["remove-stderr"]
+p0 = compute_potential(ϵ_electrical_conductivity ∘ τ, boundary_potentials)
+voltage = abs(sum(values(boundary_potentials) .* [-1, 1]))
+power = abs(sum(∫(power_density(p0))dΩ))
+current = power / voltage
+println("Voltage: ", @sprintf("%.2f V", voltage))
+println("Current: ", @sprintf("%.2f mA", current * 1e3))
+println("Power: ", @sprintf("%.2f mW", power * 1e3))
+
+# %% tags=["remove-stderr"]
 T0 = calculate_temperature(ϵ_conductivities ∘ τ, power_density(p0), boundary_temperatures)
 
 # %% [markdown]
