@@ -19,6 +19,7 @@
 
 # %% tags=["remove-stderr", "hide-input", "hide-output"]
 using CairoMakie
+using Printf
 
 using Gridap
 using GridapGmsh
