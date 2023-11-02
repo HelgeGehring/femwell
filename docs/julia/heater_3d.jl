@@ -159,7 +159,7 @@ figure = Figure()
 ax = Axis(
     figure[1, 1],
     ylabel = "Average silicon waveguide temperature / K",
-    xlabel = "time / ms",
+    xlabel = "Time / ms",
 )
 
 for (label, power_factor, temperature_factor) in [("heatup", 1, 0), ("cooldown", 0, 1)]
