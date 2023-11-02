@@ -113,14 +113,27 @@ function calculate_modes(
         )dΩ
     rhs((u1, u2), (v1, v2)) = ∫(-1 / μ_r * u1 ⊙ v1 / k0^2)dΩ
 
+    radius_function(x) = x[1]
+    r = interpolate_everywhere(radius_function, V2)
+    lhs_radial((u1, u2), (v1, v2)) =
+        ∫(
+            -(r / radius * curl(u1) ⋅ curl(v1)) +
+            (radius / r * gradient(u2) ⋅ v1) +
+            (k0^2 * ε * r / radius * u1 ⋅ v1) - (radius / r * gradient(u2) ⋅ gradient(v2)) +
+            (k0^2 * ε * radius / r * u2 * v2),
+        )dΩ
+
+    rhs_radial((u1, u2), (v1, v2)) =
+        ∫((radius / r * u1 ⋅ v1) - (radius / r * u1 ⋅ gradient(v2)))dΩ
+
     epsilons = ε(get_cell_points(Measure(Ω, 1)))
     k0_guess =
         isnothing(k0_guess) ? k0^2 * maximum(maximum.(maximum.(real.(epsilons)))) * 1.1 :
         k0_guess
 
     assem = Gridap.FESpaces.SparseMatrixAssembler(U, V)
-    A = assemble_matrix(lhs, assem, U, V)
-    B = assemble_matrix(rhs, assem, U, V)
+    A = assemble_matrix(lhs_radial, assem, U, V)
+    B = assemble_matrix(rhs_radial, assem, U, V)
     if all(imag(A.nzval) .== 0) && all(imag(B.nzval) .== 0)
         A, B = real(A), real(B)
     end
