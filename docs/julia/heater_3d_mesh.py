@@ -37,9 +37,9 @@ layerstack.layers["clad"].thickness += sum(
 
 resolutions = {
     "core": {"resolution": 0.2},
-    "via2": {"resolution": 0.1},
-    "via1": {"resolution": 0.1},
-    "heater": {"resolution": 0.3},
+    "via2": {"resolution": 0.2},
+    "via1": {"resolution": 0.2},
+    "heater": {"resolution": 0.4},
 }
 geometry = get_mesh(
     type="3D",
@@ -47,7 +47,7 @@ geometry = get_mesh(
     layer_stack=layerstack,
     resolutions=resolutions,
     filename="mesh.msh",
-    default_characteristic_length=0.5,
+    default_characteristic_length=0.6,
     # global_3D_algorithm=10,
     # verbosity=5,
     global_scaling=1e-6,

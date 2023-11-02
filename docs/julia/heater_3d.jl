@@ -184,7 +184,6 @@ for (label, power_factor, temperature_factor) in [("heatup", 1, 0), ("cooldown",
     #end
 
     sums = [(t, ∑(∫(u)dΩ_w) / silicon_volume) for (u, t) in uₕₜ]
-
     t, s = getindex.(sums, 1), getindex.(sums, 2)
     lines!(ax, t * 1e3, s, label = label)
 end
