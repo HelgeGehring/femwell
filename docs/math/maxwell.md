@@ -275,7 +275,7 @@ $$
 
 The mode profiles of bent waveguides can be calculated using the previously
 derived math with an transformed effective refractive index defined as
-{cite}`AzizurRahman2013,shyroki2006exact`
+{cite}`AzizurRahman2013,shyroki2006exact,Jedidi2007,Xiao2012`
 
 $$
     n_{eq}(x,y)
