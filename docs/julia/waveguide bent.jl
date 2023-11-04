@@ -32,17 +32,22 @@ clip_by_rect = pyimport("shapely.ops").clip_by_rect
 OrderedDict = pyimport("collections").OrderedDict
 mesh_from_OrderedDict = pyimport("femwell.mesh").mesh_from_OrderedDict
 
+radius = 100000
 wg_width = 0.5
 wg_thickness = 0.22
-slab_width = 3
-slab_thickness = 0.11
-core = shapely.geometry.box(-wg_width / 2, 0, wg_width / 2, wg_thickness)
-slab = shapely.geometry.box(slab_width / 2, 0, slab_width / 2, slab_thickness)
-env = shapely.affinity.scale(core.buffer(3, resolution = 8), xfact = 0.5)
+sim_width = 3
+sim_height = 4
+core = shapely.geometry.box(radius - wg_width / 2, 0, radius + wg_width / 2, wg_thickness)
+
+env = shapely.geometry.box(
+    radius - sim_width / 2,
+    -sim_height / 2,
+    radius + sim_width / 2,
+    sim_height / 2,
+)
 
 polygons = OrderedDict(
     core = core,
-    slab = slab,
     box = clip_by_rect(env, -np.inf, -np.inf, np.inf, 0),
     clad = clip_by_rect(env, -np.inf, 0, np.inf, np.inf),
 )
@@ -81,38 +86,28 @@ model = GmshDiscreteModel("mesh.msh")
 
 labels = get_face_labeling(model)
 
-epsilons = ["core" => 3.5^2, "slab" => 1.44^2, "box" => 1.444^2, "clad" => 1.44^2]
+epsilons = ["core" => 3.5^2, "box" => 1.444^2, "clad" => 1.44^2]
 ε(tag) = Dict(get_tag_from_name(labels, u) => v for (u, v) in epsilons)[tag]
 
 
 #dΩ = Measure(Ω, 1)
 τ = CellField(get_face_tag(labels, num_cell_dims(model)), Ω)
 
-modes = calculate_modes(model, ε ∘ τ, λ = 1.55, num = 1, order = 1)
-println(n_eff(modes[1]))
+modes = calculate_modes(model, ε ∘ τ, λ = 1.55, num = 2, order = 1, radius = radius)
+println(n_eff(modes[2]))
 # write_mode_to_vtk("mode", modes[2])
 
-plot_mode(modes[1])
+plot_mode(modes[2], absolute = true)
 #plot_mode(modes[2])
 modes
 
 # %% [markdown]
-# ## Perturbations
-# Let's add a minor perturbation and calculate the effective refractive index using perturbation theory:
-
-# %% tags=["remove-stderr"]
-epsilons_p = ["core" => -0.1im, "box" => -0.0im, "slab" => -0.0im, "clad" => -0.0im]
-ε_p(tag) = Dict(get_tag_from_name(labels, u) => v for (u, v) in epsilons_p)[tag]
-
-println(perturbed_neff(modes[1], ε_p ∘ τ))
-
-# %% [markdown]
-# For comparison, we also calculate directly the effective refractive index:
+# For comparison, we the effective refractive index of a straight waveguide:
 
 # %% tags=["remove-stderr"]
 
-modes_p = calculate_modes(model, ε ∘ τ + ε_p ∘ τ, λ = 1.55, num = 2, order = 1)
-println(n_eff(modes_p[1]))
-plot_mode(modes_p[1])
+modes_p = calculate_modes(model, ε ∘ τ, λ = 1.55, num = 2, order = 1)
+println(n_eff(modes_p[2]))
+plot_mode(modes_p[2], absolute = true)
 
 # %%

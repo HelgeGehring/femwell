@@ -99,46 +99,58 @@ function calculate_modes(
     Ω = Triangulation(model)
     dΩ = Measure(Ω, 2 * order)
 
-    μ_r = 1
-    radius_factor(x) = (1 + x[1] / radius)^2
-    twothree = TensorValue([1 0 0; 0 1 0])
-    lhs((u1, u2), (v1, v2)) =
-        ∫(
-            1 / μ_r * (curl(u1) ⊙ curl(v1) / k0^2 + ∇(u2) ⊙ v1) +
-            radius_factor * (
-                -u1 ⋅ twothree ⋅ ε ⋅ transpose(twothree) ⋅ v1 +
-                u1 ⋅ twothree ⋅ ε ⋅ transpose(twothree) ⋅ ∇(v2) -
-                u2 * VectorValue(0, 0, 1) ⋅ ε ⋅ VectorValue(0, 0, 1) * v2 * k0^2
-            ),
-        )dΩ
-    rhs((u1, u2), (v1, v2)) = ∫(-1 / μ_r * u1 ⊙ v1 / k0^2)dΩ
-
-    radius_function(x) = x[1]
-    r = interpolate_everywhere(radius_function, V2)
-    lhs_radial((u1, u2), (v1, v2)) =
-        ∫(
-            -(r / radius * curl(u1) ⋅ curl(v1)) +
-            (radius / r * gradient(u2) ⋅ v1) +
-            (k0^2 * ε * r / radius * u1 ⋅ v1) - (radius / r * gradient(u2) ⋅ gradient(v2)) +
-            (k0^2 * ε * radius / r * u2 * v2),
-        )dΩ
-
-    rhs_radial((u1, u2), (v1, v2)) =
-        ∫((radius / r * u1 ⋅ v1) - (radius / r * u1 ⋅ gradient(v2)))dΩ
-
     epsilons = ε(get_cell_points(Measure(Ω, 1)))
     k0_guess =
         isnothing(k0_guess) ? k0^2 * maximum(maximum.(maximum.(real.(epsilons)))) * 1.1 :
         k0_guess
 
+    lhs, rhs = if radius == Inf
+        μ_r = 1
+        twothree = TensorValue([1 0 0; 0 1 0])
+        lhs_straight((u1, u2), (v1, v2)) =
+            ∫(
+                1 / μ_r * (curl(u1) ⊙ curl(v1) / k0^2 + ∇(u2) ⊙ v1) + (
+                    -u1 ⋅ twothree ⋅ ε ⋅ transpose(twothree) ⋅ v1 +
+                    u1 ⋅ twothree ⋅ ε ⋅ transpose(twothree) ⋅ ∇(v2) -
+                    u2 * VectorValue(0, 0, 1) ⋅ ε ⋅ VectorValue(0, 0, 1) * v2 * k0^2
+                ),
+            )dΩ
+        rhs_straight((u1, u2), (v1, v2)) = ∫(-1 / μ_r * u1 ⊙ v1 / k0^2)dΩ
+
+        lhs_straight, rhs_straight
+    else
+        radius_function(x) = x[1]
+        r = interpolate_everywhere(radius_function, V2)
+        lhs_radial((u1, u2), (v1, v2)) =
+            ∫(
+                -(r / radius * curl(u1) ⋅ curl(v1)) +
+                (radius / r * gradient(u2) ⋅ v1) +
+                (k0^2 * ε * r / radius * u1 ⋅ v1) -
+                (radius / r * gradient(u2) ⋅ gradient(v2)) +
+                (k0^2 * ε * radius / r * u2 * v2),
+            )dΩ
+
+        rhs_radial((u1, u2), (v1, v2)) =
+            ∫((radius / r * u1 ⋅ v1) - (radius / r * u1 ⋅ gradient(v2)))dΩ
+
+        lhs_radial, rhs_radial
+    end
+
+
     assem = Gridap.FESpaces.SparseMatrixAssembler(U, V)
-    A = assemble_matrix(lhs_radial, assem, U, V)
-    B = assemble_matrix(rhs_radial, assem, U, V)
+    A = assemble_matrix(lhs, assem, U, V)
+    B = assemble_matrix(rhs, assem, U, V)
     if all(imag(A.nzval) .== 0) && all(imag(B.nzval) .== 0)
         A, B = real(A), real(B)
     end
     vals, vecs = eigs(A, B, sigma = k0_guess, nev = num)
-    vecs[num_free_dofs(V1)+1:end, :] ./= 1im * sqrt.(vals)' / k0^2
+
+    if radius == Inf
+        vecs[num_free_dofs(V1)+1:end, :] ./= 1im * sqrt.(vals)' / k0^2
+    else
+        vecs[num_free_dofs(V1)+1:end, :] ./= 1im * sqrt.(vals)'
+    end
+
 
     return [
         Mode(
@@ -157,7 +169,13 @@ function plot_field(field)
     display(fig)
 end
 
-function plot_mode(mode::Mode; vertical = false, vectors = false, same_range = false)
+function plot_mode(
+    mode::Mode;
+    vertical = false,
+    vectors = false,
+    same_range = false,
+    absolute = false,
+)
     Ω = get_triangulation(mode.E)
     model = get_active_model(Ω)
     labels = get_face_labeling(model)
@@ -190,8 +208,8 @@ function plot_mode(mode::Mode; vertical = false, vectors = false, same_range = f
             plt = plot!(
                 ax,
                 Ω,
-                real((E(mode) ⋅ vector)),
-                colorrange = (-colorrange, colorrange),
+                (absolute ? abs : real)((E(mode) ⋅ vector)),
+                #colorrange = (-colorrange, colorrange),
             )
             wireframe!(fig[x, y], ∂Ω, color = :black)
             Colorbar(fig[x+!vertical, y+vertical], plt, vertical = vertical)
