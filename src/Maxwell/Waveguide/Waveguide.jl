@@ -74,6 +74,7 @@ function calculate_modes(
     radius::Real = Inf,
     k0_guess::Union{Number,Nothing} = nothing,
     metallic_boundaries = String[],
+    pml::Union{Vector{Function},Nothing} = nothing,
 )
     if count(isnothing, [k0, λ]) != 1
         throw(ArgumentError("Exactly one of k0,λ must be defined"))
@@ -99,24 +100,59 @@ function calculate_modes(
     Ω = Triangulation(model)
     dΩ = Measure(Ω, 2 * order)
 
-    μ_r = 1
-    radius_factor(x) = (1 + x[1] / radius)^2
-    twothree = TensorValue([1 0 0; 0 1 0])
-    lhs((u1, u2), (v1, v2)) =
-        ∫(
-            1 / μ_r * (curl(u1) ⊙ curl(v1) / k0^2 + ∇(u2) ⊙ v1) +
-            radius_factor * (
-                -u1 ⋅ twothree ⋅ ε ⋅ transpose(twothree) ⋅ v1 +
-                u1 ⋅ twothree ⋅ ε ⋅ transpose(twothree) ⋅ ∇(v2) -
-                u2 * VectorValue(0, 0, 1) ⋅ ε ⋅ VectorValue(0, 0, 1) * v2 * k0^2
-            ),
-        )dΩ
-    rhs((u1, u2), (v1, v2)) = ∫(-1 / μ_r * u1 ⊙ v1 / k0^2)dΩ
-
     epsilons = ε(get_cell_points(Measure(Ω, 1)))
     k0_guess =
         isnothing(k0_guess) ? k0^2 * maximum(maximum.(maximum.(real.(epsilons)))) * 1.1 :
-        k0_guess
+        k0_guess^2
+
+    lhs, rhs = if radius == Inf
+        μ_r = 1
+        twothree = TensorValue([1 0 0; 0 1 0])
+        lhs_straight((u1, u2), (v1, v2)) =
+            ∫(
+                1 / μ_r * (curl(u1) ⊙ curl(v1) / k0^2 + ∇(u2) ⊙ v1) + (
+                    -u1 ⋅ twothree ⋅ ε ⋅ transpose(twothree) ⋅ v1 +
+                    u1 ⋅ twothree ⋅ ε ⋅ transpose(twothree) ⋅ ∇(v2) -
+                    u2 * VectorValue(0, 0, 1) ⋅ ε ⋅ VectorValue(0, 0, 1) * v2 * k0^2
+                ),
+            )dΩ
+        rhs_straight((u1, u2), (v1, v2)) = ∫(-1 / μ_r * u1 ⊙ v1 / k0^2)dΩ
+
+        lhs_straight, rhs_straight
+    else
+        V_pml = TestFESpace(model, ReferenceFE(lagrangian, Float64, 2))
+        pml_f = interpolate(pml[1], V_pml)
+        pml_g = interpolate(pml[2], V_pml)
+
+        s_r = 1 - 1im * gradient(pml_f) ⋅ VectorValue(1, 0)
+        s_y = 1 - 1im * gradient(pml_g) ⋅ VectorValue(0, 1)
+        γ_θ = 1 - 1im * pml_f / (x -> x[1])
+
+        d_θ = s_r * s_y / γ_θ
+        D_t =
+            γ_θ *
+            (s_y / s_r * TensorValue(1, 0, 0, 0) + s_r / s_y * TensorValue(0, 0, 0, 1))
+
+        radius_function(x) = x[1]
+        r = interpolate_everywhere(radius_function, V2)
+        lhs_radial((u1, u2), (v1, v2)) =
+            ∫(
+                -(1 / d_θ * r / radius * curl(u1) ⋅ curl(v1)) +
+                (radius / r / (γ_θ * γ_θ) * (D_t ⋅ gradient(u2)) ⋅ v1) +
+                (k0^2 * ε * r / radius * (D_t ⋅ u1) ⋅ v1) -
+                (radius / r / (γ_θ * γ_θ) * (D_t ⋅ gradient(u2)) ⋅ gradient(v2)) +
+                (k0^2 * ε * d_θ * radius / r * u2 * v2),
+            )dΩ
+
+        rhs_radial((u1, u2), (v1, v2)) =
+            ∫(
+                (radius / r * (D_t ⋅ u1) ⋅ v1) -
+                (radius / r / (γ_θ * γ_θ) * (D_t ⋅ u1) ⋅ gradient(v2)),
+            )dΩ
+
+        lhs_radial, rhs_radial
+    end
+
 
     assem = Gridap.FESpaces.SparseMatrixAssembler(U, V)
     A = assemble_matrix(lhs, assem, U, V)
@@ -125,7 +161,13 @@ function calculate_modes(
         A, B = real(A), real(B)
     end
     vals, vecs = eigs(A, B, sigma = k0_guess, nev = num)
-    vecs[num_free_dofs(V1)+1:end, :] ./= 1im * sqrt.(vals)' / k0^2
+
+    if radius == Inf
+        vecs[num_free_dofs(V1)+1:end, :] ./= 1im * sqrt.(vals)' / k0^2
+    else
+        vecs[num_free_dofs(V1)+1:end, :] ./= 1im * sqrt.(vals)'
+    end
+
 
     return [
         Mode(
@@ -144,7 +186,13 @@ function plot_field(field)
     display(fig)
 end
 
-function plot_mode(mode::Mode; vertical = false, vectors = false, same_range = false)
+function plot_mode(
+    mode::Mode;
+    vertical = false,
+    vectors = false,
+    same_range = false,
+    absolute = false,
+)
     Ω = get_triangulation(mode.E)
     model = get_active_model(Ω)
     labels = get_face_labeling(model)
@@ -177,8 +225,8 @@ function plot_mode(mode::Mode; vertical = false, vectors = false, same_range = f
             plt = plot!(
                 ax,
                 Ω,
-                real((E(mode) ⋅ vector)),
-                colorrange = (-colorrange, colorrange),
+                (absolute ? abs : real)((E(mode) ⋅ vector)),
+                #colorrange = (-colorrange, colorrange),
             )
             wireframe!(fig[x, y], ∂Ω, color = :black)
             Colorbar(fig[x+!vertical, y+vertical], plt, vertical = vertical)
