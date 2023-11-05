@@ -74,6 +74,7 @@ function calculate_modes(
     radius::Real = Inf,
     k0_guess::Union{Number,Nothing} = nothing,
     metallic_boundaries = String[],
+    pml::Union{Vector{Function},Nothing} = nothing,
 )
     if count(isnothing, [k0, λ]) != 1
         throw(ArgumentError("Exactly one of k0,λ must be defined"))
@@ -102,7 +103,7 @@ function calculate_modes(
     epsilons = ε(get_cell_points(Measure(Ω, 1)))
     k0_guess =
         isnothing(k0_guess) ? k0^2 * maximum(maximum.(maximum.(real.(epsilons)))) * 1.1 :
-        k0_guess
+        k0_guess^2
 
     lhs, rhs = if radius == Inf
         μ_r = 1
@@ -119,19 +120,35 @@ function calculate_modes(
 
         lhs_straight, rhs_straight
     else
+        V_pml = TestFESpace(model, ReferenceFE(lagrangian, Float64, 2))
+        pml_f = interpolate(pml[1], V_pml)
+        pml_g = interpolate(pml[2], V_pml)
+
+        s_r = 1 - 1im * gradient(pml_f) ⋅ VectorValue(1, 0)
+        s_y = 1 - 1im * gradient(pml_g) ⋅ VectorValue(0, 1)
+        γ_θ = 1 - 1im * pml_f / (x -> x[1])
+
+        d_θ = s_r * s_y / γ_θ
+        D_t =
+            γ_θ *
+            (s_y / s_r * TensorValue(1, 0, 0, 0) + s_r / s_y * TensorValue(0, 0, 0, 1))
+
         radius_function(x) = x[1]
         r = interpolate_everywhere(radius_function, V2)
         lhs_radial((u1, u2), (v1, v2)) =
             ∫(
-                -(r / radius * curl(u1) ⋅ curl(v1)) +
-                (radius / r * gradient(u2) ⋅ v1) +
-                (k0^2 * ε * r / radius * u1 ⋅ v1) -
-                (radius / r * gradient(u2) ⋅ gradient(v2)) +
-                (k0^2 * ε * radius / r * u2 * v2),
+                -(1 / d_θ * r / radius * curl(u1) ⋅ curl(v1)) +
+                (radius / r / (γ_θ * γ_θ) * (D_t ⋅ gradient(u2)) ⋅ v1) +
+                (k0^2 * ε * r / radius * (D_t ⋅ u1) ⋅ v1) -
+                (radius / r / (γ_θ * γ_θ) * (D_t ⋅ gradient(u2)) ⋅ gradient(v2)) +
+                (k0^2 * ε * d_θ * radius / r * u2 * v2),
             )dΩ
 
         rhs_radial((u1, u2), (v1, v2)) =
-            ∫((radius / r * u1 ⋅ v1) - (radius / r * u1 ⋅ gradient(v2)))dΩ
+            ∫(
+                (radius / r * (D_t ⋅ u1) ⋅ v1) -
+                (radius / r / (γ_θ * γ_θ) * (D_t ⋅ u1) ⋅ gradient(v2)),
+            )dΩ
 
         lhs_radial, rhs_radial
     end

@@ -15,7 +15,7 @@
 # ---
 
 # %% [markdown]
-# # Mode solving
+# # Mode solving for bent waveguides
 
 # %% [markdown]
 # ```{caution}
@@ -32,18 +32,21 @@ clip_by_rect = pyimport("shapely.ops").clip_by_rect
 OrderedDict = pyimport("collections").OrderedDict
 mesh_from_OrderedDict = pyimport("femwell.mesh").mesh_from_OrderedDict
 
-radius = 100000
+radius = 1
 wg_width = 0.5
 wg_thickness = 0.22
-sim_width = 3
-sim_height = 4
+sim_left = 0.5
+sim_right = 3
+sim_top = 1
+sim_bottom = 3
+pml_thickness = 3
 core = shapely.geometry.box(radius - wg_width / 2, 0, radius + wg_width / 2, wg_thickness)
 
 env = shapely.geometry.box(
-    radius - sim_width / 2,
-    -sim_height / 2,
-    radius + sim_width / 2,
-    sim_height / 2,
+    radius - wg_width / 2 - sim_left,
+    -sim_bottom - pml_thickness,
+    radius + wg_width / 2 + sim_right + pml_thickness,
+    wg_thickness + sim_top,
 )
 
 polygons = OrderedDict(
@@ -53,14 +56,14 @@ polygons = OrderedDict(
 )
 
 resolutions = Dict(
-    "core" => Dict("resolution" => 0.03, "distance" => 0.5),
-    "slab" => Dict("resolution" => 0.03, "distance" => 0.5),
+    "core" => Dict("resolution" => 0.015, "distance" => 0.5),
+    "slab" => Dict("resolution" => 0.015, "distance" => 0.5),
 )
 
 mesh = mesh_from_OrderedDict(
     polygons,
     resolutions,
-    default_resolution_max = 1,
+    default_resolution_max = 0.2,
     filename = "mesh.msh",
 )
 
@@ -86,18 +89,33 @@ model = GmshDiscreteModel("mesh.msh")
 
 labels = get_face_labeling(model)
 
-epsilons = ["core" => 3.5^2, "box" => 1.444^2, "clad" => 1.44^2]
+epsilons = ["core" => 3.48^2, "box" => 1.46^2, "clad" => 1.0^2]
 ε(tag) = Dict(get_tag_from_name(labels, u) => v for (u, v) in epsilons)[tag]
 
 
 #dΩ = Measure(Ω, 1)
 τ = CellField(get_face_tag(labels, num_cell_dims(model)), Ω)
+pml_x = x -> 0
+pml_y = x -> 0
+pml_x = x -> 0.1 * max(0, x[1] - (radius + wg_width / 2 + sim_right))^2
+pml_y = x -> 0.1 * max(0, -x[2] - sim_bottom)^2
 
-modes = calculate_modes(model, ε ∘ τ, λ = 1.55, num = 2, order = 1, radius = radius)
-println(n_eff(modes[2]))
+modes = calculate_modes(model, ε ∘ τ, λ = 1.55, num = 2, order = 1)
+modes = calculate_modes(
+    model,
+    ε ∘ τ,
+    λ = 1.55,
+    num = 2,
+    order = 1,
+    radius = radius,
+    pml = [pml_x, pml_y],
+    k0_guess = modes[1].k,
+)
+println(n_eff(modes[1]))
+println(log10(abs(imag(n_eff(modes[1])))))
 # write_mode_to_vtk("mode", modes[2])
 
-plot_mode(modes[2], absolute = true)
+plot_mode(modes[1], absolute = true)
 #plot_mode(modes[2])
 modes
 
@@ -106,8 +124,8 @@ modes
 
 # %% tags=["remove-stderr"]
 
-modes_p = calculate_modes(model, ε ∘ τ, λ = 1.55, num = 2, order = 1)
-println(n_eff(modes_p[2]))
-plot_mode(modes_p[2], absolute = true)
+#modes_p = calculate_modes(model, ε ∘ τ, λ = 1.55, num = 2, order = 1)
+#println(n_eff(modes_p[1]))
+#plot_mode(modes_p[1], absolute = true)
 
 # %%
