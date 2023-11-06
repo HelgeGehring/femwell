@@ -165,6 +165,14 @@ function calculate_modes(
     if radius == Inf
         vecs[num_free_dofs(V1)+1:end, :] ./= 1im * sqrt.(vals)' / k0^2
     else
+        for i = 1:size(vecs)[2]
+            vecs[num_free_dofs(V1)+1:end, i] = get_free_dof_values(
+                interpolate(
+                    FEFunction(V2, vecs[num_free_dofs(V1)+1:end, i]) * (x -> radius / x[1]),
+                    V2,
+                ),
+            )
+        end
         vecs[num_free_dofs(V1)+1:end, :] ./= 1im * sqrt.(vals)'
     end
 
