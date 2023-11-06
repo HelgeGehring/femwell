@@ -39,9 +39,9 @@ function write_mesh(;
     wg_width = 0.5,
     wg_thickness = 0.22,
     sim_left = 0.5,
-    sim_right = 3,
+    sim_right = 4,
     sim_top = 1,
-    sim_bottom = 3,
+    sim_bottom = 4,
     pml_thickness = 3,
 )
     core =
