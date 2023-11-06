@@ -32,40 +32,46 @@ clip_by_rect = pyimport("shapely.ops").clip_by_rect
 OrderedDict = pyimport("collections").OrderedDict
 mesh_from_OrderedDict = pyimport("femwell.mesh").mesh_from_OrderedDict
 
-radius = 1
-wg_width = 0.5
-wg_thickness = 0.22
-sim_left = 0.5
-sim_right = 3
-sim_top = 1
-sim_bottom = 3
-pml_thickness = 3
-core = shapely.geometry.box(radius - wg_width / 2, 0, radius + wg_width / 2, wg_thickness)
 
-env = shapely.geometry.box(
-    radius - wg_width / 2 - sim_left,
-    -sim_bottom - pml_thickness,
-    radius + wg_width / 2 + sim_right + pml_thickness,
-    wg_thickness + sim_top,
-)
 
-polygons = OrderedDict(
-    core = core,
-    box = clip_by_rect(env, -np.inf, -np.inf, np.inf, 0),
-    clad = clip_by_rect(env, -np.inf, 0, np.inf, np.inf),
+function write_mesh(;
+    radius = 2,
+    wg_width = 0.5,
+    wg_thickness = 0.22,
+    sim_left = 0.5,
+    sim_right = 3,
+    sim_top = 1,
+    sim_bottom = 3,
+    pml_thickness = 3,
 )
+    core =
+        shapely.geometry.box(radius - wg_width / 2, 0, radius + wg_width / 2, wg_thickness)
 
-resolutions = Dict(
-    "core" => Dict("resolution" => 0.015, "distance" => 0.5),
-    "slab" => Dict("resolution" => 0.015, "distance" => 0.5),
-)
+    env = shapely.geometry.box(
+        radius - wg_width / 2 - sim_left,
+        -sim_bottom - pml_thickness,
+        radius + wg_width / 2 + sim_right + pml_thickness,
+        wg_thickness + sim_top,
+    )
 
-mesh = mesh_from_OrderedDict(
-    polygons,
-    resolutions,
-    default_resolution_max = 0.2,
-    filename = "mesh.msh",
-)
+    polygons = OrderedDict(
+        core = core,
+        box = clip_by_rect(env, -np.inf, -np.inf, np.inf, 0),
+        clad = clip_by_rect(env, -np.inf, 0, np.inf, np.inf),
+    )
+
+    resolutions = Dict(
+        "core" => Dict("resolution" => 0.015, "distance" => 1.5),
+        "slab" => Dict("resolution" => 0.015, "distance" => 1.5),
+    )
+
+    mesh_from_OrderedDict(
+        polygons,
+        resolutions,
+        default_resolution_max = 0.2,
+        filename = "mesh.msh",
+    )
+end
 
 # %% tags=["remove-stderr", "hide-output", "thebe-init"]
 using Gridap
@@ -80,52 +86,50 @@ using Femwell.Maxwell.Waveguide
 CairoMakie.inline!(true)
 
 # %% tags=["remove-stderr"]
-model = GmshDiscreteModel("mesh.msh")
-Ω = Triangulation(model)
-#fig = plot(Ω)
-#fig.axis.aspect=DataAspect()
-#wireframe!(Ω, color=:black, linewidth=1)
-#display(fig)
+radiuss = 1:0.5:5
+neffs = ComplexF64[]
+for radius in radiuss
+    write_mesh(radius = radius)
+    model = GmshDiscreteModel("mesh.msh")
+    Ω = Triangulation(model)
+    labels = get_face_labeling(model)
 
-labels = get_face_labeling(model)
+    epsilons = ["core" => 3.48^2, "box" => 1.46^2, "clad" => 1.0^2]
+    ε(tag) = Dict(get_tag_from_name(labels, u) => v for (u, v) in epsilons)[tag]
 
-epsilons = ["core" => 3.48^2, "box" => 1.46^2, "clad" => 1.0^2]
-ε(tag) = Dict(get_tag_from_name(labels, u) => v for (u, v) in epsilons)[tag]
+    τ = CellField(get_face_tag(labels, num_cell_dims(model)), Ω)
+    pml_x = x -> 0.1 * max(0, x[1] - (radius + wg_width / 2 + sim_right))^2
+    pml_y = x -> 0.1 * max(0, -x[2] - sim_bottom)^2
 
+    modes = calculate_modes(model, ε ∘ τ, λ = 1.55, order = 1)
+    println(n_eff(modes[1]))
+    plot_mode(modes[1], absolute = true)
+    modes = calculate_modes(
+        model,
+        ε ∘ τ,
+        λ = 1.55,
+        order = 1,
+        radius = radius,
+        pml = [pml_x, pml_y],
+        k0_guess = modes[1].k,
+    )
+    println(n_eff(modes[1]))
+    println(log10(abs(imag(n_eff(modes[1])))))
+    plot_mode(modes[1], absolute = true)
+    push!(neffs, n_eff(modes[1]))
+end
 
-#dΩ = Measure(Ω, 1)
-τ = CellField(get_face_tag(labels, num_cell_dims(model)), Ω)
-pml_x = x -> 0
-pml_y = x -> 0
-pml_x = x -> 0.1 * max(0, x[1] - (radius + wg_width / 2 + sim_right))^2
-pml_y = x -> 0.1 * max(0, -x[2] - sim_bottom)^2
+println(radiuss, neffs)
 
-modes = calculate_modes(model, ε ∘ τ, λ = 1.55, num = 2, order = 1)
-modes = calculate_modes(
-    model,
-    ε ∘ τ,
-    λ = 1.55,
-    num = 2,
-    order = 1,
-    radius = radius,
-    pml = [pml_x, pml_y],
-    k0_guess = modes[1].k,
-)
-println(n_eff(modes[1]))
-println(log10(abs(imag(n_eff(modes[1])))))
-# write_mode_to_vtk("mode", modes[2])
+figure = Figure()
+ax = Axis(figure[1, 1], xlabel = "Radius / μm", ylabel = "log(-imag(n_eff))")
+lines!(ax, radiuss, log10.(-imag(neffs)))
+scatter!(ax, radiuss, log10.(-imag(neffs)), label = "FEM")
 
-plot_mode(modes[1], absolute = true)
-#plot_mode(modes[2])
-modes
-
-# %% [markdown]
-# For comparison, we the effective refractive index of a straight waveguide:
-
-# %% tags=["remove-stderr"]
-
-#modes_p = calculate_modes(model, ε ∘ τ, λ = 1.55, num = 2, order = 1)
-#println(n_eff(modes_p[1]))
-#plot_mode(modes_p[1], absolute = true)
-
-# %%
+radiuss_reference = 1:5
+log10imags_fmm = [-3.63721, -6.48982, -9.30488, -9.97048, -10.36615]
+scatter!(ax, radiuss_reference, log10imags_fmm, label = "FMM")
+log10imags_fd = [-3.68456, -6.41594, -9.37884, -9.98148, -10.39617]
+scatter!(ax, radiuss_reference, log10imags_fd, label = "FD")
+axislegend()
+display(figure)
