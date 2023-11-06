@@ -85,7 +85,7 @@ using Femwell.Maxwell.Waveguide
 
 CairoMakie.inline!(true)
 
-# %% tags=["remove-stderr"]
+# %% tags=["remove-stderr", "hide-output"]
 radiuss = 1:0.5:5
 wg_width = 0.5
 sim_right = 4
@@ -128,7 +128,7 @@ end
 
 display(neffs)
 
-# %% 
+# %% tags=["hide-output"]
 radiuss_reference = 1:5
 neff_fd = [2.40762, 2.39421, 2.39204, 2.39128, 2.39091]
 log10imags_fd = [-3.68456, -6.41594, -9.37884, -9.98148, -10.39617]
