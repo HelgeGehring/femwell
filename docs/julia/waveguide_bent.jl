@@ -88,9 +88,16 @@ CairoMakie.inline!(true)
 # %% tags=["remove-stderr"]
 radiuss = 1:0.5:5
 wg_width = 0.5
+sim_right = 4
+sim_bottom = 4
 neffs = ComplexF64[]
 for radius in radiuss
-    write_mesh(radius = radius, wg_width = wg_width)
+    write_mesh(
+        radius = radius,
+        wg_width = wg_width,
+        sim_right = sim_right,
+        sim_bottom = sim_bottom,
+    )
     model = GmshDiscreteModel("mesh.msh")
     Ω = Triangulation(model)
     labels = get_face_labeling(model)
