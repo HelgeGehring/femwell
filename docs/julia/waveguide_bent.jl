@@ -61,8 +61,8 @@ function write_mesh(;
     )
 
     resolutions = Dict(
-        "core" => Dict("resolution" => 0.015, "distance" => 1.5),
-        "slab" => Dict("resolution" => 0.015, "distance" => 1.5),
+        "core" => Dict("resolution" => 0.01, "distance" => 1.5),
+        "slab" => Dict("resolution" => 0.01, "distance" => 1.5),
     )
 
     mesh_from_OrderedDict(
@@ -118,17 +118,37 @@ for radius in radiuss
     push!(neffs, n_eff(modes[1]))
 end
 
-println(radiuss, neffs)
+display(neffs)
 
+# %% 
+radiuss_reference = 1:5
+neff_fd = [2.40762, 2.39421, 2.39204, 2.39128, 2.39091]
+neff_fmm = [2.40791, 2.39433, 2.39224, 2.39142, 2.39093]
+log10imags_fmm = [-3.63721, -6.48982, -9.30488, -9.97048, -10.36615]
+
+# %% 
 figure = Figure()
 ax = Axis(figure[1, 1], xlabel = "Radius / μm", ylabel = "log(-imag(n_eff))")
 lines!(ax, radiuss, log10.(-imag(neffs)))
 scatter!(ax, radiuss, log10.(-imag(neffs)), label = "FEM")
-
-radiuss_reference = 1:5
-log10imags_fd = [-3.68456, -6.41594, -9.37884, -9.98148, -10.39617]
 scatter!(ax, radiuss_reference, log10imags_fd, label = "FD")
-log10imags_fmm = [-3.63721, -6.48982, -9.30488, -9.97048, -10.36615]
+scatter!(
+    ax,
+    radiuss_reference,
+    log10imags_fmm,
+    label = "FMM",
+    color = :red,
+    marker = :xcross,
+)
+axislegend()
+display(figure)
+
+# %% 
+figure = Figure()
+ax = Axis(figure[1, 1], xlabel = "Radius / μm", ylabel = "real(n_eff)")
+lines!(ax, radiuss, real(neffs))
+scatter!(ax, radiuss, real(neffs), label = "FEM")
+scatter!(ax, radiuss_reference, log10imags_fd, label = "FD")
 scatter!(
     ax,
     radiuss_reference,
