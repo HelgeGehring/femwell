@@ -103,7 +103,6 @@ for radius in radiuss
 
     modes = calculate_modes(model, ε ∘ τ, λ = 1.55, order = 1)
     println(n_eff(modes[1]))
-    plot_mode(modes[1], absolute = true)
     modes = calculate_modes(
         model,
         ε ∘ τ,
@@ -127,9 +126,16 @@ lines!(ax, radiuss, log10.(-imag(neffs)))
 scatter!(ax, radiuss, log10.(-imag(neffs)), label = "FEM")
 
 radiuss_reference = 1:5
-log10imags_fmm = [-3.63721, -6.48982, -9.30488, -9.97048, -10.36615]
-scatter!(ax, radiuss_reference, log10imags_fmm, label = "FMM")
 log10imags_fd = [-3.68456, -6.41594, -9.37884, -9.98148, -10.39617]
 scatter!(ax, radiuss_reference, log10imags_fd, label = "FD")
+log10imags_fmm = [-3.63721, -6.48982, -9.30488, -9.97048, -10.36615]
+scatter!(
+    ax,
+    radiuss_reference,
+    log10imags_fmm,
+    label = "FMM",
+    color = :red,
+    marker = :xcross,
+)
 axislegend()
 display(figure)
