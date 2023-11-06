@@ -61,8 +61,8 @@ function write_mesh(;
     )
 
     resolutions = Dict(
-        "core" => Dict("resolution" => 0.008, "distance" => 1.5),
-        "slab" => Dict("resolution" => 0.008, "distance" => 1.5),
+        "core" => Dict("resolution" => 0.01, "distance" => 1.5),
+        "slab" => Dict("resolution" => 0.01, "distance" => 1.5),
     )
 
     mesh_from_OrderedDict(
