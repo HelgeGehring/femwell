@@ -11,7 +11,7 @@ import Unitful: ustrip
 export Mode
 export calculate_modes
 export E, H, power, overlap, te_fraction, tm_fraction, coupling_coefficient, perturbed_neff
-export frequency, n_eff, ω, λ
+export frequency, n_eff, n_eff_cylidrical, ω, λ
 export plot_mode, plot_field, write_mode_to_vtk
 
 struct Mode
@@ -20,23 +20,38 @@ struct Mode
     E::FEFunction
     order::Int
     ε::CellField
+    cylindrical::Bool
 end
 
 Base.show(io::IO, mode::Mode) = print(io, "Mode(k=$(mode.k), n_eff=$(n_eff(mode)))")
 Gridap.Measure(mode::Mode) = Measure(get_triangulation(mode.E), 2 * mode.order)
-n_eff(mode::Mode) = mode.k / mode.k0
+n_eff(mode::Mode) =
+    !mode.cylindrical ? (mode.k / mode.k0) :
+    error("You need to supply a radius to get the tangential effective refractive index")
+n_eff_cylidrical(mode::Mode) =
+    mode.cylindrical ? mode.k / mode.k0 : error("Not a cylindrical mode")
 ω(mode::Mode) = mode.k0 * ustrip(c_0)
 frequency(mode::Mode) = 2π * ω(mode)
-λ(mode::Mode) = 2π / mode.k
+λ(mode::Mode) = 2π / mode.k0
 E(mode::Mode) =
     mode.E[1] ⋅ TensorValue([1.0 0.0 0.0; 0.0 1.0 0.0]) +
     mode.E[2] * VectorValue(0.0, 0.0, 1.0)
-H(mode::Mode) =
-    -1im / ustrip(μ_0) / ω(mode) * (
-        (1im * mode.k * mode.E[1] - ∇(mode.E[2])) ⋅
-        TensorValue([0.0 1.0 0.0; -1.0 0.0 0.0]) +
-        ∇(mode.E[1]) ⊙ TensorValue(0.0, -1.0, 1.0, 0.0) * VectorValue(0.0, 0.0, 1.0)
-    )
+function H(mode::Mode)
+    if !mode.cylindrical
+        -1im / ustrip(μ_0) / ω(mode) * (
+            (1im * mode.k * mode.E[1] - ∇(mode.E[2])) ⋅
+            TensorValue([0.0 1.0 0.0; -1.0 0.0 0.0]) +
+            ∇(mode.E[1]) ⊙ TensorValue(0.0, -1.0, 1.0, 0.0) * VectorValue(0.0, 0.0, 1.0)
+        )
+    else
+        -1im / ustrip(μ_0) / ω(mode) * (
+            (1im * mode.k * mode.E[1] / (x -> x[1]) - ∇(mode.E[2])) ⋅
+            TensorValue([0.0 1.0 0.0; -1.0 0.0 0.0]) +
+            ∇(mode.E[1]) ⊙ TensorValue(0.0, -1.0, 1.0, 0.0) * VectorValue(0.0, 0.0, 1.0) +
+            mode.E[2] / (x -> x[1]) * VectorValue(0.0, 1.0, 0.0)
+        )
+    end
+end
 overlap(mode1::Mode, mode2::Mode) =
     0.5 * sum(
         ∫(
@@ -110,9 +125,9 @@ function calculate_modes(
         twothree = TensorValue([1 0 0; 0 1 0])
         lhs_straight((u1, u2), (v1, v2)) =
             ∫(
-                1 / μ_r * (curl(u1) ⊙ curl(v1) / k0^2 + ∇(u2) ⊙ v1) + (
+                1 / μ_r * (curl(u1) ⊙ curl(v1) / k0^2 - ∇(u2) ⊙ v1) + (
                     -u1 ⋅ twothree ⋅ ε ⋅ transpose(twothree) ⋅ v1 +
-                    u1 ⋅ twothree ⋅ ε ⋅ transpose(twothree) ⋅ ∇(v2) -
+                    u1 ⋅ twothree ⋅ ε ⋅ transpose(twothree) ⋅ ∇(v2) +
                     u2 * VectorValue(0, 0, 1) ⋅ ε ⋅ VectorValue(0, 0, 1) * v2 * k0^2
                 ),
             )dΩ
@@ -180,10 +195,25 @@ function calculate_modes(
     return [
         Mode(
             k0,
-            sqrt(k2),
-            FEFunction(U, E / sqrt(power(Mode(k0, sqrt(k2), FEFunction(U, E), order, ε)))),
+            sqrt(k2) * (radius == Inf ? 1 : radius),
+            FEFunction(
+                U,
+                E / sqrt(
+                    power(
+                        Mode(
+                            k0,
+                            sqrt(k2) * (radius == Inf ? 1 : radius),
+                            FEFunction(U, E),
+                            order,
+                            ε,
+                            radius != Inf,
+                        ),
+                    ),
+                ),
+            ),
             order,
             ε,
+            radius != Inf,
         ) for (k2, E) in zip(vals, eachcol(vecs))
     ]
 end

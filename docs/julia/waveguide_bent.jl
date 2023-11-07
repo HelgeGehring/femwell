@@ -120,10 +120,10 @@ for radius in radiuss
         pml = [pml_x, pml_y],
         k0_guess = modes[1].k,
     )
-    println(n_eff(modes[1]))
-    println(log10(abs(imag(n_eff(modes[1])))))
-    plot_mode(modes[1], absolute = true)
-    push!(neffs, n_eff(modes[1]))
+    println(n_eff_cylidrical(modes[1]) / radius)
+    println(log10(abs(imag(n_eff_cylidrical(modes[1]) / radius))))
+    plot_mode(modes[1], absolute = false)
+    push!(neffs, n_eff_cylidrical(modes[1]) / radius)
 end
 
 display(neffs)
