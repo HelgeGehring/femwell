@@ -20,30 +20,30 @@ struct Mode
     E::FEFunction
     order::Int
     ε::CellField
-    cylindrical::Bool
+    radius::Float64
 end
 
 Base.show(io::IO, mode::Mode) = print(io, "Mode(k=$(mode.k), n_eff=$(n_eff(mode)))")
 Gridap.Measure(mode::Mode) = Measure(get_triangulation(mode.E), 2 * mode.order)
 n_eff(mode::Mode) =
-    !mode.cylindrical ? (mode.k / mode.k0) :
+    mode.radius == Inf ? (mode.k / mode.k0) :
     error("You need to supply a radius to get the tangential effective refractive index")
 n_eff_cylidrical(mode::Mode) =
-    mode.cylindrical ? mode.k / mode.k0 : error("Not a cylindrical mode")
+    mode.radius != Inf ? mode.k / mode.k0 : error("Not a cylindrical mode")
 ω(mode::Mode) = mode.k0 * ustrip(c_0)
 frequency(mode::Mode) = 2π * ω(mode)
 λ(mode::Mode) = 2π / mode.k0
 function E(mode::Mode)
-    if !mode.cylindrical
+    if mode.radius == Inf
         mode.E[1] ⋅ TensorValue([1.0 0.0 0.0; 0.0 1.0 0.0]) +
         mode.E[2] * VectorValue(0.0, 0.0, 1.0)
     else
         mode.E[1] ⋅ TensorValue([1.0 0.0 0.0; 0.0 1.0 0.0]) +
-        mode.E[2] * VectorValue(0.0, 0.0, 1.0) / (x -> 1 / x[1])
+        mode.E[2] * VectorValue(0.0, 0.0, 1.0) * (x -> mode.radius / x[1])
     end
 end
 function H(mode::Mode)
-    if !mode.cylindrical
+    if mode.radius == Inf
         -1im / ustrip(μ_0) / ω(mode) * (
             (1im * mode.k * mode.E[1] - ∇(mode.E[2])) ⋅
             TensorValue([0.0 1.0 0.0; -1.0 0.0 0.0]) +
@@ -52,8 +52,8 @@ function H(mode::Mode)
         )
     else
         -1im / ustrip(μ_0) / ω(mode) * (
-            (1im * mode.k * mode.E[1] - ∇(mode.E[2])) ⋅
-            TensorValue([0.0 1.0 0.0; -1.0 0.0 0.0]) / (x -> 1 / x[1]) +
+            (1im * mode.k * mode.E[1] - mode.radius * ∇(mode.E[2])) ⋅
+            TensorValue([0.0 1.0 0.0; -1.0 0.0 0.0]) * (x -> 1 / x[1]) +
             ∇(mode.E[1]) ⊙ TensorValue(0.0, -1.0, 1.0, 0.0) * VectorValue(0.0, 0.0, 1.0)
             #curl(mode.E[1]) * VectorValue(0.0, 0.0, 1.0)
         )
@@ -205,14 +205,14 @@ function calculate_modes(
                             FEFunction(U, E),
                             order,
                             ε,
-                            radius != Inf,
+                            radius,
                         ),
                     ),
                 ),
             ),
             order,
             ε,
-            radius != Inf,
+            radius,
         ) for (k2, E) in zip(vals, eachcol(vecs))
     ]
 end
