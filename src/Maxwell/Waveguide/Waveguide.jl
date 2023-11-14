@@ -47,15 +47,13 @@ function H(mode::Mode)
         -1im / ustrip(μ_0) / ω(mode) * (
             (1im * mode.k * mode.E[1] - ∇(mode.E[2])) ⋅
             TensorValue([0.0 1.0 0.0; -1.0 0.0 0.0]) +
-            ∇(mode.E[1]) ⊙ TensorValue(0.0, -1.0, 1.0, 0.0) * VectorValue(0.0, 0.0, 1.0)
-            #curl(mode.E[1]) * VectorValue(0.0, 0.0, 1.0)
+            curl(mode.E[1]) * VectorValue(0.0, 0.0, 1.0)
         )
     else
         -1im / ustrip(μ_0) / ω(mode) * (
             (1im * mode.k * mode.E[1] - mode.radius * ∇(mode.E[2])) ⋅
             TensorValue([0.0 1.0 0.0; -1.0 0.0 0.0]) * (x -> 1 / x[1]) +
-            ∇(mode.E[1]) ⊙ TensorValue(0.0, -1.0, 1.0, 0.0) * VectorValue(0.0, 0.0, 1.0)
-            #curl(mode.E[1]) * VectorValue(0.0, 0.0, 1.0)
+            curl(mode.E[1]) * VectorValue(0.0, 0.0, 1.0)
         )
     end
 end

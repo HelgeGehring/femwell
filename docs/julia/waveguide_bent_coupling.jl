@@ -111,7 +111,7 @@ using Femwell.Maxwell.Waveguide
 CairoMakie.inline!(true)
 
 # %% tags=["remove-stderr", "hide-output"]
-radiuss = 10000 # [10.,15.,20.]
+radiuss = 10 # [10.,15.,20.]
 wg_width = 0.55
 sim_right = 1
 sim_bottom = 1
@@ -140,7 +140,7 @@ for radius in radiuss
         model,
         ε ∘ τ,
         λ = 1.55,
-        num = 2,
+        num = 4,
         order = 1,
         #radius = radius,
         pml = [pml_x, pml_y],
@@ -154,7 +154,7 @@ for radius in radiuss
         model,
         ε ∘ τ,
         λ = 1.55,
-        num = 3,
+        num = 4,
         order = 1,
         radius = radius,
         pml = [pml_x, pml_y],
@@ -171,13 +171,16 @@ for radius in radiuss
     println("overlaps")
     println(abs(overlap(modes_1[1], modes_1[1])^2))
     println(abs(overlap(modes_1[1], modes_1[2])^2))
+    println(abs(overlap(modes_1[1], modes_1[3])^2))
+    println(abs(overlap(modes_1[1], modes_1[4])^2))
     println(abs(overlap(modes_1[1], modes[1])^2))
     println(abs(overlap(modes_1[1], modes[2])^2))
     println(abs(overlap(modes[1], modes[1])^2))
-    println(abs(overlap(modes[1], modes[2])^2))
     println(abs(overlap(modes[2], modes[2])^2))
-    println(abs(overlap(modes[1], modes[3])^2))
     println(abs(overlap(modes[3], modes[3])^2))
+    println(abs(overlap(modes[1], modes[2])^2))
+    println(abs(overlap(modes[1], modes[3])^2))
+    println(abs(overlap(modes[1], modes[4])^2))
 end
 
 # %% tags=["hide-output"]
