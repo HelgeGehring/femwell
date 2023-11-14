@@ -42,12 +42,14 @@ function H(mode::Mode)
             (1im * mode.k * mode.E[1] - ∇(mode.E[2])) ⋅
             TensorValue([0.0 1.0 0.0; -1.0 0.0 0.0]) +
             ∇(mode.E[1]) ⊙ TensorValue(0.0, -1.0, 1.0, 0.0) * VectorValue(0.0, 0.0, 1.0)
+            #curl(mode.E[1]) * VectorValue(0.0, 0.0, 1.0)
         )
     else
         -1im / ustrip(μ_0) / ω(mode) * (
             (1im * mode.k * mode.E[1] / (x -> x[1]) - ∇(mode.E[2])) ⋅
             TensorValue([0.0 1.0 0.0; -1.0 0.0 0.0]) +
             ∇(mode.E[1]) ⊙ TensorValue(0.0, -1.0, 1.0, 0.0) * VectorValue(0.0, 0.0, 1.0) +
+            #curl(mode.E[1]) * VectorValue(0.0, 0.0, 1.0) +
             mode.E[2] / (x -> x[1]) * VectorValue(0.0, 1.0, 0.0)
         )
     end
@@ -230,6 +232,7 @@ function plot_mode(
     vectors = false,
     same_range = false,
     absolute = false,
+    field = E,
 )
     Ω = get_triangulation(mode.E)
     model = get_active_model(Ω)
@@ -248,7 +251,7 @@ function plot_mode(
 
         colorranges = Float64[]
         for (i, (title, vector)) in enumerate(fields)
-            efield = real((E(mode) ⋅ vector)(get_cell_points(Measure(Ω, 1))))
+            efield = real((field(mode) ⋅ vector)(get_cell_points(Measure(Ω, 1))))
             colorrange = max(abs(maximum(maximum.(efield))), abs(minimum(minimum.(efield))))
             push!(colorranges, colorrange)
         end
@@ -263,7 +266,7 @@ function plot_mode(
             plt = plot!(
                 ax,
                 Ω,
-                (absolute ? abs : real)((E(mode) ⋅ vector)),
+                (absolute ? abs : real)((field(mode) ⋅ vector)),
                 #colorrange = (-colorrange, colorrange),
             )
             wireframe!(fig[x, y], ∂Ω, color = :black)
@@ -283,14 +286,15 @@ function plot_mode(
             ymin .. ymax,
         )
 
-        efield = real((E(mode) ⋅ VectorValue(0, 0, 1im))(get_cell_points(Measure(Ω, 1))))
+        efield =
+            real((field(mode) ⋅ VectorValue(0, 0, 1im))(get_cell_points(Measure(Ω, 1))))
         colorrange = max(abs(maximum(maximum.(efield))), abs(minimum(minimum.(efield))))
 
         ax = Axis(fig[1, 2], title = "E_z")
         plt = plot!(
             ax,
             Ω,
-            real((E(mode) ⋅ VectorValue(0, 0, 1im))),
+            real((field(mode) ⋅ VectorValue(0, 0, 1im))),
             colorrange = (-colorrange, colorrange),
         )
         wireframe!(fig[1, 2], ∂Ω, color = :black)
