@@ -16,10 +16,12 @@
 
 # %% [markdown]
 # # Mode solving for bent waveguides
+# reference values from {cite}`Xiao2012`
 
 # %% [markdown]
 # ```{caution}
-# **This example is under construction**
+# **This example is under construction** eigenvalues match paper, overlaps not yet precise, working on it
+
 # As Julia-Dicts are not ordered, the mesh might become incorrect when adjusted (for now, better do the meshing in python)
 # ```
 
