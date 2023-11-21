@@ -16,12 +16,10 @@
 
 # %% [markdown]
 # # Mode solving for bent waveguides
-# reference values from {cite}`Xiao2012`
 
 # %% [markdown]
 # ```{caution}
-# **This example is under construction** eigenvalues match paper, overlaps not yet precise, working on it
-# 
+# **This example is under construction**
 # As Julia-Dicts are not ordered, the mesh might become incorrect when adjusted (for now, better do the meshing in python)
 # ```
 
@@ -104,7 +102,7 @@ for radius in radiuss
     Ω = Triangulation(model)
     labels = get_face_labeling(model)
 
-    epsilons = ["core" => 3.48^2, "box" => 1.46^2, "clad" => 1.46^2]
+    epsilons = ["core" => 3.48^2, "box" => 1.46^2, "clad" => 1.0^2]
     ε(tag) = Dict(get_tag_from_name(labels, u) => v for (u, v) in epsilons)[tag]
 
     τ = CellField(get_face_tag(labels, num_cell_dims(model)), Ω)
@@ -131,9 +129,35 @@ end
 display(neffs)
 
 # %% tags=["hide-output"]
+radiuss_reference = 1:5
+neff_fd = [2.40762, 2.39421, 2.39204, 2.39128, 2.39091]
+log10imags_fd = [-3.68456, -6.41594, -9.37884, -9.98148, -10.39617]
+neff_fmm = [2.40791, 2.39433, 2.39224, 2.39142, 2.39093]
+log10imags_fmm = [-3.63721, -6.48982, -9.30488, -9.97048, -10.36615]
+
 # %% 
 figure = Figure()
 ax = Axis(figure[1, 1], xlabel = "Radius / μm", ylabel = "log(-imag(n_eff))")
 lines!(ax, radiuss, log10.(-imag(neffs)))
 scatter!(ax, radiuss, log10.(-imag(neffs)), label = "FEM")
+scatter!(ax, radiuss_reference, log10imags_fd, label = "FD")
+scatter!(
+    ax,
+    radiuss_reference,
+    log10imags_fmm,
+    label = "FMM",
+    color = :red,
+    marker = :xcross,
+)
+axislegend()
+display(figure)
+
+# %% 
+figure = Figure()
+ax = Axis(figure[1, 1], xlabel = "Radius / μm", ylabel = "real(n_eff)")
+lines!(ax, radiuss, real(neffs))
+scatter!(ax, radiuss, real(neffs), label = "FEM")
+scatter!(ax, radiuss_reference, neff_fd, label = "FD")
+scatter!(ax, radiuss_reference, neff_fmm, label = "FMM", color = :red, marker = :xcross)
+axislegend()
 display(figure)
