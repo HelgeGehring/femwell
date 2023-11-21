@@ -3,8 +3,8 @@
 #   jupytext:
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
+#       format_name: percent
+#       format_version: '1.3'
 #       jupytext_version: 1.15.2
 #   kernelspec:
 #     display_name: femwell
@@ -12,17 +12,19 @@
 #     name: python3
 # ---
 
+# %% [markdown]
 # # Waveguide crosstalk (EME)
 #
 # In this notebook, we reproduce Fig. 4.19 of , which calculates the maximum cross talk between strips waveguides of different dimensions.
 #
 # First, we setup a coupled waveguide system:
 
+# %%
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
-# +
+# %%
 import shapely
 from meshwell.model import Model
 from meshwell.polysurface import PolySurface
@@ -32,11 +34,10 @@ from skfem.io.meshio import from_meshio
 from femwell.maxwell.waveguide import compute_modes
 from femwell.visualization import plot_domains
 
-# -
-
+# %% [markdown]
 # First, we precisely extract the refractive index of silicon at 1.55 um using a Lorentz fit:
 
-# +
+# %%
 si_data = np.loadtxt("../reference_data/palik_silicon.txt", skiprows=1)
 c = 299792458  # m/s
 
@@ -62,9 +63,7 @@ plt.legend()
 plt.title("Silicon")
 
 
-# -
-
-
+# %%
 def coupled_waveguides_crosstalk(
     width_A: float = 0.5,
     width_B: float = 0.5,
@@ -252,10 +251,11 @@ def coupled_waveguides_crosstalk(
     return coeff1, coeff2, beta_full_1, beta_full_2
 
 
+# %% [markdown]
 # Some functions to manipulate the returned overlap coefficients and betas:
 
 
-# +
+# %%
 def PA(coeff1, coeff2, beta_full_1, beta_full_2, L, wavelength=1.55):
     """Power in waveguide A vs propagation length"""
     return (
@@ -275,11 +275,10 @@ def dB(lin: float = 0.0):
     return 10 * np.log10(lin)
 
 
-# -
-
+# %% [markdown]
 # Run the simulation for two gaps and two sets of widths:
 
-# +
+# %% tags=["hide-output"]
 coeff1s = {}
 coeff2s = {}
 beta_full_1s = {}
@@ -308,10 +307,11 @@ for width_B in widths_B:
         coeff2s[(width_B, gap)] = coeff2
         beta_full_1s[(width_B, gap)] = beta_full_1
         beta_full_2s[(width_B, gap)] = beta_full_2
-# -
 
+# %% [markdown]
 # Using the coupling coefficients and propagation constants, we plot the power in each waveguide as a function of propagation distance, and compare to reference data (light shade):
 
+# %%
 Chrostowski_4p19a = np.genfromtxt(
     "../reference_data/Chrostowski_4p19a.csv", skip_header=2, delimiter=","
 )
@@ -319,7 +319,7 @@ Chrostowski_4p19b = np.genfromtxt(
     "../reference_data/Chrostowski_4p19b.csv", skip_header=2, delimiter=","
 )
 
-# +
+# %%
 L = np.linspace(0, 70, 10000)  # um
 
 cmap = mpl.colormaps["tab10"]
@@ -358,7 +358,7 @@ plt.ylim([-60, 5])
 plt.ylabel("Normalized power in waveguide / dB")
 plt.xlabel("Length / um")
 
-# +
+# %%
 L = np.linspace(0, 70, 10000)  # um
 
 cmap = mpl.colormaps["tab10"]
