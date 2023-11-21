@@ -12,9 +12,9 @@
 #     name: python3
 # ---
 
-# # Waveguide crosstalk
+# # Waveguide crosstalk (EME)
 #
-# In this notebook, we reproduce Fig. 4.20 of , which calculates the maximum cross talk between strips waveguides of different dimensions.
+# In this notebook, we reproduce Fig. 4.19 of , which calculates the maximum cross talk between strips waveguides of different dimensions.
 #
 # First, we setup a coupled waveguide system:
 

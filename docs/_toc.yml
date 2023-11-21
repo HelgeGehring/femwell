@@ -27,6 +27,7 @@ parts:
     - file: photonics/examples/vary_wavelength.py
     - file: photonics/examples/selecting_modes.py
     - file: photonics/examples/fiber_overlap.py
+    - file: photonics/examples/crosstalk.py
     - file: photonics/examples/metal_heater_phase_shifter.py
     - file: photonics/examples/metal_heater_phase_shifter_transient.py
     - file: photonics/examples/si_heater_phase_shifter.py
