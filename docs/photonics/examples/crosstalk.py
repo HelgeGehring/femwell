@@ -34,14 +34,44 @@ from femwell.visualization import plot_domains
 
 # -
 
+# First, we precisely extract the refractive index of silicon at 1.55 um using a Lorentz fit:
+
+# +
+si_data = np.loadtxt("../reference_data/palik_silicon.txt", skiprows=1)
+c = 299792458  # m/s
+
+
+def ncore(wl):
+    # Assume wl provided in um
+    wl_m = wl * 1e-6
+    eps = 7.9874
+    eps_lorentz = 3.6880
+    w0 = 3.9328e15
+    return np.sqrt(eps + eps_lorentz * w0**2 / (w0**2 - (2 * np.pi * c / wl_m) ** 2))
+
+
+wls = np.linspace(1.100, 1.800, 1000)
+
+plt.scatter(si_data[:, 0] * 1e-3, si_data[:, 1], label="data")
+plt.plot(wls, ncore(wls), label="Lorentz")
+plt.xlim([1.100, 1.800])
+plt.ylim([3.45, 3.55])
+plt.xlabel("Wavelength (um)")
+plt.ylabel("n")
+plt.legend()
+plt.title("Silicon")
+
+
+# -
+
 
 def coupled_waveguides_crosstalk(
     width_A: float = 0.5,
     width_B: float = 0.5,
     gap: float = 1.0,
     thickness: float = 0.22,
-    core_index: float = 3.45,
-    clad_index: float = 1.44,
+    core_index: float = ncore(1.55),
+    clad_index: float = 1.444,
     wavelength: float = 1.55,
     simulation_padding: float = 2.0,
     plot_geometry: bool = False,
@@ -222,9 +252,12 @@ def coupled_waveguides_crosstalk(
     return coeff1, coeff2, beta_full_1, beta_full_2
 
 
+# Some functions to manipulate the returned overlap coefficients and betas:
+
+
 # +
 def PA(coeff1, coeff2, beta_full_1, beta_full_2, L, wavelength=1.55):
-    """Power in waveguide A"""
+    """Power in waveguide A vs propagation length"""
     return (
         np.abs(coeff1) ** 4
         + np.abs(coeff2) ** 4
@@ -233,7 +266,7 @@ def PA(coeff1, coeff2, beta_full_1, beta_full_2, L, wavelength=1.55):
 
 
 def PB(coeff1, coeff2, beta_full_1, beta_full_2, L):
-    """Power in waveguide B"""
+    """Power in waveguide B vs propagation length"""
     return 1 - PA(coeff1, coeff2, beta_full_1, beta_full_2, L)
 
 
@@ -242,16 +275,9 @@ def dB(lin: float = 0.0):
     return 10 * np.log10(lin)
 
 
-def crosstalk(coeff1, coeff2, beta_full_1, beta_full_2):
-    "Cross talk as defined in the book: 0 dB is full cross-talk"
-    L_min = -np.pi / (beta_full_2 - beta_full_1)  # make cosine = -1
-    return dB(
-        1
-        - PA(
-            coeff1=coeff1, coeff2=coeff2, beta_full_1=beta_full_1, beta_full_2=beta_full_2, L=L_min
-        )
-    )
+# -
 
+# Run the simulation for two gaps and two sets of widths:
 
 # +
 coeff1s = {}
@@ -284,6 +310,8 @@ for width_B in widths_B:
         beta_full_2s[(width_B, gap)] = beta_full_2
 # -
 
+# Using the coupling coefficients and propagation constants, we plot the power in each waveguide as a function of propagation distance, and compare to reference data (light shade):
+
 Chrostowski_4p19a = np.genfromtxt(
     "../reference_data/Chrostowski_4p19a.csv", skip_header=2, delimiter=","
 )
@@ -292,140 +320,79 @@ Chrostowski_4p19b = np.genfromtxt(
 )
 
 # +
-L = np.linspace(0, 70, 10000)
+L = np.linspace(0, 70, 10000)  # um
 
 cmap = mpl.colormaps["tab10"]
 colors = cmap(np.linspace(0, 1, 11))
 
-plt.plot(
-    L,
-    dB(
-        PA(
-            coeff1s[(widths_B[0], gaps[0])],
-            coeff2s[(widths_B[0], gaps[0])],
-            beta_full_1s[(widths_B[0], gaps[0])],
-            beta_full_2s[(widths_B[0], gaps[0])],
-            L,
-        )
-    ),
-    color=colors[3],
-)
+widths_B_list = [widths_B[0], widths_B[1], widths_B[1], widths_B[0]]
+gaps_list = [gaps[0], gaps[0], gaps[0], gaps[0]]
+colors_index = [3, 0, 1, 2]
+functions_list = [PA, PA, PB, PB]
+
+for width, gap, function, color_ind in zip(widths_B_list, gaps_list, functions_list, colors_index):
+    plt.plot(
+        L,
+        dB(
+            function(
+                coeff1s[(width, gap)],
+                coeff2s[(width, gap)],
+                beta_full_1s[(width, gap)],
+                beta_full_2s[(width, gap)],
+                L,
+            )
+        ),
+        color=colors[color_ind],
+        label=f"{width_A*1E3:1.0f} nm, {width*1E3:1.0f} nm, {gap*1E3:1.0f} nm, {function.__name__}",
+    )
 
 plt.plot(Chrostowski_4p19a[:, 2], Chrostowski_4p19a[:, 3], color=colors[0], alpha=0.3, linewidth=5)
-plt.plot(
-    L,
-    dB(
-        PA(
-            coeff1s[(widths_B[1], gaps[0])],
-            coeff2s[(widths_B[1], gaps[0])],
-            beta_full_1s[(widths_B[1], gaps[0])],
-            beta_full_2s[(widths_B[1], gaps[0])],
-            L,
-        )
-    ),
-    color=colors[0],
-)
-
-
 plt.plot(Chrostowski_4p19a[:, 4], Chrostowski_4p19a[:, 5], color=colors[1], alpha=0.3, linewidth=5)
-plt.plot(
-    L,
-    dB(
-        PB(
-            coeff1s[(widths_B[1], gaps[0])],
-            coeff2s[(widths_B[1], gaps[0])],
-            beta_full_1s[(widths_B[1], gaps[0])],
-            beta_full_2s[(widths_B[1], gaps[0])],
-            L,
-        )
-    ),
-    color=colors[1],
-)
-
 plt.plot(Chrostowski_4p19a[:, 0], Chrostowski_4p19a[:, 1], color=colors[2], alpha=0.3, linewidth=5)
-plt.plot(
-    L,
-    dB(
-        PB(
-            coeff1s[(widths_B[0], gaps[0])],
-            coeff2s[(widths_B[0], gaps[0])],
-            beta_full_1s[(widths_B[0], gaps[0])],
-            beta_full_2s[(widths_B[0], gaps[0])],
-            L,
-        )
-    ),
-    color=colors[2],
-)
 
+plt.legend(title="Width A, Width B, gap, guide", bbox_to_anchor=[1.0, 1.0])
+plt.title("Power in waveguide A (PA, initially 100%) or waveguide B (PB, initially 0%)")
 
-plt.ylim([-60, 0])
+plt.ylim([-60, 5])
 
 plt.ylabel("Normalized power in waveguide / dB")
 plt.xlabel("Length / um")
 
 # +
-plt.plot(
-    L,
-    dB(
-        PA(
-            coeff1s[(widths_B[0], gaps[1])],
-            coeff2s[(widths_B[0], gaps[1])],
-            beta_full_1s[(widths_B[0], gaps[1])],
-            beta_full_2s[(widths_B[0], gaps[1])],
-            L,
-        )
-    ),
-    color=colors[3],
-)
+L = np.linspace(0, 70, 10000)  # um
+
+cmap = mpl.colormaps["tab10"]
+colors = cmap(np.linspace(0, 1, 11))
+
+widths_B_list = [widths_B[0], widths_B[1], widths_B[1], widths_B[0]]
+gaps_list = [gaps[1], gaps[1], gaps[1], gaps[1]]
+colors_index = [3, 0, 1, 2]
+functions_list = [PA, PA, PB, PB]
+
+for width, gap, function, color_ind in zip(widths_B_list, gaps_list, functions_list, colors_index):
+    plt.plot(
+        L,
+        dB(
+            function(
+                coeff1s[(width, gap)],
+                coeff2s[(width, gap)],
+                beta_full_1s[(width, gap)],
+                beta_full_2s[(width, gap)],
+                L,
+            )
+        ),
+        color=colors[color_ind],
+        label=f"{width_A*1E3:1.0f} nm, {width*1E3:1.0f} nm, {gap*1E3:1.0f} nm, {function.__name__}",
+    )
 
 plt.plot(Chrostowski_4p19b[:, 2], Chrostowski_4p19b[:, 3], color=colors[0], alpha=0.3, linewidth=5)
-plt.plot(
-    L,
-    dB(
-        PA(
-            coeff1s[(widths_B[1], gaps[1])],
-            coeff2s[(widths_B[1], gaps[1])],
-            beta_full_1s[(widths_B[1], gaps[1])],
-            beta_full_2s[(widths_B[1], gaps[1])],
-            L,
-        )
-    ),
-    color=colors[0],
-)
-
-
 plt.plot(Chrostowski_4p19b[:, 4], Chrostowski_4p19b[:, 5], color=colors[1], alpha=0.3, linewidth=5)
-plt.plot(
-    L,
-    dB(
-        PB(
-            coeff1s[(widths_B[1], gaps[1])],
-            coeff2s[(widths_B[1], gaps[1])],
-            beta_full_1s[(widths_B[1], gaps[1])],
-            beta_full_2s[(widths_B[1], gaps[1])],
-            L,
-        )
-    ),
-    color=colors[1],
-)
-
 plt.plot(Chrostowski_4p19b[:, 0], Chrostowski_4p19b[:, 1], color=colors[2], alpha=0.3, linewidth=5)
-plt.plot(
-    L,
-    dB(
-        PB(
-            coeff1s[(widths_B[0], gaps[1])],
-            coeff2s[(widths_B[0], gaps[1])],
-            beta_full_1s[(widths_B[0], gaps[1])],
-            beta_full_2s[(widths_B[0], gaps[1])],
-            L,
-        )
-    ),
-    color=colors[2],
-)
 
+plt.legend(title="Width A, Width B, gap, guide", bbox_to_anchor=[1.0, 1.0])
+plt.title("Power in waveguide A (PA, initially 100%) or waveguide B (PB, initially 0%)")
 
-plt.ylim([-60, 0])
+plt.ylim([-60, 5])
 
 plt.ylabel("Normalized power in waveguide / dB")
 plt.xlabel("Length / um")
