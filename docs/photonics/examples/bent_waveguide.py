@@ -13,6 +13,7 @@
 # ---
 
 # # Bent waveguide losses
+# This example uses an effective epsilon approximation for the bent, for more precise implementation see julia example.
 
 # + tags=["hide-input"]
 from collections import OrderedDict
