@@ -20,7 +20,7 @@ jobs:
           cat $GITHUB_OUTPUT
       - uses: actions/checkout@v4
       - name: Setup Mambaforge
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
             miniforge-version: latest
             activate-environment: env
