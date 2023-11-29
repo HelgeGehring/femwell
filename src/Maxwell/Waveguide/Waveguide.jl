@@ -31,7 +31,7 @@ n_eff(mode::Mode) =
 n_eff_cylidrical(mode::Mode) =
     mode.radius != Inf ? mode.k / mode.k0 : error("Not a cylindrical mode")
 ω(mode::Mode) = mode.k0 * ustrip(c_0)
-frequency(mode::Mode) = 2π * ω(mode)
+frequency(mode::Mode) = ω(mode) / (2π)
 λ(mode::Mode) = 2π / mode.k0
 function E(mode::Mode)
     if mode.radius == Inf
