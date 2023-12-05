@@ -14,6 +14,11 @@ export E, H, power, overlap, te_fraction, tm_fraction, coupling_coefficient, per
 export frequency, n_eff, n_eff_cylidrical, ω, λ
 export plot_mode, plot_field, write_mode_to_vtk
 
+struct Pml_funcs
+    pml_f::CellField
+    pml_g::CellField
+end
+
 struct Mode
     k0::ComplexF64
     k::ComplexF64
@@ -21,6 +26,7 @@ struct Mode
     order::Int
     ε::CellField
     radius::Float64
+    pml_funcs::Union{Pml_funcs,Nothing}
 end
 
 Base.show(io::IO, mode::Mode) = print(io, "Mode(k=$(mode.k), n_eff=$(n_eff(mode)))")
@@ -50,9 +56,27 @@ function H(mode::Mode)
             curl(mode.E[1]) * VectorValue(0.0, 0.0, 1.0)
         )
     else
-        -1im / ustrip(μ_0) / ω(mode) * (
-            (1im * mode.k * mode.E[1] - mode.radius * ∇(mode.E[2])) ⋅
-            TensorValue([0.0 1.0 0.0; -1.0 0.0 0.0]) * (x -> 1 / x[1]) +
+        s_r = 1 - 1im * gradient(mode.pml_funcs.pml_f) ⋅ VectorValue(1, 0)
+        s_y = 1 - 1im * gradient(mode.pml_funcs.pml_g) ⋅ VectorValue(0, 1)
+        s_θ = 1
+
+        γ_r = 1
+        γ_y = 1
+        γ_θ = 1 - 1im * mode.pml_funcs.pml_f / (x -> x[1])
+
+        d_r = γ_r * s_r / (γ_y * s_y * γ_θ * s_θ)
+        d_y = γ_y * s_y / (γ_r * s_r * γ_θ * s_θ)
+        d_θ = γ_θ * s_θ / (γ_r * s_r * γ_y * s_y)
+
+        pml_operator = (
+              d_r ⋅ TensorValue(1, 0, 0, 0, 0, 0, 0, 0, 0)
+            + d_y ⋅ TensorValue(0, 0, 0, 0, 1, 0, 0, 0, 0)
+            + d_θ ⋅ TensorValue(0, 0, 0, 0, 0, 0, 0, 0, 1)
+        )
+
+        -1im / ustrip(μ_0) / ω(mode) * pml_operator ⋅ (
+            (1im * mode.k * mode.E[1] + mode.radius * ∇(mode.E[2])) ⋅
+            TensorValue([0.0 1.0 0.0; -1.0 0.0 0.0]) * (x -> 1 / x[1]) -
             curl(mode.E[1]) * VectorValue(0.0, 0.0, 1.0)
         )
     end
@@ -204,6 +228,7 @@ function calculate_modes(
                             order,
                             ε,
                             radius,
+                            (radius == Inf ? nothing : Pml_funcs(pml_f, pml_g))
                         ),
                     ),
                 ),
@@ -211,6 +236,7 @@ function calculate_modes(
             order,
             ε,
             radius,
+            (radius == Inf ? nothing : Pml_funcs(pml_f, pml_g))
         ) for (k2, E) in zip(vals, eachcol(vecs))
     ]
 end
