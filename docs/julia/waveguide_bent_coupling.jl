@@ -115,6 +115,8 @@ radiuss = 10 # [10.,15.,20.]
 wg_width = 0.55
 sim_right = 1
 sim_bottom = 1
+pml_thickness = 3
+distance = 0.8
 overlaps = Float64[]
 Δneff_cylindrical = Float64[]
 for radius in radiuss
@@ -123,14 +125,16 @@ for radius in radiuss
         wg_width = wg_width,
         sim_right = sim_right,
         sim_bottom = sim_bottom,
-        distance = 0.8,
+        distance = distance,
     )
     model = GmshDiscreteModel("mesh.msh")
     Ω = Triangulation(model)
     labels = get_face_labeling(model)
 
     τ = CellField(get_face_tag(labels, num_cell_dims(model)), Ω)
-    pml_x = x -> 0.1 * max(0, x[1] - (radius + wg_width / 2 + sim_right))^2
+    # pml_x = x -> 0.1 * max(0, x[1] - (radius + wg_width / 2 + sim_right))^2
+    pml_order = 3
+    pml_x = x -> 1/pml_order * max(0, (x[1] - (radius + wg_width / 2 + distance / 2 + sim_right)) / pml_thickness)^pml_order * 5
     pml_y = x -> 0.1 * max(0, -x[2] - sim_bottom)^2
 
 
