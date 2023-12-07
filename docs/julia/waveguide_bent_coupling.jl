@@ -84,13 +84,13 @@ function write_mesh(;
         meshwell.polySurface.PolySurface(
             model = model,
             polygons = clip_by_rect(env, -np.inf, -np.inf, np.inf, 0),
-            physical_name = "clad",
+            physical_name = "box",
             mesh_order = 2,
         ),
         meshwell.polySurface.PolySurface(
             model = model,
             polygons = clip_by_rect(env, -np.inf, 0, np.inf, np.inf),
-            physical_name = "box",
+            physical_name = "clad",
             mesh_order = 2,
         ),
     ]
