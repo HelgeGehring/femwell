@@ -134,8 +134,15 @@ for radius in radiuss
     τ = CellField(get_face_tag(labels, num_cell_dims(model)), Ω)
     # pml_x = x -> 0.1 * max(0, x[1] - (radius + wg_width / 2 + sim_right))^2
     pml_order = 3
-    pml_x = x -> 1/pml_order * max(0, (x[1] - (radius + wg_width / 2 + distance / 2 + sim_right)) / pml_thickness)^pml_order * 5
-    pml_y = x -> 0.
+    pml_x =
+        x ->
+            1 / pml_order *
+            max(
+                0,
+                (x[1] - (radius + wg_width / 2 + distance / 2 + sim_right)) / pml_thickness,
+            )^pml_order *
+            5
+    pml_y = x -> 0.0
 
 
     epsilons = ["core1" => 3.48^2, "core2" => 3.48^2, "box" => 1.46^2, "clad" => 1.46^2]

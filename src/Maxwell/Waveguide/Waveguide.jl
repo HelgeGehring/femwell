@@ -69,9 +69,9 @@ function H(mode::Mode)
         d_θ = γ_θ * s_θ / (γ_r * s_r * γ_y * s_y)
 
         pml_operator = (
-              d_r ⋅ TensorValue(1, 0, 0, 0, 0, 0, 0, 0, 0)
-            + d_y ⋅ TensorValue(0, 0, 0, 0, 1, 0, 0, 0, 0)
-            + d_θ ⋅ TensorValue(0, 0, 0, 0, 0, 0, 0, 0, 1)
+            d_r ⋅ TensorValue(1, 0, 0, 0, 0, 0, 0, 0, 0) +
+            d_y ⋅ TensorValue(0, 0, 0, 0, 1, 0, 0, 0, 0) +
+            d_θ ⋅ TensorValue(0, 0, 0, 0, 0, 0, 0, 0, 1)
         )
 
         -1im / ustrip(μ_0) / ω(mode) * pml_operator ⋅ (
@@ -228,7 +228,7 @@ function calculate_modes(
                             order,
                             ε,
                             radius,
-                            (radius == Inf ? nothing : Pml_funcs(pml_f, pml_g))
+                            (radius == Inf ? nothing : Pml_funcs(pml_f, pml_g)),
                         ),
                     ),
                 ),
@@ -236,7 +236,7 @@ function calculate_modes(
             order,
             ε,
             radius,
-            (radius == Inf ? nothing : Pml_funcs(pml_f, pml_g))
+            (radius == Inf ? nothing : Pml_funcs(pml_f, pml_g)),
         ) for (k2, E) in zip(vals, eachcol(vecs))
     ]
 end
