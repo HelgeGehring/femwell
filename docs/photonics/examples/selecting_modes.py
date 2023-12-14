@@ -211,7 +211,7 @@ modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=4)
 
 # Option 1: using an element name
 
-modes_sorted = modes.sorted(key=lambda mode: -mode.calculate_power(elements="sin"))
+modes_sorted = modes.sorted(key=lambda mode: -mode.calculate_power(elements="sin").real)
 
 modes_sorted[0].show(modes_sorted[0].E.real, direction="x")
 
