@@ -60,6 +60,7 @@ Something missing? Feel free to open an [issue](https://github.com/HelgeGehring/
 - Niko Savola (Google, Aalto University)
 - Rouven Glauert (Idalab)
 - Markus DeMartini (Google)
+- Lucas Grosjean (Google, Femto-ST Institute)
 
 Happy about every form of contribution -
 pull requests, feature requests, issues, questions, ... :)
