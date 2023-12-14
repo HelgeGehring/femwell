@@ -102,7 +102,7 @@ thermal_diffisitivities =
 
 # %% tags=["remove-stderr", "hide-output"]
 boundary_potentials = Dict(["metal3#e1___None" => 0.4, "metal3#e2___None" => 0.0])
-boundary_temperatures = Dict("box___None" => 0.0)
+boundary_temperatures = Dict("metal3#e1___None" => 0.4, "metal3#e2___None" => 0.0)
 
 # %% [markdown]
 # Now we're ready to do the simulations! First we simulate the electrical potential,
@@ -145,6 +145,8 @@ writevtk(
         "potential" => potential(p0),
         "current" => current_density(p0),
         "temperature" => temperature(T0),
+        "heat flux" => heat_flux(T0),
+        "tags" => τ,
     ],
 )
 
