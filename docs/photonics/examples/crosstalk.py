@@ -313,10 +313,10 @@ for width_B in widths_B:
 
 # %%
 Chrostowski_4p19a = np.genfromtxt(
-    "../reference_data/Chrostowski_4p19a.csv", skip_header=2, delimiter=","
+    "../reference_data/Chrostowski/Chrostowski_4p19a.csv", skip_header=2, delimiter=","
 )
 Chrostowski_4p19b = np.genfromtxt(
-    "../reference_data/Chrostowski_4p19b.csv", skip_header=2, delimiter=","
+    "../reference_data/Chrostowski/Chrostowski_4p19b.csv", skip_header=2, delimiter=","
 )
 
 # %%
