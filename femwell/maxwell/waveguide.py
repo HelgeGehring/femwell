@@ -112,6 +112,40 @@ class Mode:
             delta_epsilon=self.basis_epsilon_r.interpolate(delta_epsilon),
         )
 
+    def calculate_effective_area(self, field="xy"):
+        if field == "xy":
+
+            @Functional(dtype=complex)
+            def E2(w):
+                return dot(np.conj(w["E"][0]), w["E"][0])
+
+            @Functional(dtype=complex)
+            def E4(w):
+                return dot(np.conj(w["E"][0]), w["E"][0]) ** 2
+
+        else:
+            num = 0 if (field == "x") else 1
+
+            @Functional(dtype=complex)
+            def E2(w):
+                return np.conj(w["E"][0][num]) * w["E"][0][num]
+
+            @Functional(dtype=complex)
+            def E4(w):
+                return (np.conj(w["E"][0][num]) * w["E"][0][num]) ** 2
+
+        return np.real(
+            E2.assemble(
+                self.basis,
+                E=self.basis.interpolate(self.E),
+            )
+            ** 2
+            / E4.assemble(
+                self.basis,
+                E=self.basis.interpolate(self.E),
+            )
+        )
+
     def calculate_propagation_loss(self, distance):
         return -20 / np.log(10) * self.k0 * np.imag(self.n_eff) * distance
 
