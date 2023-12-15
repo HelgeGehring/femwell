@@ -98,7 +98,7 @@ reference_neff_500nm = pd.read_csv(
     "../reference_data/Rukhlenko/fig_1c_neff/h_500nm.csv", dtype=np.float64
 )
 reference_aeff_500nm = pd.read_csv(
-    "../reference_data/Rukhlenko/fig_1b_aeff/0.5 Eq2.csv", dtype=np.float64
+    "../reference_data/Rukhlenko/fig_1b_aeff/0.5_Eq2.csv", dtype=np.float64
 )
 ref_neff_x, ref_neff_y = np.split(reference_neff_500nm.values, 2, axis=1)
 ref_aeff_x, ref_aeff_y = np.split(reference_aeff_500nm.values, 2, axis=1)
