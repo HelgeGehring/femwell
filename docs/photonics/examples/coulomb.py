@@ -1,22 +1,24 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: py:light,md:myst
+#     formats: py:percent,md:myst
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.14.4
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.15.0
 #   kernelspec:
 #     display_name: Python 3
 #     name: python3
 # ---
 
+# %% [markdown]
 # # Lithium niobate phase-shifter
 
+# %% [markdown]
 # Reproducing {cite}`Han2022`
 
-# + tags=["hide-input"]
+# %% tags=["hide-input"]
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
@@ -30,9 +32,7 @@ from femwell.coulomb import solve_coulomb
 from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
 
-# -
-
-# + tags=["remove-stderr"]
+# %% tags=["remove-stderr"]
 core_width = 1.532
 electrode_start_x = core_width / 2 + 2.629
 electrode_width = 4.4
@@ -118,9 +118,9 @@ plt.plot(voltages, np.real(voltages_neffs))
 plt.xlabel("Voltage / V")
 plt.ylabel("Effective refractive index")
 plt.show()
-# -
 
 
+# %% [markdown]
 # ## Bibliography
 #
 # ```{bibliography}

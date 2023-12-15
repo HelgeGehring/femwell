@@ -1,22 +1,24 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: py:light,md:myst
+#     formats: py:percent,md:myst
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.14.4
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.15.0
 #   kernelspec:
 #     display_name: Python 3
 #     name: python3
 # ---
 
+# %% [markdown]
 # # Grating coupler
 
+# %% [markdown]
 # Reproducing an example of {cite}`Notaros2015`
 
-# + tags=["remove-stderr"]
+# %% tags=["remove-stderr"]
 
 from collections import OrderedDict
 
@@ -119,9 +121,9 @@ for i, k in enumerate(ks):
     # axs[0].set_aspect(1)
     plot_periodic(k, a, basis_phi, phis[..., i], 10, axs[1])
     plt.show()
-# -
 
 
+# %% [markdown]
 # ## Bibliography
 #
 # ```{bibliography}

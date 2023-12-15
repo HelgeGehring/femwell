@@ -1,20 +1,21 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: py:light,md:myst
+#     formats: py:percent,md:myst
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.14.4
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.15.0
 #   kernelspec:
 #     display_name: Python 3
 #     name: python3
 # ---
 
+# %% [markdown]
 # # TiN TOPS heater
 
-# + tags=["hide-input"]
+# %% tags=["hide-input"]
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
@@ -28,12 +29,11 @@ from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.thermal import solve_thermal
 
-# -
-
+# %% [markdown]
 # Simulating the TiN TOPS heater in {cite}`Jacques2019`.
 # First we set up the mesh:
 
-# + tags=["remove-stderr"]
+# %% tags=["remove-stderr"]
 
 w_sim = 8 * 2
 h_clad = 2.8
@@ -103,11 +103,11 @@ resolutions = dict(
 
 mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=0.6))
 mesh.draw().show()
-# -
 
+# %% [markdown]
 # And then we solve it!
 
-# + tags=["remove-stderr"]
+# %% tags=["remove-stderr"]
 currents = np.linspace(0.0, 7.4e-3, 10)
 current_densities = currents / polygons["heater"].area
 neffs = []
@@ -156,9 +156,9 @@ plt.xlabel("Current / mA")
 plt.ylabel("Effective refractive index $n_{eff}$")
 plt.plot(currents * 1e3, neffs)
 plt.show()
-# -
 
 
+# %% [markdown]
 # ## Bibliography
 #
 # ```{bibliography}

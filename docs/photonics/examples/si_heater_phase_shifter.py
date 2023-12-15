@@ -1,20 +1,21 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: py:light,md:myst
+#     formats: py:percent,md:myst
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.14.4
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.15.0
 #   kernelspec:
 #     display_name: Python 3
 #     name: python3
 # ---
 
+# %% [markdown]
 # # Doped silicon heater
 
-# + tags=["hide-input"]
+# %% tags=["hide-input"]
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
@@ -26,12 +27,11 @@ from skfem.io import from_meshio
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.thermal import solve_thermal
 
-# -
-
+# %% [markdown]
 # Simulating the doped silicon heater in {cite}`Jacques2019`.
 # First we set up the mesh:
 
-# + tags=["remove-stderr"]
+# %% tags=["remove-stderr"]
 w_sim = 8 * 4
 h_clad = 2.8
 h_box = 2
@@ -112,11 +112,11 @@ resolutions = dict(
 )
 
 mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=0.4))
-# -
 
+# %% [markdown]
 # And then we solve it!
 
-# + tags=["remove-stderr"]
+# %% tags=["remove-stderr"]
 basis0 = Basis(mesh, ElementTriP0(), intorder=4)
 thermal_conductivity_p0 = basis0.zeros()
 for domain, value in {
@@ -159,9 +159,9 @@ divider = make_axes_locatable(ax)
 cax = divider.append_axes("right", size="5%", pad=0.05)
 plt.colorbar(ax.collections[0], cax=cax)
 plt.show()
-# -
 
 
+# %% [markdown]
 # ## Bibliography
 #
 # ```{bibliography}

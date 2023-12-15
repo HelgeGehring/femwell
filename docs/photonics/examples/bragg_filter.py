@@ -1,22 +1,24 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: py:light,md:myst
+#     formats: py:percent,md:myst
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.14.4
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.15.0
 #   kernelspec:
 #     display_name: Python 3
 #     name: python3
 # ---
 
+# %% [markdown]
 # # Bragg filter
 
+# %% [markdown]
 # Reproducing an example of {cite}`Notaros2015`
 
-# + tags=["hide-input"]
+# %% tags=["hide-input"]
 
 
 from collections import OrderedDict
@@ -30,7 +32,7 @@ from skfem.io import from_meshio
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.mode_solver_2d_periodic import plot_periodic, solve_periodic
 
-# + tags=["remove-stderr"]
+# %% tags=["remove-stderr"]
 
 height = 1
 a = 0.330
@@ -97,9 +99,9 @@ for i, k in enumerate(ks):
     # axs[0].set_aspect(1)
     plot_periodic(k, a, basis_phi, phis[..., i], 10, axs[1])
     plt.show()
-# -
 
 
+# %% [markdown]
 # ## Bibliography
 #
 # ```{bibliography}

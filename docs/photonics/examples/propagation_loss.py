@@ -3,22 +3,23 @@
 #   jupytext:
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.14.5
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.15.0
 #   kernelspec:
 #     display_name: femwell
 #     language: python
 #     name: python3
 # ---
 
+# %% [markdown]
 # # Physics-informed propagation loss model
 #
 # The ability to locally refine the mesh makes FEM well-suited to problems with very different lengthscales.
 #
 # One such problem is empirically modeling the propagation loss due to sidewall roughness, for instance as performed in {cite}`Lindecrantz2014`.
 
-# + tags=["remove-stderr"]
+# %% tags=["remove-stderr"]
 
 from collections import OrderedDict
 
@@ -34,11 +35,10 @@ from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
 from femwell.visualization import plot_domains
 
-# -
-
+# %% [markdown]
 # Assume there is some information available about TE waveguide loss as a function of wavelength and width:
 
-# +
+# %%
 # Foundry-reported information
 wavelengths = (1.55, 1.55)
 widths = (0.5, 1)
@@ -57,12 +57,11 @@ for wavelength, width, slab_height in zip(wavelengths, widths, slab_heights):
     xdata.append((wavelength, width, slab_height))
 xdata = np.array(xdata)
 
-
-# -
-
+# %% [markdown]
 # Assuming sidewall roughness dominates the loss, we prepare the following mesh:
 
 
+# %%
 def waveguide(
     core_width,
     slab_thickness,
@@ -121,7 +120,7 @@ def waveguide(
     return mesh, basis0, epsilon
 
 
-# +
+# %%
 mesh, basis0, epsilon = waveguide(
     core_width=0.5,
     slab_thickness=0.0,
@@ -132,12 +131,11 @@ plot_domains(mesh)
 basis0.plot(epsilon.real, colorbar=True).show()
 basis0.plot(epsilon.imag, colorbar=True).show()
 
-
-# -
-
+# %% [markdown]
 # Now that we have a simulation, we can compute TE0 modes, and fit the hyperparameters `sidewall_extent` and `sidewall_index` to get a better model for loss as a function of waveguide geometry:
 
 
+# %%
 def compute_propagation_loss(
     wavelength,
     core_width,
@@ -166,6 +164,7 @@ def compute_propagation_loss(
     return 10 * np.log10(np.exp(1)) * alpha * 1e-2  # convert to cm
 
 
+# %%
 for wavelength, core_width, slab_thickness, loss in zip(wavelengths, widths, slab_heights, losses):
     predicted_loss = compute_propagation_loss(
         wavelength=wavelength,
@@ -181,9 +180,11 @@ for wavelength, core_width, slab_thickness, loss in zip(wavelengths, widths, sla
     print(wavelength, core_width, slab_thickness, predicted_loss, loss)
 
 
+# %% [markdown]
 # Pretty close, refine through optimization:
 
 
+# %%
 def objective_vector(xdata, sidewall_k, material_k):
     losses_obj = []
     for wavelength, width, slab_height in xdata:
@@ -202,10 +203,13 @@ def objective_vector(xdata, sidewall_k, material_k):
     return losses_obj
 
 
+# %%
 popt, pcov = curve_fit(objective_vector, xdata, ydata, bounds=(0, [1e-2, 1e-2]), p0=(3e-4, 1e-6))
 
+# %%
 popt, pcov
 
+# %%
 for wavelength, core_width, slab_thickness, loss in zip(wavelengths, widths, slab_heights, losses):
     predicted_loss = compute_propagation_loss(
         wavelength=wavelength,
@@ -220,6 +224,7 @@ for wavelength, core_width, slab_thickness, loss in zip(wavelengths, widths, sla
 
     print(wavelength, core_width, slab_thickness, predicted_loss, loss)
 
+# %%
 widths_plot = np.linspace(0.275, 2.0, 19)
 losses_plot_strip = []
 for width in widths_plot:
@@ -236,7 +241,7 @@ for width in widths_plot:
         )
     )
 
-# +
+# %%
 import matplotlib.pyplot as plt
 
 plt.plot(widths_plot, losses_plot_strip, label="strip model")
@@ -245,8 +250,8 @@ plt.scatter(widths, losses, label="strip data")
 plt.legend()
 plt.xlabel("Core width (um)")
 plt.ylabel("Propagation loss (dB/cm)")
-# -
 
+# %% [markdown]
 # ## Bibliography
 #
 # ```{bibliography}

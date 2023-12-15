@@ -2,20 +2,21 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: py:light,md:myst
+#     formats: py:percent,md:myst
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.14.4
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.15.0
 #   kernelspec:
 #     display_name: Python 3
 #     name: python3
 # ---
 
+# %% [markdown]
 # # Variation of the width
 
-# + tags=["hide-input"]
+# %% tags=["hide-input"]
 
 from collections import OrderedDict
 
@@ -30,9 +31,7 @@ from tqdm import tqdm
 from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
 
-# -
-
-# + tags=["remove-stderr"]
+# %% tags=["remove-stderr"]
 wavelength = 1.55
 num_modes = 8
 widths = np.linspace(0.5, 3.5, 100)
@@ -59,9 +58,8 @@ for i, width in enumerate(tqdm(widths)):
     modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=num_modes)
     all_neffs[i] = np.real([mode.n_eff for mode in modes])
     all_te_fracs[i, :] = [mode.te_fraction for mode in modes]
-# -
 
-# + tags=["hide-input"]
+# %% tags=["hide-input"]
 all_neffs = np.real(all_neffs)
 plt.xlabel("Width of waveguide / µm")
 plt.ylabel("Effective refractive index")
@@ -71,4 +69,3 @@ for lams, te_fracs in zip(all_neffs.T, all_te_fracs.T):
     plt.scatter(widths, lams, c=te_fracs, cmap="cool")
 plt.colorbar().set_label("TE fraction")
 plt.show()
-# -

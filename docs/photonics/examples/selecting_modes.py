@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.11.2
+#       jupytext_version: 1.15.0
 #   kernelspec:
 #     display_name: env_3.11
 #     language: python
@@ -16,7 +16,7 @@
 
 # %% [markdown]
 # # Selecting modes in the mode solver
-
+#
 # Sometimes we have structures where the mode of interest is
 # not the mode with the highest effective index. There are a few
 # ways to select modes of interest in femwell
@@ -38,7 +38,7 @@ from femwell.mesh import mesh_from_OrderedDict
 from femwell.utils import inside_bbox
 
 # %% [markdown]
-
+#
 # We will use as an example a system with a Si and a SiN sections.
 # This could happen, for example, in a system where we are trying
 # to heat a SiN waveguide with a Si resistor
@@ -113,9 +113,9 @@ epsilon[basis0.get_dofs(elements=("sin"))] = 1.973**2
 
 
 # %% [markdown]
-
+#
 # ## 0. Directly using femwell
-
+#
 # If we use `find_modes`, these are the modes we get:
 
 # %%
@@ -129,23 +129,23 @@ for mode in modes:
 print(f"The effective index of the SiN mode is {np.real(modes[2].n_eff)}")
 
 # %% [markdown]
-
+#
 # We can see how to get the SiN mode (which is the mode of
 # interest for us) we need to go to the third mode found by femwell.
-
+#
 # Are there easier ways to get the SiN modes? Yes!
 
 # %% [markdown]
-
+#
 # ## 1. Hack (not 100% accurate): Erasing the Si waveguide
-
+#
 # One thing we can do to find the SiN mode is to "erase" the Si
 # waveguide, or in other words assign the refractive index of SiO2
 # to the Si waveguide.
-
+#
 # Of course, this is in general not desired, because this way we are
 # missing the effect of the presence of the Si waveguide.
-
+#
 # thi smight not be an issue in this example but there's many
 # examples where this is not an acceptable option.
 
@@ -164,10 +164,10 @@ print(f"The effective index of the SiN mode is {np.real(modes[0].n_eff)}")
 
 # %% [markdown]
 # ## 2. Giving a guess effective index
-
+#
 # We can use the `n_guess` parameter to `compute_modes` to
 # select modes close to that effective index.
-
+#
 # This is great, but of course we need to know what's that guess
 # effective index. The way to do that would be to use option 1 above
 # and then use that as the n_guess.
@@ -185,23 +185,23 @@ for mode in modes:
 print(f"The effective index of the SiN mode is {np.real(modes[1].n_eff)}")
 
 # %% [markdown]
-
+#
 # You can see how using `n_guess` can still give the wrong mode!
 
 # %% [markdown]
-
+#
 # ## 3. Using `argsort_modes_by_power_in_elements`
-
+#
 # This allows to choose a mode that has the biggest overlap with
 # a given structure.
-
+#
 # There are two main ways to specify the structure:
 # 1. Using the name of the polygon of interest
 # 2. Giving a square bounding box of coordinates
-
+#
 # You can also give it directly the selection_basis of the
 # are of interest.
-
+#
 # A requirement for using `argsort_modes_by_power_in_elements` is to
 # calculate the H field of the found modes.
 
