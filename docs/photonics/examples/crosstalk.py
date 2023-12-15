@@ -38,7 +38,7 @@ from femwell.visualization import plot_domains
 # First, we precisely extract the refractive index of silicon at 1.55 um using a Lorentz fit:
 
 # %%
-si_data = np.loadtxt("../reference_data/palik_silicon.txt", skiprows=1)
+si_data = np.loadtxt("../reference_data/Palik/palik_silicon.txt", skiprows=1)
 c = 299792458  # m/s
 
 
