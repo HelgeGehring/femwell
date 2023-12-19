@@ -35,7 +35,7 @@ from femwell.mesh import mesh_from_OrderedDict
 # For the surrounding we buffer the core and clip it to the part above the waveguide for the air
 # Width is a sweep parameter from 50nm to 700nm
 
-# %%
+# %%  tags=["hide-output"]
 wavelength = 1.55
 capital_w = 1.4
 capital_h = 0.3
