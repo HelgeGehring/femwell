@@ -92,6 +92,32 @@ class Mode:
 
         return 1 - self.te_fraction
 
+    @cached_property
+    def transversality(self):
+        """TE-fraction of the mode"""
+
+        @Functional
+        def ex(w):
+            return np.abs(w.E[0][0]) ** 2
+
+        @Functional
+        def ey(w):
+            return np.abs(w.E[0][1]) ** 2
+
+        @Functional
+        def ez(w):
+            return np.abs(
+                w.E[0][0] * np.conj(w.E[0][0])
+                + w.E[0][1] * np.conj(w.E[0][1])
+                + w.E[1] * np.conj(w.E[1])
+            )
+
+        ex_sum = ex.assemble(self.basis, E=self.basis.interpolate(self.E))
+        ey_sum = ey.assemble(self.basis, E=self.basis.interpolate(self.E))
+        ez_sum = ez.assemble(self.basis, E=self.basis.interpolate(self.E))
+
+        return (ex_sum + ey_sum) / (ez_sum)
+
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(k: {self.k}, n_eff:{self.n_eff})"
 
