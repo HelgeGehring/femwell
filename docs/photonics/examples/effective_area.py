@@ -12,8 +12,7 @@
 #     name: python3
 # ---
 # %% [markdown]
-# # Effective area and effective refractive index of a Si-NCs waveguide from
-# https://opg.optica.org/ol/abstract.cfm?uri=ol-37-12-2295#:~:text=A%20simple%20and%20physically%20meaningful,of%20Si%2DNC%20slot%20waveguides.
+# # Effective area and effective refractive index of a Si-NCs waveguide from {cite}`Rukhlenko2012`.
 # %% tags=["hide-input"]
 from collections import OrderedDict
 
