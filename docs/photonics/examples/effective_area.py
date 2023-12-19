@@ -120,7 +120,7 @@ reference_neff_700nm = pd.read_csv(
     "../reference_data/Rukhlenko/fig_1c_neff/h_700nm.csv", dtype=np.float64
 )
 reference_aeff_700nm = pd.read_csv(
-    "../reference_data/Rukhlenko/fig_1b_aeff/0.7 Eq2.csv", dtype=np.float64
+    "../reference_data/Rukhlenko/fig_1b_aeff/0.7_Eq2.csv", dtype=np.float64
 )
 reference_tm_700nm = pd.read_csv(
     "../reference_data/Rukhlenko/fig_1c_neff/tm_h_700nm.csv", dtype=np.float64
