@@ -92,6 +92,32 @@ class Mode:
 
         return 1 - self.te_fraction
 
+    @cached_property
+    def transversality(self):
+        """TE-fraction of the mode"""
+
+        @Functional
+        def ex(w):
+            return np.abs(w.E[0][0]) ** 2
+
+        @Functional
+        def ey(w):
+            return np.abs(w.E[0][1]) ** 2
+
+        @Functional
+        def ez(w):
+            return np.abs(
+                w.E[0][0] * np.conj(w.E[0][0])
+                + w.E[0][1] * np.conj(w.E[0][1])
+                + w.E[1] * np.conj(w.E[1])
+            )
+
+        ex_sum = ex.assemble(self.basis, E=self.basis.interpolate(self.E))
+        ey_sum = ey.assemble(self.basis, E=self.basis.interpolate(self.E))
+        ez_sum = ez.assemble(self.basis, E=self.basis.interpolate(self.E))
+
+        return (ex_sum + ey_sum) / (ez_sum)
+
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(k: {self.k}, n_eff:{self.n_eff})"
 
@@ -110,6 +136,40 @@ class Mode:
             E_i=self.basis.interpolate(self.E),
             E_j=self.basis.interpolate(mode.E),
             delta_epsilon=self.basis_epsilon_r.interpolate(delta_epsilon),
+        )
+
+    def calculate_effective_area(self, field="xy"):
+        if field == "xy":
+
+            @Functional(dtype=complex)
+            def E2(w):
+                return dot(np.conj(w["E"][0]), w["E"][0])
+
+            @Functional(dtype=complex)
+            def E4(w):
+                return dot(np.conj(w["E"][0]), w["E"][0]) ** 2
+
+        else:
+            num = 0 if (field == "x") else 1
+
+            @Functional(dtype=complex)
+            def E2(w):
+                return np.conj(w["E"][0][num]) * w["E"][0][num]
+
+            @Functional(dtype=complex)
+            def E4(w):
+                return (np.conj(w["E"][0][num]) * w["E"][0][num]) ** 2
+
+        return np.real(
+            E2.assemble(
+                self.basis,
+                E=self.basis.interpolate(self.E),
+            )
+            ** 2
+            / E4.assemble(
+                self.basis,
+                E=self.basis.interpolate(self.E),
+            )
         )
 
     def calculate_propagation_loss(self, distance):
