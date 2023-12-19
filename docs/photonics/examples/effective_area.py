@@ -104,6 +104,8 @@ for h in h_list:
     tm_dict[str(h)] = tm_list
 # %% [markdown]
 # Plot the result
+
+# %%
 reference_neff_500nm = pd.read_csv(
     "../reference_data/Rukhlenko/fig_1c_neff/h_500nm.csv", dtype=np.float64
 )
