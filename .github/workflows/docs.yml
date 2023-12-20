@@ -72,7 +72,7 @@ jobs:
           PYTHON_JULIAPKG_PROJECT=~/work/femwell/femwell PYTHON_JULIAPKG_OFFLINE=yes jupyter-book build docs/
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: './docs/_build/html/'
 
