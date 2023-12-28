@@ -175,6 +175,26 @@ class Mode:
     def calculate_propagation_loss(self, distance):
         return -20 / np.log(10) * self.k0 * np.imag(self.n_eff) * distance
 
+    def calculate_poynting(self):
+        """Poynting vector of the mode"""
+
+        # Extraction of the fields
+        (Ex, Ey), Ez = self.basis.interpolate(self.E)
+        (Hx, Hy), Hz = self.basis.interpolate(self.H)
+        new_basis = self.basis.with_element(ElementDG(ElementTriP1()))
+
+        # Calculation of the Poynting vector
+        Px = Ey * Hz - Ez * Hy
+        Py = Ez * Hx - Ex * Hz
+        Pz = Ex * Hy - Ey * Hx
+
+        # Projection of the Poynting vector on the new basis
+        Px_proj = new_basis.project(Px, dtype=np.complex64)
+        Py_proj = new_basis.project(Py, dtype=np.complex64)
+        Pz_proj = new_basis.project(Pz, dtype=np.complex64)
+
+        return new_basis, np.array([Px_proj, Py_proj, Pz_proj])
+
     def calculate_power(self, elements=None):
         if not elements:
             basis = self.basis
