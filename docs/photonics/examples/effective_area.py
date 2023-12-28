@@ -208,24 +208,32 @@ basis_fig_f, P_fig_f = p_dict[str(h_fig_f)][idx_fig_f]
 fig, ax = plt.subplots(1, 2)
 
 basis_fig_h.plot(np.abs(P_fig_h[2]), ax=ax[0], aspect="equal")
-ax[0].set_title(f"Poynting vector $S_z$\nfor h = {h_fig_h}μm & w = {w_fig_h}nm\n(Reproduction of Fig.1.h)")
-ax[0].set_xlim(-w_fig_h*1e-3/2 - 0.1, w_fig_h*1e-3/2 + 0.1)
+ax[0].set_title(
+    f"Poynting vector $S_z$\nfor h = {h_fig_h}μm & w = {w_fig_h}nm\n(Reproduction of Fig.1.h)"
+)
+ax[0].set_xlim(-w_fig_h * 1e-3 / 2 - 0.1, w_fig_h * 1e-3 / 2 + 0.1)
 ax[0].set_ylim(capital_h - 0.1, capital_h + h_fig_h + 0.1)
 # Turn off the axis wrt to the article figure
-ax[0].axis('off')
+ax[0].axis("off")
 # Add the contour
 for subdomain in basis_fig_h.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
-    basis_fig_h.mesh.restrict(subdomain).draw(ax=ax[0], boundaries_only=True, color="k", linewidth=1.0)
+    basis_fig_h.mesh.restrict(subdomain).draw(
+        ax=ax[0], boundaries_only=True, color="k", linewidth=1.0
+    )
 
 basis_fig_f.plot(np.abs(P_fig_f[2]), ax=ax[1], aspect="equal")
-ax[1].set_title(f"Poynting vector $S_z$\nfor h = {h_fig_f}μm & w = {w_fig_f}nm\n(Reproduction of Fig.1.f)")
-ax[1].set_xlim(-w_list[idx_fig_f]*1e-3/2 - 0.1, w_list[idx_fig_f]*1e-3/2 + 0.1)
+ax[1].set_title(
+    f"Poynting vector $S_z$\nfor h = {h_fig_f}μm & w = {w_fig_f}nm\n(Reproduction of Fig.1.f)"
+)
+ax[1].set_xlim(-w_list[idx_fig_f] * 1e-3 / 2 - 0.1, w_list[idx_fig_f] * 1e-3 / 2 + 0.1)
 ax[1].set_ylim(capital_h - 0.1, capital_h + h_fig_f + 0.1)
 # Turn off the axis wrt to the article figure
-ax[1].axis('off')
+ax[1].axis("off")
 # Add the contour
 for subdomain in basis_fig_f.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
-    basis_fig_f.mesh.restrict(subdomain).draw(ax=ax[1], boundaries_only=True, color="k", linewidth=1.0)
+    basis_fig_f.mesh.restrict(subdomain).draw(
+        ax=ax[1], boundaries_only=True, color="k", linewidth=1.0
+    )
 
 fig.tight_layout()
 plt.show()
