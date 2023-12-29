@@ -199,7 +199,6 @@ class Mode:
     def calculate_propagation_loss(self, distance):
         return -20 / np.log(10) * self.k0 * np.imag(self.n_eff) * distance
 
-
     def calculate_power(self, elements=None):
         if not elements:
             basis = self.basis
@@ -357,7 +356,8 @@ def compute_modes(
     elif order == 2:
         # element = ElementTriN2() * ElementTriP2()
         from skfem.element import ElementQuad2
-        element = ElementTriN2() * ElementQuad2#ElementTriP2()
+
+        element = ElementTriN2() * ElementQuad2  # ElementTriP2()
     else:
         raise AssertionError("Only order 1 and 2 implemented by now.")
 
