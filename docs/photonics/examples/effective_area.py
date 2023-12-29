@@ -97,7 +97,7 @@ for h in h_list:
                 neff_list.append(np.real(mode.n_eff))
                 aeff_list.append(mode.calculate_effective_area())
                 tm_list.append(mode.transversality)
-                p_list.append(mode.calculate_poynting())
+                p_list.append(mode.poynting)
                 break
         else:
             print(f"no TM mode found for {width}")
