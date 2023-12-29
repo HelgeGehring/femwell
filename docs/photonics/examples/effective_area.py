@@ -97,7 +97,7 @@ for h in h_list:
                 neff_list.append(np.real(mode.n_eff))
                 aeff_list.append(mode.calculate_effective_area())
                 tm_list.append(mode.transversality)
-                p_list.append(mode.poynting)
+                p_list.append(mode.Pz)
                 break
         else:
             print(f"no TM mode found for {width}")
@@ -197,17 +197,17 @@ plt.show()
 w_fig_h = 500
 idx_fig_h = min(range(len(w_list)), key=lambda x: abs(w_list[x] - w_fig_h))
 h_fig_h = 0.7
-basis_fig_h, P_fig_h = p_dict[str(h_fig_h)][idx_fig_h]
+basis_fig_h, Pz_fig_h = p_dict[str(h_fig_h)][idx_fig_h]
 
 # Data figure f
 w_fig_f = 600
 idx_fig_f = min(range(len(w_list)), key=lambda x: abs(w_list[x] - w_fig_f))
 h_fig_f = 0.5
-basis_fig_f, P_fig_f = p_dict[str(h_fig_f)][idx_fig_f]
+basis_fig_f, Pz_fig_f = p_dict[str(h_fig_f)][idx_fig_f]
 
 fig, ax = plt.subplots(1, 2)
 
-basis_fig_h.plot(np.abs(P_fig_h[2]), ax=ax[0], aspect="equal")
+basis_fig_h.plot(np.abs(Pz_fig_h), ax=ax[0], aspect="equal")
 ax[0].set_title(
     f"Poynting vector $S_z$\nfor h = {h_fig_h}μm & w = {w_fig_h}nm\n(Reproduction of Fig.1.h)"
 )
@@ -221,7 +221,7 @@ for subdomain in basis_fig_h.mesh.subdomains.keys() - {"gmsh:bounding_entities"}
         ax=ax[0], boundaries_only=True, color="k", linewidth=1.0
     )
 
-basis_fig_f.plot(np.abs(P_fig_f[2]), ax=ax[1], aspect="equal")
+basis_fig_f.plot(np.abs(Pz_fig_f), ax=ax[1], aspect="equal")
 ax[1].set_title(
     f"Poynting vector $S_z$\nfor h = {h_fig_f}μm & w = {w_fig_f}nm\n(Reproduction of Fig.1.f)"
 )

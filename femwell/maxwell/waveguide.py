@@ -94,6 +94,21 @@ class Mode:
         return poynting_basis, np.array([Px_proj, Py_proj, Pz_proj])
 
     @cached_property
+    def Px(self):
+        basis, _P = self.poynting
+        return basis, _P[0]
+
+    @cached_property
+    def Py(self):
+        basis, _P = self.poynting
+        return basis, _P[1]
+
+    @cached_property
+    def Pz(self):
+        basis, _P = self.poynting
+        return basis, _P[2]
+
+    @cached_property
     def te_fraction(self):
         """TE-fraction of the mode"""
 
