@@ -181,6 +181,9 @@ class Mode:
         # Extraction of the fields
         (Ex, Ey), Ez = self.basis.interpolate(self.E)
         (Hx, Hy), Hz = self.basis.interpolate(self.H)
+
+        # New basis will be the discontinuous variant used by the solved Ez-field
+        (Et, Et_basis), (En, En_basis) = self.basis.split(self.E)
         new_basis = self.basis.with_element(ElementDG(ElementTriP1()))
 
         # Calculation of the Poynting vector
@@ -350,7 +353,9 @@ def compute_modes(
     if order == 1:
         element = ElementTriN1() * ElementTriP1()
     elif order == 2:
-        element = ElementTriN2() * ElementTriP2()
+        # element = ElementTriN2() * ElementTriP2()
+        from skfem.element import ElementQuad2
+        element = ElementTriN2() * ElementQuad2#ElementTriP2()
     else:
         raise AssertionError("Only order 1 and 2 implemented by now.")
 
