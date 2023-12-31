@@ -78,8 +78,7 @@ class Mode:
         (Hx, Hy), Hz = self.basis.interpolate(self.H)
 
         # New basis will be the discontinuous variant used by the solved Ez-field
-        (Et, Et_basis), (En, En_basis) = self.basis.split(self.E)
-        poynting_basis = self.basis.with_element(ElementDG(ElementTriP1()))
+        poynting_basis = self.basis.with_element(ElementDG(self.basis.elem.elems[1]))
 
         # Calculation of the Poynting vector
         Px = Ey * Hz - Ez * Hy
