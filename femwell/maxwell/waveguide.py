@@ -369,10 +369,7 @@ def compute_modes(
     if order == 1:
         element = ElementTriN1() * ElementTriP1()
     elif order == 2:
-        # element = ElementTriN2() * ElementTriP2()
-        from skfem.element import ElementQuad2
-
-        element = ElementTriN2() * ElementQuad2  # ElementTriP2()
+        element = ElementTriN2() * ElementTriP2()
     else:
         raise AssertionError("Only order 1 and 2 implemented by now.")
 
