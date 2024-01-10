@@ -96,8 +96,50 @@ $$\begin{aligned}
     \mathbf{\nabla}\times\mathbf{H}\left(\mathbf{r},t\right) &=& \mathbf{J}_{\text{ext}}\left(\mathbf{r},t\right) + \varepsilon \frac{\partial \mathbf{E}\left(\mathbf{r},t\right)} {\partial t} \,.
 \end{aligned}$$
 
+## Wave equation
+
+From Maxwell's equation equations we can derive the wave equation. We start in the simplest case when there are no external sources, i.e., we set $\rho = 0$ and $\vec{J}=0$ and assume homogeneous $\varepsilon$ and $\mu$. Now we combine two of Maxwell's equations, namely $\vec{\nabla}\times \vec{E} = - \mu \frac{\partial \vec{H}}{\partial t}$ and
+$\varepsilon \vec{\nabla}\times \vec{H} = \frac{\partial \vec{E}}{\partial t}$ in the
+following way 
+
+$$\begin{aligned}
+    \vec{\nabla}\times \vec{\nabla}\times \vec{E} = \vec{\nabla}\times \left( - \mu \frac{\partial H}{\partial t}\right) = 
+        -\mu \varepsilon \frac{\partial^2 \vec{E}}{\partial t^2} 
+\end{aligned}$$ 
+
+For the rotation we can use the known vector identity for the nable opertaor $\vec{\nabla}\times \vec{\nabla}\times \vec{E} =  \vec{\nabla} (\vec{\nabla}\cdot \vec{E}) - \Delta \vec{E}$.
+We can further make use of Maxwell's equation that $\vec{\nabla} \vec{E} = 0$ in the case without sources. This leads us to the wave equation
+
+$$\begin{aligned}
+    \Delta \vec{E} - \frac{1}{c_{n}} \frac{\partial^2 \vec{E}}{\partial t^2} =0
+\end{aligned}$$
+
+We have introduced the important relation that the
+light velocity in a medium is given by $c_n=1/\sqrt{\varepsilon\mu}$. In
+vacuum, we obtain the speed of light $c_n=1/\sqrt{\varepsilon_0\mu_0}$,
+while in matter the velocity is reduced by the refractive index via
+$c_n=c/n$.
+
+Solutions of the wave equation can be given in the basis of
+monochromatic plane waves 
+
+$$\begin{aligned}
+    \vec{E} &=& \vec{E}_0 \cos(\vec{k} \cdot \vec{r} - \omega t + \varphi) \,, \notag 
+\end{aligned}$$ 
+
+Here, $\vec{k}$ is the wave vector and indicates the propagation direction. $E_0$ is the amplitude of the wave. Because of Maxwell's equation in free space, all waves are transversal, i.e., the
+amplitude vector is perpendicular to the propagation direction $\vec{E}_0 \perp \vec{k}$. Note that this can be different in matter, in particular for nanostructured systems. The frequency is denoted by $\omega$ and there can be an additional phase $\phi$.
+
+In many situations it is useful to write the solution as complex light
+field 
+
+$$\begin{aligned}
+    \vec{E} &=& \vec{\tilde{E}}_0 e^{i(\vec{k} \cdot \vec{r}- \omega t  + \varphi)} \,
+\end{aligned}$$
+
+
 ### Interface between piecewise constant materials 
-It is instructive to condsider the well-known case of an interface $I$ between two dielectric materials, which appear in many devices. We assume an interface between two materials called $1$ with dielectric constant $\varepsilon_1$ and $2$ with dielectric constant $\varepsilon_2$. The surface is defined by the normal vector of the interface $\mathbf{n}_{I}$ and there are no external surface charges or currents. For simplicity, we surpress the dependencies $\left(\mathbf{r},t\right)$ here. 
+It is instructive to consider the well-known case of an interface $I$ between two dielectric materials, which appear in many devices. We assume an interface between two materials called $1$ with dielectric constant $\varepsilon_1$ and $2$ with dielectric constant $\varepsilon_2$. The surface is defined by the normal vector of the interface $\mathbf{n}_{I}$ and there are no external surface charges or currents. For simplicity, we surpress the dependencies $\left(\mathbf{r},t\right)$ here. 
 
 All fields can then be split into the component parallel to the interface (hence perpendicular to the normal vector) and perpendicular to the interface (hence parallel to the normal vector). For example we consider the electric field: Define the normalized field vector $\hat{\mathbf{E}}=\mathbf{E}/E$ we split it into
 
