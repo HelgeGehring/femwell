@@ -78,7 +78,9 @@ class Mode:
         (Hx, Hy), Hz = self.basis.interpolate(self.H)
 
         # New basis will be the discontinuous variant used by the solved Ez-field
-        poynting_basis = self.basis.with_element(ElementDG(self.basis.elem.elems[1]))
+        poynting_basis = self.basis.with_element(
+            ElementVector(ElementDG(self.basis.elem.elems[1]), 3)
+        )
 
         # Calculation of the Poynting vector
         Px = Ey * Hz - Ez * Hy
@@ -86,26 +88,24 @@ class Mode:
         Pz = Ex * Hy - Ey * Hx
 
         # Projection of the Poynting vector on the new basis
-        Px_proj = poynting_basis.project(Px, dtype=np.complex64)
-        Py_proj = poynting_basis.project(Py, dtype=np.complex64)
-        Pz_proj = poynting_basis.project(Pz, dtype=np.complex64)
+        P_proj = poynting_basis.project(np.stack([Px, Py, Pz], axis=0), dtype=np.complex64)
 
-        return poynting_basis, np.array([Px_proj, Py_proj, Pz_proj])
+        return poynting_basis, P_proj
 
     @cached_property
     def Px(self):
         basis, _P = self.poynting
-        return basis, _P[0]
+        return basis.split_bases()[0], _P[basis.split_indices()[0]]
 
     @cached_property
     def Py(self):
         basis, _P = self.poynting
-        return basis, _P[1]
+        return basis.split_bases()[1], _P[basis.split_indices()[1]]
 
     @cached_property
     def Pz(self):
         basis, _P = self.poynting
-        return basis, _P[2]
+        return basis.split_bases()[2], _P[basis.split_indices()[2]]
 
     @cached_property
     def te_fraction(self):
