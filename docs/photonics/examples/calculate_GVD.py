@@ -37,50 +37,55 @@ from tqdm import tqdm
 # %%
 
 
-width = 0.88 # um
-height = 0.69 # um
+width = 0.88  # um
+height = 0.69  # um
 
-wavelength_range = [500,2500]
+wavelength_range = [500, 2500]
 wavelegnth_step = 50
 
 # Construct waveguide geometry
-core = shapely.geometry.box(-width/2, 0, +width/2, height)
-cladding = shapely.geometry.box(-width*2, 0, width*2, height*3)
-buried_oxide = shapely.geometry.box(-width*2,-height*2,width*2,0)
+core = shapely.geometry.box(-width / 2, 0, +width / 2, height)
+cladding = shapely.geometry.box(-width * 2, 0, width * 2, height * 3)
+buried_oxide = shapely.geometry.box(-width * 2, -height * 2, width * 2, 0)
 polygon = OrderedDict(
-    core = core,
-    cladding = cladding,
-    buried_oxide = buried_oxide,
+    core=core,
+    cladding=cladding,
+    buried_oxide=buried_oxide,
 )
 
 # Define material property and resolution of waveguide
 resolutions = dict(core={"resolution": 0.02, "distance": 0.3},
                    cladding={"resolution": 0.05, "distance": 0.3},
-                   buried_oxide={"resolution": 0.05, "distance": 0.3} )
+                   buried_oxide={"resolution": 0.05, "distance": 0.3})
 
 mesh = from_meshio(mesh_from_OrderedDict(polygon, resolutions, default_resolution_max=2))
 mesh.draw().show()
 plot_domains(mesh)
 plt.show()
 
+
 # %% [markdown]
 # Use sellmeier equation to determine the refractive index of material.
 
 # %%
-def n_Si3N4(wavelength, fit = False):
+def n_Si3N4(wavelength, fit=False):
     if wavelength >= 0.31 and wavelength <= 5.507:
         return math.sqrt(
-                (3.0249 * wavelength ** 2) / (wavelength ** 2 - 0.1353406 ** 2) + (40314 * wavelength ** 2) / (
-                        wavelength ** 2 - 1239.842 ** 2) + 1)
+            (3.0249 * wavelength ** 2) / (wavelength ** 2 - 0.1353406 ** 2) + (40314 * wavelength ** 2) / (
+                    wavelength ** 2 - 1239.842 ** 2) + 1)
     else:
         raise ValueError(f"wavelength provided is {wavelength}um, is out of the range for Si3N4")
+
 
 def n_SiO2(wavelength):
     if wavelength < 0.21 or wavelength > 6.7:
         raise ValueError(f"wavelength provided is {wavelength}um, is out of the range for {type}")
-    return np.sqrt( 0.6961663* wavelength**2/(wavelength**2 - 0.0684043**2)+(0.4079426*wavelength**2/(wavelength**2-0.1162414**2))+(0.8974794*wavelength**2/(wavelength**2-9.896161**2))+1)
+    return np.sqrt(0.6961663 * wavelength ** 2 / (wavelength ** 2 - 0.0684043 ** 2) + (
+            0.4079426 * wavelength ** 2 / (wavelength ** 2 - 0.1162414 ** 2)) + (
+                           0.8974794 * wavelength ** 2 / (wavelength ** 2 - 9.896161 ** 2)) + 1)
 
-n_dict = {"core": n_Si3N4,"cladding":n_SiO2 ,"buried_oxide": n_SiO2}
+
+n_dict = {"core": n_Si3N4, "cladding": n_SiO2, "buried_oxide": n_SiO2}
 
 # %% [markdown]
 # Create the mesh, and sweep wavelength using the same mesh. The target mode is te mode, so the mode is selected by highest te fraction
@@ -108,40 +113,40 @@ for wavelength in tqdm(wavelength_list):
 # Calculate the GVD by fitting a curve for wavelength vs neff. Then take second derivative of the curve
 # %%
 
-y_spl = UnivariateSpline(wavelength_list,neff_list,s=0,k=3)
-x_range = np.linspace(wavelength_list[0],wavelength_list[-1],1000)
+y_spl = UnivariateSpline(wavelength_list, neff_list, s=0, k=3)
+x_range = np.linspace(wavelength_list[0], wavelength_list[-1], 1000)
 y_spl_2d = y_spl.derivative(n=2)
 
 # Plot the result
-fig, axs = plt.subplots(3, 1, figsize=(9,20))
+fig, axs = plt.subplots(3, 1, figsize=(9, 20))
 
 axs[0].set_xlabel("Wavelength / nm")
 axs[0].set_ylabel("neff")
 axs[0].set_title(" neff vs wavelength fit")
-axs[0].semilogy(x_range,y_spl(x_range))
-axs[0].semilogy(wavelength_list,neff_list,'ro',label = 'data')
+axs[0].semilogy(x_range, y_spl(x_range))
+axs[0].semilogy(wavelength_list, neff_list, 'ro', label='data')
 axs[0].legend()
-axs[0].set_xlim(500,2200)
+axs[0].set_xlim(500, 2200)
 
 axs[1].set_xlabel("Wavelength / nm")
 axs[1].set_ylabel("neff''")
 axs[1].set_title("wavelength vs second derivative of neff")
-axs[1].plot(x_range,y_spl_2d(x_range))
-axs[1].set_xlim(500,2200)
+axs[1].plot(x_range, y_spl_2d(x_range))
+axs[1].set_xlim(500, 2200)
 
-#----plot reference data-------
+# ----plot reference data-------
 ref_gvd = pd.read_csv("../reference_data/Klenner/GVD.csv", dtype=np.float64)
 ref_gvd_x, ref_gvd_y = np.split(ref_gvd.values, 2, axis=1)
-axs[2].plot(ref_gvd_x, ref_gvd_y, c="green", label = "paper")
+axs[2].plot(ref_gvd_x, ref_gvd_y, c="green", label="paper")
 
-#----Calculate and plot GVD
-GVD=(-wavelength_list/(2.99792e-7 ) * y_spl_2d(wavelength_list))
-axs[2].scatter(wavelength_list, GVD, label = "calculated", c="red")
+# ----Calculate and plot GVD
+GVD = (-wavelength_list / (2.99792e-7) * y_spl_2d(wavelength_list))
+axs[2].scatter(wavelength_list, GVD, label="calculated", c="red")
 
 axs[2].set_ylabel("GVD")
 axs[2].set_xlabel("Wavelength / nm")
-axs[2].set_ylim(-1000,200)
-axs[2].set_xlim(500,2200)
+axs[2].set_ylim(-1000, 200)
+axs[2].set_xlim(500, 2200)
 axs[2].set_title("GVD paramter")
 axs[2].legend()
 
