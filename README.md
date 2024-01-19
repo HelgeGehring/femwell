@@ -61,6 +61,7 @@ Something missing? Feel free to open an [issue](https://github.com/HelgeGehring/
 - Rouven Glauert (Idalab)
 - Markus DeMartini (Google)
 - Lucas Grosjean (Google, Femto-ST Institute)
+- Eliza Leung (University of Adelaide)
 
 Happy about every form of contribution -
 pull requests, feature requests, issues, questions, ... :)
