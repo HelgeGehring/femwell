@@ -19,6 +19,7 @@
 
 # %% tags=["remove-stderr", "hide-input", "hide-output"]
 using CairoMakie
+using GridapMakie
 using Printf
 
 using Gridap
@@ -31,6 +32,46 @@ using Femwell.Thermal
 
 dir = @__DIR__
 run(`python $dir/heater_3d_mesh.py`)
+
+# %% [markdown]
+# We can visualize the mesh using GridapMakie:
+
+# %% tags=["remove-stderr", "hide-input", "hide-output"]
+function visualize_mesh(model::DiscreteModel)
+    volume_tags = ["box","core","heater","via2","via1","metal3","metal2","metal3#e1","metal3#e2"]
+    colors = ["grey", "black","orange","green", "green", "brown", "brown", "blue", "blue"]
+    alphas = [1.0, 1.0, 0.2, 0.5, 0.5, 0.1, 0.1, 0.5, 0.5]
+    fig = Figure(fontsize=20)
+    xlims = (-20e-6, 60e-6)
+    ylims = (-5e-6, 5e-6)
+    zlims = (-5e-6, 5e-6)
+    aspect = (xlims[2]-xlims[1])/(ylims[2]-ylims[1])
+    tickfunc = values->(x->string(x*1e6)).(values)
+
+    # Mesh
+    ∂Ω = BoundaryTriangulation(model, tags=volume_tags)
+    ax = fig[1,2] = Axis3(
+        fig[1,2], aspect=(aspect, 1.0, 1.0), 
+        xlabel="x (μm)", ylabel="\ny (μm)", zlabel="z (μm)\n\n", title="Heater Mesh",
+        limits=(xlims, ylims, zlims), titlesize=28,
+        xtickformat=tickfunc, ytickformat=tickfunc, ztickformat=tickfunc,
+        azimuth=51/40 * pi + pi/20, elevation=pi/8 + pi / 10
+    )
+    plt = plot!(fig[1,2], ∂Ω, shading=true, title="Mesh", fontsize=20)
+    for (i, tag) in enumerate(volume_tags)
+        ∂Ω_region = BoundaryTriangulation(model, tags=[tag])
+        wireframe!(∂Ω_region, color=(colors[i], alphas[i]), linewidth=0.1, fontsize=20)
+    end
+    wf = [PolyElement(color=color) for color in colors]
+    Legend(fig[1,1], wf, volume_tags, halign=:left, valign=:top, framevisible=false, labelsize=20)
+
+    return fig
+end
+
+# %% tags=["remove-stderr"]
+model = GmshDiscreteModel("mesh.msh")
+fig = visualize_mesh(model)
+display(fig)
 
 # %% [markdown]
 # Let's start with defining the constants for the simulation:
@@ -77,7 +118,6 @@ thermal_diffisitivities = [
 # and create functions which work on the tags
 
 # %% tags=["remove-stderr", "hide-output"]
-model = GmshDiscreteModel("mesh.msh")
 Ω = Triangulation(model)
 dΩ = Measure(Ω, 1)
 
@@ -135,7 +175,55 @@ println(
 )
 
 # %% [markdown]
-# And we write the fields to a file for visualisation using paraview:
+# And we plot the fields using GridapMakie:
+
+# %% tags=["remove-stderr", "hide-input", "hide-output"]
+function plot_fields(model, potential, current_density, temperature, heat_flux)
+
+    # Set up figure
+    volume_tags = ["box","core","heater","via2","via1","metal3","metal2","metal3#e1","metal3#e2"]
+    fontsize = 10
+    fig = Figure(fontsize=fontsize, resolution=(800, 500))
+    xlims = (-20e-6, 60e-6)
+    ylims = (-5e-6, 5e-6)
+    zlims = (-5e-6, 5e-6)
+    aspect = (xlims[2]-xlims[1])/(ylims[2]-ylims[1])
+    tickfunc = values->(x->string(x*1e6)).(values)
+
+    # Set up four quadrants
+    g11 = fig[1, 1] = GridLayout()
+    g12 = fig[1, 2] = GridLayout()
+    g21 = fig[2, 1] = GridLayout()
+    g22 = fig[2, 2] = GridLayout()
+
+    # Plot fields
+    gs = [g11, g12, g21, g22]
+    fs = [potential, current_density, temperature, heat_flux]
+    labels = ["Potential", "Current", "Temperature", "Heat Flux"]
+    cmaps = [:viridis, :viridis, Reverse(:RdBu), Reverse(:RdBu)]
+    cranges = [(0, 0.5), (0, 1.75e10), (0, 120.0), (3.0e4, 4e9)]
+    Ω = Triangulation(model, tags=volume_tags)
+    for (g, f, label, cmap, crange) ∈ zip(gs, fs, labels, cmaps, cranges)
+        Axis3(
+            g[1,1], aspect=(aspect, 1.0, 1.0), 
+            xlabel="x (μm)", ylabel="y (μm)", zlabel="z (μm)", title=label,
+            limits=(xlims, ylims, zlims), titlesize=18,
+            xtickformat=tickfunc, ytickformat=tickfunc, ztickformat=tickfunc,
+            azimuth=51/40 * pi + pi/20, elevation=pi/8 + pi / 10
+        )
+        plt = plot!(g[1,1], Ω, f, shading=true, colorrange=crange, colormap=cmap, fontsize=fontsize)
+        Colorbar(g[1,2], plt, label=label, vertical=true, flipaxis = false)
+        colsize!(g, 1, Aspect(1, 1.25))
+    end
+    return fig
+end
+
+# %% tags=["remove-stderr"]
+fig = plot_fields(model, potential(p0), current_density(p0), temperature(T0), heat_flux(T0))
+display(fig)
+
+# %% [markdown]
+# Alternatively, we write the fields to a file for visualisation using paraview:
 
 # %% tags=["remove-stderr", "hide-output"]
 writevtk(
