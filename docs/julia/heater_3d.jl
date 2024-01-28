@@ -206,7 +206,7 @@ function plot_fields(model, potential, current_density, temperature, heat_flux)
     for (g, f, label, cmap, crange) ∈ zip(gs, fs, labels, cmaps, cranges)
         Axis3(
             g[1,1], aspect=(aspect, 1.0, 1.0), 
-            xlabel="x (μm)", ylabel="\ny (μm)", zlabel="z (μm)\n", title=label,
+            xlabel="x (μm)", ylabel="\ny (μm)", zlabel="z (μm)\n\n", title=label,
             limits=(xlims, ylims, zlims), titlesize=18*2,
             xtickformat=tickfunc, ytickformat=tickfunc, ztickformat=tickfunc,
             azimuth=51/40 * pi + pi/20, elevation=pi/8 + pi / 10
@@ -277,7 +277,7 @@ function plot_time(uₕₜ::Gridap.ODEs.TransientFETools.TransientFESolution; la
     timetitle = lift(time -> label * @sprintf("   t = %.2f ms", time * 1e3), t_uh_time)
     Axis3(
         fig[1,1], aspect=(aspect, 1.0, 1.0), 
-        xlabel="x (μm)", ylabel="y (μm)", zlabel="z (μm)", title=timetitle,
+        xlabel="x (μm)", ylabel="\ny (μm)", zlabel="z (μm)", title=timetitle,
         limits=(xlims, ylims, zlims),
         xtickformat=tickfunc, ytickformat=tickfunc, ztickformat=tickfunc,
         azimuth=51/40 * pi + pi/20, elevation=pi/8 + pi / 10
