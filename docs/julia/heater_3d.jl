@@ -287,7 +287,6 @@ function plot_time(uₕₜ::Gridap.ODEs.TransientFETools.TransientFESolution; la
     u = lift(t_uh_time) do t
         while (time[1] < t) || (time[1] ≈ t)
             if time[1] ≈ t
-                @show time[1]
                 return uh[1]
             end
             it = iterate(uₕₜ, state[1])
