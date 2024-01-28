@@ -69,7 +69,7 @@ function visualize_mesh(model::DiscreteModel)
 end
 
 # %% tags=["remove-stderr"]
-model = GmshDiscreteModel("mesh.msh")
+model = GmshDiscreteModel("$dir/mesh.msh")
 fig = visualize_mesh(model)
 display(fig)
 
@@ -182,8 +182,8 @@ function plot_fields(model, potential, current_density, temperature, heat_flux)
 
     # Set up figure
     volume_tags = ["box","core","heater","via2","via1","metal3","metal2","metal3#e1","metal3#e2"]
-    fontsize = 10
-    fig = Figure(fontsize=fontsize, resolution=(800, 500))
+    fontsize = 10*2
+    fig = Figure(fontsize=fontsize, resolution=(800*2, 500*2))
     xlims = (-20e-6, 60e-6)
     ylims = (-5e-6, 5e-6)
     zlims = (-5e-6, 5e-6)
@@ -206,8 +206,8 @@ function plot_fields(model, potential, current_density, temperature, heat_flux)
     for (g, f, label, cmap, crange) ∈ zip(gs, fs, labels, cmaps, cranges)
         Axis3(
             g[1,1], aspect=(aspect, 1.0, 1.0), 
-            xlabel="x (μm)", ylabel="y (μm)", zlabel="z (μm)", title=label,
-            limits=(xlims, ylims, zlims), titlesize=18,
+            xlabel="x (μm)", ylabel="\ny (μm)", zlabel="z (μm)\n", title=label,
+            limits=(xlims, ylims, zlims), titlesize=18*2,
             xtickformat=tickfunc, ytickformat=tickfunc, ztickformat=tickfunc,
             azimuth=51/40 * pi + pi/20, elevation=pi/8 + pi / 10
         )
@@ -228,7 +228,7 @@ display(fig)
 # %% tags=["remove-stderr", "hide-output"]
 writevtk(
     Ω,
-    "results",
+    "$dir/results",
     cellfields = [
         "potential" => potential(p0),
         "current" => current_density(p0),
@@ -252,6 +252,69 @@ ax = Axis(
     xlabel = "Time / ms",
 )
 
+# %% [markdown]
+# We can plot the transient 
+# %% tags=["remove-stderr", "hide-input", "hide-output"]
+function plot_time(uₕₜ::Gridap.ODEs.TransientFETools.TransientFESolution; label="")
+    # Set up figure
+    volume_tags = ["box","core","heater","via2","via1","metal3","metal2","metal3#e1","metal3#e2"]
+    fig = Figure()
+    xlims = (-20e-6, 60e-6)
+    ylims = (-5e-6, 5e-6)
+    zlims = (-5e-6, 5e-6)
+    aspect = (xlims[2]-xlims[1])/(ylims[2]-ylims[1])
+    tickfunc = values->(x->string(x*1e6)).(values)
+    Ω = Triangulation(model, tags=volume_tags)
+    fig = Figure()
+
+    # Set up axis
+    it = iterate(uₕₜ)
+    uh = Any[nothing]
+    time = Any[nothing]
+    state = Any[nothing]
+    (uh[1], time[1]), state[1] = it
+    t_uh_time = Observable(time[1])
+    timetitle = lift(time -> label * @sprintf("   t = %.2f ms", time * 1e3), t_uh_time)
+    Axis3(
+        fig[1,1], aspect=(aspect, 1.0, 1.0), 
+        xlabel="x (μm)", ylabel="y (μm)", zlabel="z (μm)", title=timetitle,
+        limits=(xlims, ylims, zlims),
+        xtickformat=tickfunc, ytickformat=tickfunc, ztickformat=tickfunc,
+        azimuth=51/40 * pi + pi/20, elevation=pi/8 + pi / 10
+    )
+
+    # Plot new iteration
+    u = lift(t_uh_time) do t
+        while (time[1] < t) || (time[1] ≈ t)
+            if time[1] ≈ t
+                @show time[1]
+                return uh[1]
+            end
+            it = iterate(uₕₜ, state[1])
+            if isnothing(it)
+                return uh[1]
+            end
+            (uh[1], time[1]), state[1] = it
+        end
+        return uh[1]
+    end
+
+    # Create the actual plot
+    plt = plot!(fig[1,1], Ω, u, shading=true, colorrange=(0, 110.0), colormap=Reverse(:RdBu))
+    Colorbar(fig[1,2], plt, vertical=true, label="Temperature (K)")
+    colsize!(fig.layout, 1, Aspect(1, 1.0))
+    t_uh_time, fig
+end
+
+# %% [markdown]
+# Here we set the parameters for the transient simulation
+# %% tags=["remove-stderr", "hide-output"]
+Δt = 2e-7
+t_end = 2e-4
+plot_every = 200
+timestamps = collect(Δt:Δt*plot_every:t_end)
+total_render_time = 5.0
+fps = ceil(Int, length(timestamps) / total_render_time)
 for (label, power_factor, temperature_factor) in [("heatup", 1, 0), ("cooldown", 0, 1)]
     uₕₜ = calculate_temperature_transient(
         ϵ_conductivities ∘ τ,
@@ -259,10 +322,17 @@ for (label, power_factor, temperature_factor) in [("heatup", 1, 0), ("cooldown",
         power_density(p0) * power_factor,
         boundary_temperatures,
         temperature(T0) * temperature_factor,
-        2e-7,
-        2e-4,
+        Δt,
+        t_end,
     )
 
+    # Create animation
+    t_uh_time, fig = plot_time(uₕₜ; label)
+    record(fig, "$dir/animation-$label.gif", timestamps, framerate=fps) do this_t
+        t_uh_time[] = this_t
+    end
+
+    # Optionally write the solution to a file
     #createpvd("poisson_transient_solution_$label") do pvd
     #    for (uₕ, t) in uₕₜ
     #        pvd[t] = createvtk(
@@ -278,6 +348,14 @@ for (label, power_factor, temperature_factor) in [("heatup", 1, 0), ("cooldown",
     lines!(ax, t * 1e3, s, label = label)
 end
 
+# %% [markdown]
+# If we display the animations we can visualize the heatup and cooldown of the device:
+# ![heatup animation](animation-heatup.gif)
+# ![cooldown animation](animation-cooldown.gif)
+
+# %% [markdown]
+# Finally, we can plot an average of the temperature over time: 
+# %% tags=["remove-stderr"]
 axislegend(position = :rc)
 display(figure)
 
@@ -291,7 +369,7 @@ display(figure)
 #   end
 # ```
 # 
-# And then add to each of the calculate-calls the sovler parameter:
+# And then add to each of the calculate-calls the solver parameter:
 #
 # ```julia
 #   solver = PETScLinearSolver()
