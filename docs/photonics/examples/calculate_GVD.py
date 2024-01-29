@@ -98,7 +98,7 @@ n_dict = {"core": n_Si3N4, "cladding": n_SiO2, "buried_oxide": n_SiO2}
 
 # %% [markdown]
 # Create the mesh, and sweep wavelength using the same mesh. The target mode is te mode, so the mode is selected by highest te fraction
-# %%
+# %% tags=["remove-stderr"]
 neff_list = []
 aeff_list = []
 basis0 = Basis(mesh, ElementTriP0())
