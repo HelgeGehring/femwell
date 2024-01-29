@@ -15,19 +15,16 @@
 # %% [markdown]
 # # Calculate GVD of waveguide
 
-
-# %% [markdown]
 # Reproduce figure 2e from {cite}`Klenner2016`
 
 
+# %% tags=["remove-stderr", "hide-input", "thebe-init"]
 import math
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
-# %% tags=["remove-stderr", "hide-input", "thebe-init"]
 import shapely
 from scipy.interpolate import UnivariateSpline
 from skfem import Basis, ElementTriP0
@@ -41,8 +38,6 @@ from femwell.visualization import plot_domains
 # %% [markdown]
 # First, construct the geometry of waveguide according to figure 2d of the paper.
 # %%
-
-
 width = 0.88  # um
 height = 0.69  # um
 
@@ -173,3 +168,5 @@ plt.show()
 # :style: unsrt
 # :filter: docname in docnames
 # ```
+
+# %%
