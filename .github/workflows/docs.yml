@@ -60,7 +60,7 @@ jobs:
         run: |
           pip install juliacall
           julia -e 'using Pkg; Pkg.add("PythonCall")'
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: |
             docs/_build/.jupyter_cache
