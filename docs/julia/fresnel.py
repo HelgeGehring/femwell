@@ -1,6 +1,6 @@
-from shapely import Polygon, box
-from meshwell.prism import Prism
 from meshwell.model import Model
+from meshwell.prism import Prism
+from shapely import Polygon, box
 
 if __name__ == "__main__":
     model = Model()
@@ -9,30 +9,31 @@ if __name__ == "__main__":
     DEFINE ENTITIES
     """
 
-    simvolx = 60
-    simvoly = 60
-    simvolz = 30
-    pml_z = 1
+    simvolx = 1
+    simvoly = 1
+    simvolz = 0.5
+    pml_z = 0.25
+    boundary_thickness = 0.25
 
-    vol1_polygon = box(xmin = -simvolx/2, ymin = -simvoly/2, xmax = simvolx/2, ymax = simvoly/2)
+    vol1_polygon = box(xmin=-simvolx / 2, ymin=-simvoly / 2, xmax=simvolx / 2, ymax=simvoly / 2)
 
     vol1 = Prism(
         polygons=vol1_polygon,
         buffers={
-            -simvolz/2: 0.0,
-            simvolz/2: 0.0,
+            -simvolz / 2: 0.0,
+            simvolz / 2: 0.0,
         },
         model=model,
         physical_name="volume1",
         mesh_order=3,
-        resolution={"resolution": 0.5, "SizeMax": 1.0, "DistMax": 1.0},
+        resolution={"resolution": 0.1, "SizeMax": 1.0, "DistMax": 1.0},
     )
 
     PML_bot = Prism(
         polygons=vol1_polygon,
         buffers={
-            -simvolz/2 - pml_z: 0.0,
-            -simvolz/2: 0.0,
+            -simvolz / 2 - pml_z: 0.0,
+            -simvolz / 2: 0.0,
         },
         model=model,
         physical_name="PML_bottom",
@@ -42,8 +43,8 @@ if __name__ == "__main__":
     PML_top = Prism(
         polygons=vol1_polygon,
         buffers={
-            simvolz/2: 0.0,
-            simvolz/2 + pml_z: 0.0,
+            simvolz / 2: 0.0,
+            simvolz / 2 + pml_z: 0.0,
         },
         model=model,
         physical_name="PML_top",
@@ -54,12 +55,26 @@ if __name__ == "__main__":
     BOUNDARIES
     """
 
-    right_polygon = box(xmin = simvolx/2, ymin = -simvoly/2, xmax = simvolx/2 + 1, ymax = simvoly/2)
-    left_polygon = box(xmin = -simvolx/2 - 1, ymin = -simvoly/2, xmax = -simvolx/2, ymax = simvoly/2)
-    front_polygon = box(xmin = -simvolx/2, ymin = simvoly/2, xmax = simvolx/2, ymax = simvoly/2 + 1)
-    back_polygon = box(xmin = -simvolx/2, ymin = -simvoly/2 - 1, xmax = simvolx/2, ymax = -simvoly/2)
+    right_polygon = box(
+        xmin=simvolx / 2, ymin=-simvoly / 2, xmax=simvolx / 2 + boundary_thickness, ymax=simvoly / 2
+    )
+    left_polygon = box(
+        xmin=-simvolx / 2 - boundary_thickness,
+        ymin=-simvoly / 2,
+        xmax=-simvolx / 2,
+        ymax=simvoly / 2,
+    )
+    front_polygon = box(
+        xmin=-simvolx / 2, ymin=simvoly / 2, xmax=simvolx / 2, ymax=simvoly / 2 + boundary_thickness
+    )
+    back_polygon = box(
+        xmin=-simvolx / 2,
+        ymin=-simvoly / 2 - boundary_thickness,
+        xmax=simvolx / 2,
+        ymax=-simvoly / 2,
+    )
 
-    boundary_buffers = {-simvolz/2 - pml_z: 0.0, simvolz/2 + pml_z: 0.0}
+    boundary_buffers = {-simvolz / 2 - pml_z: 0.0, simvolz / 2 + pml_z: 0.0}
 
     right = Prism(
         polygons=right_polygon,
@@ -67,7 +82,7 @@ if __name__ == "__main__":
         model=model,
         physical_name="right",
         mesh_bool=False,
-        mesh_order=0
+        mesh_order=0,
     )
 
     left = Prism(
@@ -76,7 +91,7 @@ if __name__ == "__main__":
         model=model,
         physical_name="left",
         mesh_bool=False,
-        mesh_order=0
+        mesh_order=0,
     )
 
     up = Prism(
@@ -85,7 +100,7 @@ if __name__ == "__main__":
         model=model,
         physical_name="up",
         mesh_bool=False,
-        mesh_order=0
+        mesh_order=0,
     )
 
     down = Prism(
@@ -94,30 +109,22 @@ if __name__ == "__main__":
         model=model,
         physical_name="down",
         mesh_bool=False,
-        mesh_order=0
+        mesh_order=0,
     )
 
     """
     ASSEMBLE AND NAME ENTITIES
     """
-    entities = [
-        vol1,
-        PML_bot,
-        PML_top,
-        up,
-        down,
-        left,
-        right
-    ]
+    entities = [vol1, PML_bot, PML_top, up, down, left, right]
 
     mesh = model.mesh(
         entities_list=entities,
         verbosity=0,
-        global_scaling = 1e-6,
+        global_scaling=60e-6,
         filename="mesh.msh",
         periodic_entities=[
             (x + "___" + s1, x + "___" + s2)
             for x in ("volume1", "PML_bot", "PML_top")
             for (s1, s2) in (("left", "right"), ("up", "down"))
-        ]
+        ],
     )
