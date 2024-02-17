@@ -18,7 +18,6 @@
 # # 3D thermal phase shifter
 
 # %% tags=["remove-stderr", "hide-input", "hide-output"]
-using CairoMakie
 using GridapMakie
 using Printf
 
@@ -30,18 +29,57 @@ using GridapPETSc
 using Femwell.Maxwell.Electrostatic
 using Femwell.Thermal
 
-dir = @__DIR__
-run(`python $dir/heater_3d_mesh.py`)
+using IJulia
+using CairoMakie
+using WGLMakie
+using Gumbo, HTTP
+using Bonito, Markdown
+WGLMakie.activate!()
 
-# %% [markdown]
-# We can visualize the mesh using GridapMakie:
+Makie.inline!(true) # Make sure to inline plots into Documenter output!
+
+dir = @__DIR__
+# run(`python $dir/heater_3d_mesh.py`)
 
 # %% tags=["remove-stderr", "hide-input", "hide-output"]
-function visualize_mesh(model::DiscreteModel)
+js_counter = 1
+function separate_javascript!(element::HTMLElement)
+    for (i, child) in enumerate(element.children)
+        if typeof(child) <: HTMLElement{:script}
+            src_raw = replace(child.attributes["src"], "data:application/javascript;base64," => "")
+            js_content = HTTP.base64decode(src_raw)
+            global js_counter += 1
+            js_filename = "./js/js-$(js_counter).js"
+            js_write = "$dir/../_build/html/julia/js/js-$(js_counter).js"
+            write(js_write, js_content)
+            element.children[i] = HTMLElement{:script}(Vector{HTMLNode}[], element, Dict{String,String}("src"=>js_filename, "type"=>"module"))
+        end
+        if typeof(child) <: HTMLElement
+            separate_javascript!(child)
+        end
+    end
+    return element
+end
+
+function separate_javascript(html_source::AbstractString)
+    if !isdir("$dir/../_build/html/")
+        mkdir("$dir/../_build/html/")
+    end
+    if !isdir("$dir/../_build/html/julia/")
+        mkdir("$dir/../_build/html/julia/")
+    end
+    if !isdir("$dir/../_build/html/julia/js/")
+        mkdir("$dir/../_build/html/julia/js/")
+    end
+    parsed_html = parsehtml(html_source)
+    div_element = separate_javascript!(parsed_html.root.children[2].children[1])
+end
+
+function visualize_mesh(model)
     volume_tags = ["box","core","heater","via2","via1","metal3","metal2","metal3#e1","metal3#e2"]
-    colors = ["grey", "black","orange","green", "green", "brown", "brown", "blue", "blue"]
-    alphas = [1.0, 1.0, 0.2, 0.5, 0.5, 0.1, 0.1, 0.5, 0.5]
-    fig = Figure(fontsize=20)
+    colors = [:grey, :black, :orange, :green, :green, :brown, :brown, :blue, :blue]
+    alphas = [1.0, 1.0, 0.2, 0.5, 0.5, 0.1, 0.1, 0.75, 0.75]
+    fig = Figure(fontsize=16)
     xlims = (-20e-6, 60e-6)
     ylims = (-5e-6, 5e-6)
     zlims = (-5e-6, 5e-6)
@@ -49,7 +87,6 @@ function visualize_mesh(model::DiscreteModel)
     tickfunc = values->(x->string(x*1e6)).(values)
 
     # Mesh
-    ∂Ω = BoundaryTriangulation(model, tags=volume_tags)
     ax = fig[1,2] = Axis3(
         fig[1,2], aspect=(aspect, 1.0, 1.0), 
         xlabel="x (μm)", ylabel="\ny (μm)", zlabel="z (μm)\n\n", title="Heater Mesh",
@@ -57,21 +94,102 @@ function visualize_mesh(model::DiscreteModel)
         xtickformat=tickfunc, ytickformat=tickfunc, ztickformat=tickfunc,
         azimuth=51/40 * pi + pi/20, elevation=pi/8 + pi / 10
     )
-    plt = plot!(fig[1,2], ∂Ω, shading=true, title="Mesh", fontsize=20)
+    camera = Camera3D(ax.scene)
+
     for (i, tag) in enumerate(volume_tags)
         ∂Ω_region = BoundaryTriangulation(model, tags=[tag])
-        wireframe!(∂Ω_region, color=(colors[i], alphas[i]), linewidth=0.1, fontsize=20)
+        wireframe!(fig[1,2], ∂Ω_region, color=colors[i], alpha=alphas[i], linewidth=0.1, fontsize=16)
     end
     wf = [PolyElement(color=color) for color in colors]
-    Legend(fig[1,1], wf, volume_tags, halign=:left, valign=:top, framevisible=false, labelsize=20)
+    Legend(fig[1,1], wf, volume_tags, halign=:left, valign=:top, framevisible=false, labelsize=16)
 
-    return fig
+    html_str = string(DOM.div(fig))
+    html_source_new = separate_javascript(html_str)
+    display("text/html", string(html_source_new))
+end
+
+function visualize_field(model, field, label; plotargs...)
+    volume_tags = ["box","core","heater","via2","via1","metal3","metal2","metal3#e1","metal3#e2"]
+    fontsize = 10
+    fig = Figure(fontsize=fontsize, resolution=(800, 500))
+    xlims = (-20e-6, 60e-6)
+    ylims = (-5e-6, 5e-6)
+    zlims = (-5e-6, 5e-6)
+    aspect = (xlims[2]-xlims[1])/(ylims[2]-ylims[1])
+    tickfunc = values->(x->string(x*1e6)).(values)
+
+    # Setup plot
+    Ω = Triangulation(model, tags=volume_tags)
+    ax = fig[1,1] = Axis3(
+        fig[1,1], aspect=(aspect, 1.0, 1.0), 
+        xlabel="x (μm)", ylabel="y (μm)", zlabel="z (μm)", title=label,
+        limits=(xlims, ylims, zlims), titlesize=18,
+        xtickformat=tickfunc, ytickformat=tickfunc, ztickformat=tickfunc,
+        azimuth=51/40 * pi + pi/20, elevation=pi/8 + pi / 10
+    )
+    camera = Camera3D(ax.scene)
+
+    # Plot
+    plt = plot!(fig[1,1], Ω, field, shading=true; plotargs...)
+    Colorbar(fig[1,2], plt, label=label, vertical=true, flipaxis = false)
+    
+    html_str = string(DOM.div(fig))
+    html_source_new = separate_javascript(html_str)
+    display("text/html", string(html_source_new))
+end
+
+function plot_time(uₕₜ::Gridap.ODEs.TransientFETools.TransientFESolution; label="")
+    # Set up figure
+    volume_tags = ["box","core","heater","via2","via1","metal3","metal2","metal3#e1","metal3#e2"]
+    fig = CairoMakie.Figure()
+    xlims = (-20e-6, 60e-6)
+    ylims = (-5e-6, 5e-6)
+    zlims = (-5e-6, 5e-6)
+    aspect = (xlims[2]-xlims[1])/(ylims[2]-ylims[1])
+    tickfunc = values->(x->string(x*1e6)).(values)
+    Ω = Triangulation(model, tags=volume_tags)
+
+    # Set up axis
+    it = iterate(uₕₜ)
+    uh = Any[nothing]
+    time = Any[nothing]
+    state = Any[nothing]
+    (uh[1], time[1]), state[1] = it
+    t_uh_time = Observable(time[1])
+    timetitle = lift(time -> label * @sprintf("   t = %.2f ms", time * 1e3), t_uh_time)
+    Axis3(
+        fig[1,1], aspect=(aspect, 1.0, 1.0), 
+        xlabel="x (μm)", ylabel="\ny (μm)", zlabel="z (μm)", title=timetitle,
+        limits=(xlims, ylims, zlims),
+        xtickformat=tickfunc, ytickformat=tickfunc, ztickformat=tickfunc,
+        azimuth=51/40 * pi + pi/20, elevation=pi/8 + pi / 10
+    )
+
+    # Plot new iteration
+    u = lift(t_uh_time) do t
+        while (time[1] < t) || (time[1] ≈ t)
+            if time[1] ≈ t
+                return uh[1]
+            end
+            it = iterate(uₕₜ, state[1])
+            if isnothing(it)
+                return uh[1]
+            end
+            (uh[1], time[1]), state[1] = it
+        end
+        return uh[1]
+    end
+
+    # Create the actual plot
+    plt = plot!(fig[1,1], Ω, u, colorrange=(0, 110.0), colormap=Reverse(:RdBu))
+    Colorbar(fig[1,2], plt, vertical=true, label="Temperature (K)")
+    colsize!(fig.layout, 1, Aspect(1, 1.0))
+    t_uh_time, fig
 end
 
 # %% tags=["remove-stderr"]
 model = GmshDiscreteModel("$dir/mesh.msh")
-fig = visualize_mesh(model)
-display(fig)
+visualize_mesh(model)
 
 # %% [markdown]
 # Let's start with defining the constants for the simulation:
@@ -174,53 +292,17 @@ println(
     " K",
 )
 
-# %% [markdown]
-# And we plot the fields using GridapMakie:
-
-# %% tags=["remove-stderr", "hide-input", "hide-output"]
-function plot_fields(model, potential, current_density, temperature, heat_flux)
-
-    # Set up figure
-    volume_tags = ["box","core","heater","via2","via1","metal3","metal2","metal3#e1","metal3#e2"]
-    fontsize = 10*2
-    fig = Figure(fontsize=fontsize, resolution=(800*2, 500*2))
-    xlims = (-20e-6, 60e-6)
-    ylims = (-5e-6, 5e-6)
-    zlims = (-5e-6, 5e-6)
-    aspect = (xlims[2]-xlims[1])/(ylims[2]-ylims[1])
-    tickfunc = values->(x->string(x*1e6)).(values)
-
-    # Set up four quadrants
-    g11 = fig[1, 1] = GridLayout()
-    g12 = fig[1, 2] = GridLayout()
-    g21 = fig[2, 1] = GridLayout()
-    g22 = fig[2, 2] = GridLayout()
-
-    # Plot fields
-    gs = [g11, g12, g21, g22]
-    fs = [potential, current_density, temperature, heat_flux]
-    labels = ["Potential", "Current", "Temperature", "Heat Flux"]
-    cmaps = [:viridis, :viridis, Reverse(:RdBu), Reverse(:RdBu)]
-    cranges = [(0, 0.5), (0, 1.75e10), (0, 120.0), (3.0e4, 4e9)]
-    Ω = Triangulation(model, tags=volume_tags)
-    for (g, f, label, cmap, crange) ∈ zip(gs, fs, labels, cmaps, cranges)
-        Axis3(
-            g[1,1], aspect=(aspect, 1.0, 1.0), 
-            xlabel="x (μm)", ylabel="\ny (μm)", zlabel="z (μm)\n\n", title=label,
-            limits=(xlims, ylims, zlims), titlesize=18*2,
-            xtickformat=tickfunc, ytickformat=tickfunc, ztickformat=tickfunc,
-            azimuth=51/40 * pi + pi/20, elevation=pi/8 + pi / 10
-        )
-        plt = plot!(g[1,1], Ω, f, shading=true, colorrange=crange, colormap=cmap, fontsize=fontsize)
-        Colorbar(g[1,2], plt, label=label, vertical=true, flipaxis = false)
-        colsize!(g, 1, Aspect(1, 1.25))
-    end
-    return fig
-end
+# %% tags=["remove-stderr"]
+visualize_field(model, potential(p0), "Potential"; colormap=:viridis, colorrange=(0, 0.5), fontsize=14)
 
 # %% tags=["remove-stderr"]
-fig = plot_fields(model, potential(p0), current_density(p0), temperature(T0), heat_flux(T0))
-display(fig)
+visualize_field(model, current_density(p0), "Current Density"; colormap=:viridis, colorrange=(0, 1.75e10), fontsize=14)
+
+# %% tags=["remove-stderr"]
+visualize_field(model, temperature(T0), "Temperature"; colormap=Reverse(:RdBu), colorrange=(0, 120.0), fontsize=14)
+
+# %% tags=["remove-stderr"]
+visualize_field(model, heat_flux(T0), "Heat Flux"; colormap=Reverse(:RdBu), colorrange=(3.0e4, 4e9), fontsize=14)
 
 # %% [markdown]
 # Alternatively, we write the fields to a file for visualisation using paraview:
@@ -245,65 +327,13 @@ writevtk(
 # For the cooldown simulation we start with the steady state temperature profile and no heating.
 
 # %% tags=["remove-stderr"]
+CairoMakie.activate!()
 figure = Figure()
 ax = Axis(
     figure[1, 1],
     ylabel = "Average silicon waveguide temperature / K",
     xlabel = "Time / ms",
 )
-
-# %% [markdown]
-# We can plot the transient 
-# %% tags=["remove-stderr", "hide-input", "hide-output"]
-function plot_time(uₕₜ::Gridap.ODEs.TransientFETools.TransientFESolution; label="")
-    # Set up figure
-    volume_tags = ["box","core","heater","via2","via1","metal3","metal2","metal3#e1","metal3#e2"]
-    fig = Figure()
-    xlims = (-20e-6, 60e-6)
-    ylims = (-5e-6, 5e-6)
-    zlims = (-5e-6, 5e-6)
-    aspect = (xlims[2]-xlims[1])/(ylims[2]-ylims[1])
-    tickfunc = values->(x->string(x*1e6)).(values)
-    Ω = Triangulation(model, tags=volume_tags)
-    fig = Figure()
-
-    # Set up axis
-    it = iterate(uₕₜ)
-    uh = Any[nothing]
-    time = Any[nothing]
-    state = Any[nothing]
-    (uh[1], time[1]), state[1] = it
-    t_uh_time = Observable(time[1])
-    timetitle = lift(time -> label * @sprintf("   t = %.2f ms", time * 1e3), t_uh_time)
-    Axis3(
-        fig[1,1], aspect=(aspect, 1.0, 1.0), 
-        xlabel="x (μm)", ylabel="\ny (μm)", zlabel="z (μm)", title=timetitle,
-        limits=(xlims, ylims, zlims),
-        xtickformat=tickfunc, ytickformat=tickfunc, ztickformat=tickfunc,
-        azimuth=51/40 * pi + pi/20, elevation=pi/8 + pi / 10
-    )
-
-    # Plot new iteration
-    u = lift(t_uh_time) do t
-        while (time[1] < t) || (time[1] ≈ t)
-            if time[1] ≈ t
-                return uh[1]
-            end
-            it = iterate(uₕₜ, state[1])
-            if isnothing(it)
-                return uh[1]
-            end
-            (uh[1], time[1]), state[1] = it
-        end
-        return uh[1]
-    end
-
-    # Create the actual plot
-    plt = plot!(fig[1,1], Ω, u, shading=true, colorrange=(0, 110.0), colormap=Reverse(:RdBu))
-    Colorbar(fig[1,2], plt, vertical=true, label="Temperature (K)")
-    colsize!(fig.layout, 1, Aspect(1, 1.0))
-    t_uh_time, fig
-end
 
 # %% [markdown]
 # Here we set the parameters for the transient simulation
@@ -314,6 +344,8 @@ plot_every = 200
 timestamps = collect(Δt:Δt*plot_every:t_end)
 total_render_time = 5.0
 fps = ceil(Int, length(timestamps) / total_render_time)
+html_sources = String[]
+lins = CairoMakie.Lines[]
 for (label, power_factor, temperature_factor) in [("heatup", 1, 0), ("cooldown", 0, 1)]
     uₕₜ = calculate_temperature_transient(
         ϵ_conductivities ∘ τ,
@@ -344,7 +376,7 @@ for (label, power_factor, temperature_factor) in [("heatup", 1, 0), ("cooldown",
 
     sums = [(t, ∑(∫(u)dΩ_w) / silicon_volume) for (u, t) in uₕₜ]
     t, s = getindex.(sums, 1), getindex.(sums, 2)
-    lines!(ax, t * 1e3, s, label = label)
+    push!(lins,lines!(ax, t * 1e3, s, label = label))
 end
 
 # %% [markdown]
@@ -355,7 +387,7 @@ end
 # %% [markdown]
 # Finally, we can plot an average of the temperature over time: 
 # %% tags=["remove-stderr"]
-axislegend(position = :rc)
+Legend(figure[1, 1], lins, ["heatup","cooldown"], halign=:right, valign=:center, labelsize=16)
 display(figure)
 
 
