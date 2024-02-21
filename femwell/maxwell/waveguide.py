@@ -70,6 +70,41 @@ class Mode:
         return self.k / self.k0
 
     @cached_property
+    def poynting(self):
+        """Poynting vector of the mode"""
+
+        # Extraction of the fields
+        (Ex, Ey), Ez = self.basis.interpolate(self.E)
+        (Hx, Hy), Hz = self.basis.interpolate(self.H)
+
+        # New basis will be the discontinuous variant used by the solved Ez-field
+        poynting_basis = self.basis.with_element(
+            ElementVector(ElementDG(self.basis.elem.elems[1]), 3)
+        )
+
+        # Calculation of the Poynting vector
+        Px = Ey * Hz - Ez * Hy
+        Py = Ez * Hx - Ex * Hz
+        Pz = Ex * Hy - Ey * Hx
+
+        # Projection of the Poynting vector on the new basis
+        P_proj = poynting_basis.project(np.stack([Px, Py, Pz], axis=0), dtype=np.complex64)
+
+        return poynting_basis, P_proj
+
+    def Sx(self):
+        basis, _P = self.poynting
+        return basis.split_bases()[0], _P[basis.split_indices()[0]]
+
+    def Sy(self):
+        basis, _P = self.poynting
+        return basis.split_bases()[1], _P[basis.split_indices()[1]]
+
+    def Sz(self):
+        basis, _P = self.poynting
+        return basis.split_bases()[2], _P[basis.split_indices()[2]]
+
+    @cached_property
     def te_fraction(self):
         """TE-fraction of the mode"""
 

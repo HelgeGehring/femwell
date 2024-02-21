@@ -22,7 +22,7 @@ import pandas as pd
 import shapely.affinity
 from matplotlib.ticker import MultipleLocator
 from shapely.ops import clip_by_rect
-from skfem import Basis, ElementTriP0
+from skfem import Basis, ElementTriP0, Functional
 from skfem.io.meshio import from_meshio
 
 from femwell.maxwell.waveguide import compute_modes
@@ -48,10 +48,12 @@ w_list = [x for x in range(250, 700, 100)]
 neff_dict = dict()
 aeff_dict = dict()
 tm_dict = dict()
+p_dict = dict()
 for h in h_list:
     neff_list = []
     aeff_list = []
     tm_list = []
+    p_list = []
     for width in w_list:
         width = width * 1e-3
         nc = shapely.geometry.box(
@@ -95,12 +97,42 @@ for h in h_list:
                 neff_list.append(np.real(mode.n_eff))
                 aeff_list.append(mode.calculate_effective_area())
                 tm_list.append(mode.transversality)
+                p_list.append(mode.Sz)
+
+                @Functional
+                def I(w):
+                    return 1
+
+                @Functional
+                def Sz(w):
+                    return w["Sz"]
+
+                @Functional
+                def Sz2(w):
+                    return w["Sz"] ** 2
+
+                Sz_basis, Sz_vec = mode.Sz
+
+                print(
+                    "int(Sz)", Sz.assemble(Sz_basis, Sz=Sz_basis.interpolate(Sz_vec))
+                )  # 1 as it's normalized
+                print("int_core(1)", I.assemble(Sz_basis.with_elements("core")))  # area of core
+                print(
+                    "int_core(Sz)",
+                    Sz.assemble(
+                        Sz_basis.with_elements("core"),
+                        Sz=Sz_basis.with_elements("core").interpolate(Sz_vec),
+                    ),
+                )
+                print("int(Sz^2)", Sz2.assemble(Sz_basis, Sz=Sz_basis.interpolate(Sz_vec)))
+
                 break
         else:
             print(f"no TM mode found for {width}")
     neff_dict[str(h)] = neff_list
     aeff_dict[str(h)] = aeff_list
     tm_dict[str(h)] = tm_list
+    p_dict[str(h)] = p_list
 # %% [markdown]
 # Plot the result
 
@@ -183,4 +215,53 @@ ax2.yaxis.set_minor_locator(MultipleLocator(0.2))
 ax4.set_ylim(0, 2.8)
 ax4.legend()
 
+plt.show()
+
+# %% [markdown]
+# We can also plot the modes to compare them with the reference article
+
+# %%
+# Data figure h
+w_fig_h = 500
+idx_fig_h = min(range(len(w_list)), key=lambda x: abs(w_list[x] - w_fig_h))
+h_fig_h = 0.7
+basis_fig_h, Pz_fig_h = p_dict[str(h_fig_h)][idx_fig_h]
+
+# Data figure f
+w_fig_f = 600
+idx_fig_f = min(range(len(w_list)), key=lambda x: abs(w_list[x] - w_fig_f))
+h_fig_f = 0.5
+basis_fig_f, Pz_fig_f = p_dict[str(h_fig_f)][idx_fig_f]
+
+fig, ax = plt.subplots(1, 2)
+
+basis_fig_h.plot(np.abs(Pz_fig_h), ax=ax[0], aspect="equal")
+ax[0].set_title(
+    f"Poynting vector $S_z$\nfor h = {h_fig_h}μm & w = {w_fig_h}nm\n(Reproduction of Fig.1.h)"
+)
+ax[0].set_xlim(-w_fig_h * 1e-3 / 2 - 0.1, w_fig_h * 1e-3 / 2 + 0.1)
+ax[0].set_ylim(capital_h - 0.1, capital_h + h_fig_h + 0.1)
+# Turn off the axis wrt to the article figure
+ax[0].axis("off")
+# Add the contour
+for subdomain in basis_fig_h.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
+    basis_fig_h.mesh.restrict(subdomain).draw(
+        ax=ax[0], boundaries_only=True, color="k", linewidth=1.0
+    )
+
+basis_fig_f.plot(np.abs(Pz_fig_f), ax=ax[1], aspect="equal")
+ax[1].set_title(
+    f"Poynting vector $S_z$\nfor h = {h_fig_f}μm & w = {w_fig_f}nm\n(Reproduction of Fig.1.f)"
+)
+ax[1].set_xlim(-w_list[idx_fig_f] * 1e-3 / 2 - 0.1, w_list[idx_fig_f] * 1e-3 / 2 + 0.1)
+ax[1].set_ylim(capital_h - 0.1, capital_h + h_fig_f + 0.1)
+# Turn off the axis wrt to the article figure
+ax[1].axis("off")
+# Add the contour
+for subdomain in basis_fig_f.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
+    basis_fig_f.mesh.restrict(subdomain).draw(
+        ax=ax[1], boundaries_only=True, color="k", linewidth=1.0
+    )
+
+fig.tight_layout()
 plt.show()
