@@ -92,18 +92,15 @@ class Mode:
 
         return poynting_basis, P_proj
 
-    @cached_property
-    def Px(self):
+    def Sx(self):
         basis, _P = self.poynting
         return basis.split_bases()[0], _P[basis.split_indices()[0]]
 
-    @cached_property
-    def Py(self):
+    def Sy(self):
         basis, _P = self.poynting
         return basis.split_bases()[1], _P[basis.split_indices()[1]]
 
-    @cached_property
-    def Pz(self):
+    def Sz(self):
         basis, _P = self.poynting
         return basis.split_bases()[2], _P[basis.split_indices()[2]]
 

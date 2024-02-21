@@ -22,7 +22,7 @@ import pandas as pd
 import shapely.affinity
 from matplotlib.ticker import MultipleLocator
 from shapely.ops import clip_by_rect
-from skfem import Basis, ElementTriP0
+from skfem import Basis, ElementTriP0, Functional
 from skfem.io.meshio import from_meshio
 
 from femwell.maxwell.waveguide import compute_modes
@@ -97,7 +97,35 @@ for h in h_list:
                 neff_list.append(np.real(mode.n_eff))
                 aeff_list.append(mode.calculate_effective_area())
                 tm_list.append(mode.transversality)
-                p_list.append(mode.Pz)
+                p_list.append(mode.Sz)
+
+                @Functional
+                def I(w):
+                    return 1
+
+                @Functional
+                def Sz(w):
+                    return w["Sz"]
+
+                @Functional
+                def Sz2(w):
+                    return w["Sz"] ** 2
+
+                Sz_basis, Sz_vec = mode.Sz
+
+                print(
+                    "int(Sz)", Sz.assemble(Sz_basis, Sz=Sz_basis.interpolate(Sz_vec))
+                )  # 1 as it's normalized
+                print("int_core(1)", I.assemble(Sz_basis.with_elements("core")))  # area of core
+                print(
+                    "int_core(Sz)",
+                    Sz.assemble(
+                        Sz_basis.with_elements("core"),
+                        Sz=Sz_basis.with_elements("core").interpolate(Sz_vec),
+                    ),
+                )
+                print("int(Sz^2)", Sz2.assemble(Sz_basis, Sz=Sz_basis.interpolate(Sz_vec)))
+
                 break
         else:
             print(f"no TM mode found for {width}")
