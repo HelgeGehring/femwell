@@ -11,7 +11,7 @@
 #   kernelspec:
 #     display_name: base
 #     language: julia
-#     name: julia-1.9
+#     name: julia-1.10
 # ---
 
 # %% [markdown]
