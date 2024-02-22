@@ -92,14 +92,17 @@ class Mode:
 
         return poynting_basis, P_proj
 
+    @property
     def Sx(self):
         basis, _P = self.poynting
         return basis.split_bases()[0], _P[basis.split_indices()[0]]
 
+    @property
     def Sy(self):
         basis, _P = self.poynting
         return basis.split_bases()[1], _P[basis.split_indices()[1]]
 
+    @property
     def Sz(self):
         basis, _P = self.poynting
         return basis.split_bases()[2], _P[basis.split_indices()[2]]
