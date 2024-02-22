@@ -52,6 +52,7 @@ parts:
     - file: julia/lithium_niobate_phase_shifter.jl
     - file: julia/thermal_simple.jl
     - file: julia/heater_3d.jl
+    - file: julia/thermal_fill.jl
 
   - caption: Benchmarks
     chapters:
