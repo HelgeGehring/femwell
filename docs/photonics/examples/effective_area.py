@@ -89,7 +89,7 @@ for h in h_list:
             "air": n_air,
             "silica": n_silica,
         }.items():
-            epsilon[basis0.get_dofs(elements=subdomain)] = n ** 2
+            epsilon[basis0.get_dofs(elements=subdomain)] = n**2
         modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=3, order=1)
 
         for mode in modes:
@@ -103,28 +103,22 @@ for h in h_list:
                 tm_list.append(mode.transversality)
                 p_list.append(mode.Sz)
 
-
                 @Functional
                 def I(w):
                     return 1
-
 
                 @Functional
                 def Sz(w):
                     return w["Sz"]
 
-
                 @Functional
                 def Sz2(w):
                     return w["Sz"] ** 2
 
-
                 Sz_basis, Sz_vec = mode.Sz
 
                 int_Sz = Sz.assemble(Sz_basis, Sz=Sz_basis.interpolate(Sz_vec))
-                print(
-                    "int(Sz)", int_Sz
-                )  # 1 as it's normalized
+                print("int(Sz)", int_Sz)  # 1 as it's normalized
                 int_I = I.assemble(Sz_basis.with_elements("core"))
                 print("int_core(1)", int_I)  # area of core
 
@@ -139,7 +133,7 @@ for h in h_list:
                 int_Sz2 = Sz2.assemble(Sz_basis, Sz=Sz_basis.interpolate(Sz_vec))
                 print("int(Sz^2)", int_Sz2)
 
-                aeff1_list.append(int_Sz ** 2 / int_Sz2)
+                aeff1_list.append(int_Sz**2 / int_Sz2)
                 aeff3_list.append(int_I * int_Sz / int_Sz_core)
                 break
         else:
@@ -212,7 +206,7 @@ ax1.set_title("aeff at h = 500nm")
 ax1.yaxis.set_major_locator(MultipleLocator(0.05))
 ax1.yaxis.set_minor_locator(MultipleLocator(0.01))
 ax1.set_ylim(0, 0.3)
-ax1.legend(loc='upper right')
+ax1.legend(loc="upper right")
 
 ax2b = ax2.twinx()
 ax2b.set_ylabel("mode transversality")
@@ -242,7 +236,7 @@ ax3.set_title("aeff at h = 700nm")
 ax3.yaxis.set_major_locator(MultipleLocator(0.05))
 ax3.yaxis.set_minor_locator(MultipleLocator(0.01))
 ax3.set_ylim(0, 0.3)
-ax3.legend(loc='upper right')
+ax3.legend(loc="upper right")
 
 ax4b = ax4.twinx()
 ax4b.set_ylabel("mode transversality")
