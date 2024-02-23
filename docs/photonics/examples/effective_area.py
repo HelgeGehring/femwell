@@ -18,10 +18,8 @@ from collections import OrderedDict
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import shapely.affinity
 from matplotlib.ticker import MultipleLocator
-from shapely.ops import clip_by_rect
 from skfem import Basis, ElementTriP0, Functional
 from skfem.io.meshio import from_meshio
 
@@ -148,110 +146,53 @@ for h in h_list:
 # Plot the result
 
 # %%
-reference_neff_500nm = pd.read_csv(
-    "../reference_data/Rukhlenko/fig_1c_neff/h_500nm.csv", dtype=np.float64
-)
-reference_aeff1_500nm = pd.read_csv(
-    "../reference_data/Rukhlenko/fig_1b_aeff/0.5_Eq1.csv", dtype=np.float64
-)
-reference_aeff2_500nm = pd.read_csv(
-    "../reference_data/Rukhlenko/fig_1b_aeff/0.5_Eq2.csv", dtype=np.float64
-)
-reference_aeff3_500nm = pd.read_csv(
-    "../reference_data/Rukhlenko/fig_1b_aeff/0.5_Eq3.csv", dtype=np.float64
-)
-reference_tm_500nm = pd.read_csv(
-    "../reference_data/Rukhlenko/fig_1c_neff/tm_h_500nm.csv", dtype=np.float64
-)
+path = "../reference_data/Rukhlenko"
 
-reference_neff_700nm = pd.read_csv(
-    "../reference_data/Rukhlenko/fig_1c_neff/h_700nm.csv", dtype=np.float64
-)
-reference_aeff1_700nm = pd.read_csv(
-    "../reference_data/Rukhlenko/fig_1b_aeff/0.7_Eq1.csv", dtype=np.float64
-)
-reference_aeff2_700nm = pd.read_csv(
-    "../reference_data/Rukhlenko/fig_1b_aeff/0.7_Eq2.csv", dtype=np.float64
-)
-reference_aeff3_700nm = pd.read_csv(
-    "../reference_data/Rukhlenko/fig_1b_aeff/0.7_Eq3.csv", dtype=np.float64
-)
-reference_tm_700nm = pd.read_csv(
-    "../reference_data/Rukhlenko/fig_1c_neff/tm_h_700nm.csv", dtype=np.float64
-)
+fig, axs = plt.subplots(4, 1, figsize=(9, 20))
 
-ref_neff_500nm_x, ref_neff_500nm_y = np.split(reference_neff_500nm.values, 2, axis=1)
-ref_aeff1_500nm_x, ref_aeff1_500nm_y = np.split(reference_aeff1_500nm.values, 2, axis=1)
-ref_aeff2_500nm_x, ref_aeff2_500nm_y = np.split(reference_aeff2_500nm.values, 2, axis=1)
-ref_aeff3_500nm_x, ref_aeff3_500nm_y = np.split(reference_aeff3_500nm.values, 2, axis=1)
-ref_tm_500nm_x, ref_tm_500nm_y = np.split(reference_tm_500nm.values, 2, axis=1)
-ref_neff_700nm_x, ref_neff_700nm_y = np.split(reference_neff_700nm.values, 2, axis=1)
-ref_aeff1_700nm_x, ref_aeff1_700nm_y = np.split(reference_aeff1_700nm.values, 2, axis=1)
-ref_aeff2_700nm_x, ref_aeff2_700nm_y = np.split(reference_aeff2_700nm.values, 2, axis=1)
-ref_aeff3_700nm_x, ref_aeff3_700nm_y = np.split(reference_aeff3_700nm.values, 2, axis=1)
-ref_tm_700nm_x, ref_tm_700nm_y = np.split(reference_tm_700nm.values, 2, axis=1)
+for t1, t2, ax1, ax2 in [("0.5", "500", *axs[0:2]), ("0.7", "700", *axs[2:4])]:
+    reference_neff = np.loadtxt(path + f"/fig_1c_neff/h_{t2}nm.csv", delimiter=",")
+    reference_aeff1 = np.loadtxt(path + f"/fig_1b_aeff/{t1}_Eq1.csv", delimiter=",")
+    reference_aeff2 = np.loadtxt(path + f"/fig_1b_aeff/{t1}_Eq2.csv", delimiter=",")
+    reference_aeff3 = np.loadtxt(path + f"/fig_1b_aeff/{t1}_Eq3.csv", delimiter=",")
+    reference_tm = np.loadtxt(path + f"/fig_1c_neff/tm_h_{t2}nm.csv", delimiter=",")
 
-fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(9, 20))
+    ax1.scatter(w_list, aeff_dict[t1], c="r", label="stimulated, eq2")
+    ax1.plot(reference_aeff2[:, 0], reference_aeff2[:, 1], c="b", label="reference, eq2")
 
-ax1.scatter(w_list, aeff_dict["0.5"], c="r", label="stimulated, eq2")
-ax1.plot(ref_aeff2_500nm_x, ref_aeff2_500nm_y, c="b", label="reference, eq2")
+    ax1.scatter(w_list, aeff1_dict[t1], c="green", label="stimulated, eq1")
+    ax1.plot(reference_aeff1[:, 0], reference_aeff1[:, 1], c="orange", label="reference, eq1")
 
-ax1.scatter(w_list, aeff1_dict["0.5"], c="green", label="stimulated, eq1")
-ax1.plot(ref_aeff1_500nm_x, ref_aeff1_500nm_y, c="orange", label="reference, eq1")
+    ax1.scatter(w_list, aeff3_dict[t1], c="purple", label="stimulated, eq3")
+    ax1.plot(reference_aeff3[:, 0], reference_aeff3[:, 1], c="brown", label="reference, eq3")
 
-ax1.scatter(w_list, aeff3_dict["0.5"], c="purple", label="stimulated, eq3")
-ax1.plot(ref_aeff3_500nm_x, ref_aeff3_500nm_y, c="brown", label="reference, eq3")
+    ax1.set_title(f"aeff at h = {t2}nm")
+    ax1.yaxis.set_major_locator(MultipleLocator(0.05))
+    ax1.yaxis.set_minor_locator(MultipleLocator(0.01))
+    ax1.set_ylim(0, 0.3)
+    ax1.legend(loc="upper right")
 
-ax1.set_title("aeff at h = 500nm")
-ax1.yaxis.set_major_locator(MultipleLocator(0.05))
-ax1.yaxis.set_minor_locator(MultipleLocator(0.01))
-ax1.set_ylim(0, 0.3)
-ax1.legend(loc="upper right")
+    ax2b = ax2.twinx()
+    ax2b.set_ylabel("mode transversality")
+    ax2b.scatter(
+        reference_tm[:, 0],
+        reference_tm[:, 1],
+        marker="v",
+        c="b",
+        label="reference transversality",
+    )
+    ax2b.plot(w_list, tm_dict[t1], "-v", c="r", label="stimulated transversality")
+    ax2b.set_ylim(0.775, 1)
+    ax2b.legend()
 
-ax2b = ax2.twinx()
-ax2b.set_ylabel("mode transversality")
-ax2b.scatter(ref_tm_500nm_x, ref_tm_500nm_y, marker="v", c="b", label="reference transversality")
-ax2b.plot(w_list, tm_dict["0.5"], "-v", c="r", label="stimulated transversality")
-ax2b.set_ylim(0.775, 1)
-ax2b.legend()
-
-ax2.plot(w_list, neff_dict["0.5"], "-o", c="r", label="stimulated neff")
-ax2.scatter(ref_neff_500nm_x, ref_neff_500nm_y, c="b", label="reference neff")
-ax2.set_title("neff and mode transversality at h = 500nm")
-ax2.set_ylabel("neff")
-ax2.yaxis.set_major_locator(MultipleLocator(0.4))
-ax2.yaxis.set_minor_locator(MultipleLocator(0.2))
-ax2.set_ylim(0, 2.8)
-ax2.legend()
-
-ax3.scatter(w_list, aeff_dict["0.7"], c="r", label="stimulated, eq2")
-ax3.plot(ref_aeff2_700nm_x, ref_aeff2_700nm_y, c="b", label="reference, eq2")
-
-ax3.scatter(w_list, aeff3_dict["0.7"], c="green", label="stimulated, eq3")
-ax3.plot(ref_aeff3_700nm_x, ref_aeff3_700nm_y, c="orange", label="reference, eq3")
-
-ax3.scatter(w_list, aeff1_dict["0.7"], c="purple", label="stimulated, eq2")
-ax3.plot(ref_aeff1_700nm_x, ref_aeff1_700nm_y, c="cyan", label="reference, eq2")
-ax3.set_title("aeff at h = 700nm")
-ax3.yaxis.set_major_locator(MultipleLocator(0.05))
-ax3.yaxis.set_minor_locator(MultipleLocator(0.01))
-ax3.set_ylim(0, 0.3)
-ax3.legend(loc="upper right")
-
-ax4b = ax4.twinx()
-ax4b.set_ylabel("mode transversality")
-ax4b.scatter(ref_tm_700nm_x, ref_tm_700nm_y, marker="v", c="b", label="reference transversality")
-ax4b.plot(w_list, tm_dict["0.7"], "-v", c="r", label="stimulated transversality")
-ax4b.set_ylim(0.775, 1)
-ax4b.legend()
-
-ax4.plot(w_list, neff_dict["0.7"], "-o", c="r", label="stimulated aeff")
-ax4.scatter(ref_neff_700nm_x, ref_neff_700nm_y, c="b", label="reference aeff")
-ax4.set_title("neff and mode transversality at h = 700nm")
-ax2.yaxis.set_major_locator(MultipleLocator(0.4))
-ax2.yaxis.set_minor_locator(MultipleLocator(0.2))
-ax4.set_ylim(0, 2.8)
-ax4.legend()
+    ax2.plot(w_list, neff_dict[t1], "-o", c="r", label="stimulated neff")
+    ax2.scatter(reference_neff[:, 0], reference_neff[:, 1], c="b", label="reference neff")
+    ax2.set_title(f"neff and mode transversality at h = {t2}nm")
+    ax2.set_ylabel("neff")
+    ax2.yaxis.set_major_locator(MultipleLocator(0.4))
+    ax2.yaxis.set_minor_locator(MultipleLocator(0.2))
+    ax2.set_ylim(0, 2.8)
+    ax2.legend()
 
 plt.show()
 
