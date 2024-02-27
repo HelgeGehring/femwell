@@ -197,11 +197,7 @@ T0 = calculate_temperature(
 temperature_difference = abs(sum(values(boundary_temperatures) .* [-1, 1]))
 power = abs(
     sum(
-        ∫(
-            (ϵ_conductivities ∘ τ) *
-            (norm ∘ gradient(temperature(T0))) *
-            (norm ∘ gradient(temperature(T0))),
-        )dΩ,
+        ∫(gradient(temperature(T0)) ⋅ (ϵ_conductivities ∘ τ) ⋅ gradient(temperature(T0)))dΩ,
     ),
 )
 

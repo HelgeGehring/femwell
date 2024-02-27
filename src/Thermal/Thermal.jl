@@ -31,7 +31,7 @@ function calculate_temperature(
     Ω = Triangulation(model)
     dΩ = Measure(Ω, order)
 
-    a(u, v) = ∫(thermal_conductivity * ∇(v) ⋅ ∇(u))dΩ
+    a(u, v) = ∫(∇(v) ⋅ thermal_conductivity ⋅ ∇(u))dΩ
     b(v) = ∫(v * power_density)dΩ
 
     op = AffineFEOperator(a, b, U, V)
