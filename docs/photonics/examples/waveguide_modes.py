@@ -84,7 +84,7 @@ modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=2, order
 for mode in modes:
     print(f"Effective refractive index: {mode.n_eff:.4f}")
     mode.show("E", part="real", colorbar=True)
-    mode.show("E", part="imag", colorbar=True) 
+    mode.show("E", part="imag", colorbar=True)
 
 
 # %% [markdown]

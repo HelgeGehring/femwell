@@ -1,4 +1,5 @@
 """Waveguide analysis based on https://doi.org/10.1080/02726340290084012."""
+
 from dataclasses import dataclass
 from functools import cached_property
 from typing import List, Literal, Tuple
@@ -281,13 +282,14 @@ class Mode:
         )
 
     def plot_component(
-            self,
-            field_name: Literal["E", "H"],
-            component: Literal["x", "y", "z"],
-            part: Literal["real", "imag", "abs"]="real",
-            boundaries: bool=True,
-            colorbar: bool=False,
-            ax: Axes=None):
+        self,
+        field_name: Literal["E", "H"],
+        component: Literal["x", "y", "z"],
+        part: Literal["real", "imag", "abs"] = "real",
+        boundaries: bool = True,
+        colorbar: bool = False,
+        ax: Axes = None,
+    ):
         from mpl_toolkits.axes_grid1 import make_axes_locatable
 
         if part == "real":
@@ -333,7 +335,7 @@ class Mode:
             # self.basis.mesh.draw(ax=ax, boundaries=True, boundaries_only=True)
             # for subdomain in self.basis.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
             #     self.basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True, color="w")
-            #plot_basis.mesh.draw(ax=ax, boundaries=True, boundaries_only=True)
+            # plot_basis.mesh.draw(ax=ax, boundaries=True, boundaries_only=True)
             for subdomain in plot_basis.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
                 plot_basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True, color="k")
         if colorbar:
@@ -348,11 +350,11 @@ class Mode:
     def show(
         self,
         field_name: Literal["E", "H"],
-        part: Literal["real", "imag", "abs"]="real",
-        boundaries: bool=True,
-        colorbar: bool=False,
+        part: Literal["real", "imag", "abs"] = "real",
+        boundaries: bool = True,
+        colorbar: bool = False,
     ):
-        fig, axs = plt.subplots(1,3, subplot_kw=dict(aspect=1))
+        fig, axs = plt.subplots(1, 3, subplot_kw=dict(aspect=1))
 
         for id_ax, comp in enumerate("xyz"):
             self.plot_component(field_name, comp, part, boundaries, colorbar, axs[id_ax])
