@@ -1,7 +1,7 @@
 """Waveguide analysis based on https://doi.org/10.1080/02726340290084012."""
 from dataclasses import dataclass
 from functools import cached_property
-from typing import List, Tuple
+from typing import List, Literal, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -280,8 +280,83 @@ class Mode:
             direction=direction,
         )
 
-    def show(self, field, **kwargs):
-        self.plot(field=field, **kwargs)
+    def plot_component(
+            self,
+            field_name: Literal["E", "H"],
+            component: Literal["x", "y", "z"],
+            part: Literal["real", "imag", "abs"]="real",
+            boundaries: bool=True,
+            colorbar: bool=False,
+            ax: Axes=None):
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+        if part == "real":
+            conv_func = np.real
+        elif part == "imag":
+            conv_func = np.imag
+        elif part == "abs":
+            conv_func = np.abs
+        else:
+            raise ValueError("A valid part is 'real', 'imag' or 'abs'.")
+
+        if ax is None:
+            fig, ax = plt.subplots()
+        else:
+            fig = plt.gcf()
+
+        if field_name == "E":
+            mfield = self.E
+        elif field_name == "H":
+            mfield = self.H
+        else:
+            raise ValueError("A valid field_name is 'E' or 'H'.")
+
+        (mfield_t, mfield_t_basis), (mfield_n, mfield_n_basis) = self.basis.split(mfield)
+
+        if component == "x" or component == "y":
+            plot_basis = mfield_t_basis.with_element(ElementVector(ElementDG(ElementTriP1())))
+            mfield_xy = plot_basis.project(mfield_t_basis.interpolate(conv_func(mfield_t)))
+            (mfield_x, mfield_x_basis), (mfield_y, mfield_y_basis) = plot_basis.split(mfield_xy)
+            if component == "x":
+                mfield_x_basis.plot(mfield_x, ax=ax, shading="gouraud")
+            else:
+                mfield_y_basis.plot(mfield_y, ax=ax, shading="gouraud")
+        elif component == "z":
+            # plot_basis = mfield_n_basis.with_element(ElementVector(ElementDG(ElementTriP1())))
+            plot_basis = mfield_n_basis
+            mfield_z, mfield_z_basis = mfield_n, mfield_n_basis
+            mfield_z_basis.plot(conv_func(mfield_z), ax=ax, shading="gouraud")
+        else:
+            raise ValueError("A valid component is 'x', 'y' or 'z'.")
+
+        if boundaries:
+            # self.basis.mesh.draw(ax=ax, boundaries=True, boundaries_only=True)
+            # for subdomain in self.basis.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
+            #     self.basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True, color="w")
+            #plot_basis.mesh.draw(ax=ax, boundaries=True, boundaries_only=True)
+            for subdomain in plot_basis.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
+                plot_basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True, color="k")
+        if colorbar:
+            divider = make_axes_locatable(ax)
+            cax = divider.append_axes("right", size="5%", pad=0.05)
+            plt.colorbar(ax.collections[-1], cax=cax)
+
+        ax.set_title(f"{field_name}{component} ({part}. part)")
+
+        return fig, ax
+
+    def show(
+        self,
+        field_name: Literal["E", "H"],
+        part: Literal["real", "imag", "abs"]="real",
+        boundaries: bool=True,
+        colorbar: bool=False,
+    ):
+        fig, axs = plt.subplots(1,3, subplot_kw=dict(aspect=1))
+
+        for id_ax, comp in enumerate("xyz"):
+            self.plot_component(field_name, comp, part, boundaries, colorbar, axs[id_ax])
+        plt.tight_layout()
         plt.show()
 
     def plot_intensity(
