@@ -6,11 +6,12 @@ from typing import List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy.constants
 import scipy.sparse.linalg
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from numpy.typing import NDArray
-from scipy.constants import epsilon_0, speed_of_light, mu_0
+from scipy.constants import epsilon_0, speed_of_light
 from skfem import (
     Basis,
     BilinearForm,
@@ -32,7 +33,7 @@ from skfem.helpers import cross, curl, dot, grad, inner
 from skfem.utils import solver_eigen_scipy
 
 
-@dataclass(frozen=False)#True
+@dataclass(frozen=True)
 class Mode:
     frequency: float
     """Frequency of the light"""
@@ -70,6 +71,44 @@ class Mode:
         return self.k / self.k0
 
     @cached_property
+    def poynting(self):
+        """Poynting vector of the mode"""
+
+        # Extraction of the fields
+        (Ex, Ey), Ez = self.basis.interpolate(self.E)
+        (Hx, Hy), Hz = self.basis.interpolate(self.H)
+
+        # New basis will be the discontinuous variant used by the solved Ez-field
+        poynting_basis = self.basis.with_element(
+            ElementVector(ElementDG(self.basis.elem.elems[1]), 3)
+        )
+
+        # Calculation of the Poynting vector
+        Px = Ey * Hz - Ez * Hy
+        Py = Ez * Hx - Ex * Hz
+        Pz = Ex * Hy - Ey * Hx
+
+        # Projection of the Poynting vector on the new basis
+        P_proj = poynting_basis.project(np.stack([Px, Py, Pz], axis=0), dtype=np.complex64)
+
+        return poynting_basis, P_proj
+
+    @property
+    def Sx(self):
+        basis, _P = self.poynting
+        return basis.split_bases()[0], _P[basis.split_indices()[0]]
+
+    @property
+    def Sy(self):
+        basis, _P = self.poynting
+        return basis.split_bases()[1], _P[basis.split_indices()[1]]
+
+    @property
+    def Sz(self):
+        basis, _P = self.poynting
+        return basis.split_bases()[2], _P[basis.split_indices()[2]]
+
+    @cached_property
     def te_fraction(self):
         """TE-fraction of the mode"""
 
@@ -92,6 +131,32 @@ class Mode:
 
         return 1 - self.te_fraction
 
+    @cached_property
+    def transversality(self):
+        """TE-fraction of the mode"""
+
+        @Functional
+        def ex(w):
+            return np.abs(w.E[0][0]) ** 2
+
+        @Functional
+        def ey(w):
+            return np.abs(w.E[0][1]) ** 2
+
+        @Functional
+        def ez(w):
+            return np.abs(
+                w.E[0][0] * np.conj(w.E[0][0])
+                + w.E[0][1] * np.conj(w.E[0][1])
+                + w.E[1] * np.conj(w.E[1])
+            )
+
+        ex_sum = ex.assemble(self.basis, E=self.basis.interpolate(self.E))
+        ey_sum = ey.assemble(self.basis, E=self.basis.interpolate(self.E))
+        ez_sum = ez.assemble(self.basis, E=self.basis.interpolate(self.E))
+
+        return (ex_sum + ey_sum) / (ez_sum)
+
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(k: {self.k}, n_eff:{self.n_eff})"
 
@@ -110,6 +175,40 @@ class Mode:
             E_i=self.basis.interpolate(self.E),
             E_j=self.basis.interpolate(mode.E),
             delta_epsilon=self.basis_epsilon_r.interpolate(delta_epsilon),
+        )
+
+    def calculate_effective_area(self, field="xy"):
+        if field == "xy":
+
+            @Functional(dtype=complex)
+            def E2(w):
+                return dot(np.conj(w["E"][0]), w["E"][0])
+
+            @Functional(dtype=complex)
+            def E4(w):
+                return dot(np.conj(w["E"][0]), w["E"][0]) ** 2
+
+        else:
+            num = 0 if (field == "x") else 1
+
+            @Functional(dtype=complex)
+            def E2(w):
+                return np.conj(w["E"][0][num]) * w["E"][0][num]
+
+            @Functional(dtype=complex)
+            def E4(w):
+                return (np.conj(w["E"][0][num]) * w["E"][0][num]) ** 2
+
+        return np.real(
+            E2.assemble(
+                self.basis,
+                E=self.basis.interpolate(self.E),
+            )
+            ** 2
+            / E4.assemble(
+                self.basis,
+                E=self.basis.interpolate(self.E),
+            )
         )
 
     def calculate_propagation_loss(self, distance):
@@ -221,7 +320,7 @@ class Mode:
         return fig, ax
 
 
-@dataclass(frozen=False)#True
+@dataclass(frozen=True)
 class Modes:
     modes: List
 
@@ -554,61 +653,6 @@ def eval_error_estimator(basis, u):
     eta_E = np.sum(0.5 * tmp[basis.mesh.t2f], axis=0)
 
     return eta_K + eta_E
-
-
-def calculate_sfwm_Aeff(
-    basis: Basis,
-    mode_p,
-    mode_s,
-    mode_i,
-) -> np.complex64:
-    """
-    Calculates the overlap integral for SFWM process by considering the interactions
-    between pump, signal, and idler modes in the xy plane.
-
-    Args:
-        basis (Basis): Common basis used for all modes in the same geometric structure.
-        mode_p, mode_s, mode_i: Mode instances for pump, signal, and idler, respectively.
-
-    Returns:
-        np.complex64: The Aeff result for the SFWM process(1/overlap integral).
-    """
-    def normalize_mode(mode):
-        @Functional
-        def E2(w):
-            return dot(w["E"][0], np.conj(w["E"][0]))
-            #return dot(w["E"][0], np.conj(w["E"][0]))
-            #return (w["E"][0]* np.conj(w["E"][0]))
-        E_xy, _ = mode.basis.interpolate(mode.E) #[0]=xy [1]=z
-        E_squared_integral = E2.assemble(mode.basis, E=E_xy)
-        normalization_factor = 1 / np.sqrt(E_squared_integral)
-        mode.E0 = mode.E * normalization_factor
-    
-    normalize_mode(mode_p)
-    normalize_mode(mode_s)
-    normalize_mode(mode_i)
-
-    #Normalization needed for uv(x,y)!
-    E_p, _ = mode_p.basis.interpolate(mode_p.E0) #xy, z
-    E_s, _ = mode_s.basis.interpolate(mode_s.E0)
-    E_i, _ = mode_i.basis.interpolate(mode_i.E0)
-    
-    @Functional(dtype=np.complex64)
-    def sfwm_overlap(w):
-        overlap_SFWM = w["E_p"][0] * w["E_p"][0] * np.conj(w["E_s"][0]) * np.conj(w["E_i"][0])  #up up us* ui*?
-        return (overlap_SFWM)
-
-    # Assemble the integral over the basis to compute the overlap
-    overlap_result = sfwm_overlap.assemble(
-        basis,
-        E_p=E_p,
-        E_s=E_s,
-        E_i=E_i,
-    )
-
-    return  1/overlap_result
-
-
 
 
 if __name__ == "__main__":
