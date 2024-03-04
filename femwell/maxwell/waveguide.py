@@ -1,4 +1,5 @@
 """Waveguide analysis based on https://doi.org/10.1080/02726340290084012."""
+
 from dataclasses import dataclass
 from functools import cached_property
 from typing import List, Tuple
