@@ -360,7 +360,7 @@ class Mode:
     #     plt.tight_layout()
     #     plt.show()
 
-+    def show(self, field: Literal["E", "H"] | NDArray, **kwargs):
+    def show(self, field: Literal["E", "H"] | NDArray, **kwargs):
         if type(field) is np.ndarray:
             warn(
                 "The behavior of passing an array directly to `show` "
