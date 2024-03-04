@@ -382,7 +382,7 @@ class Mode:
             title = kwargs.get("title", "E")
 
             if plot_vectors is True:
-                rc = (2, 1) if direction != "x" else (1, 3)
+                rc = (2, 1) if direction != "x" else (1, 2)
                 fig, axs = plt.subplots(*rc, subplot_kw=dict(aspect=1))
 
                 self.plot_component(field, "t", part, boundaries, colorbar, axs[0])
