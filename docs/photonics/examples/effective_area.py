@@ -12,7 +12,9 @@
 #     name: python3
 # ---
 # %% [markdown]
-# # Effective area and effective refractive index of a Si-NCs waveguide from {cite}`Rukhlenko2012`.
+# # Effective area of a Si-NCs waveguide.
+# In this example we calculate the effective area and the effective refractive index of a Si-NCs waveguide from {cite}`Rukhlenko2012`.
+
 # %% tags=["hide-input"]
 from collections import OrderedDict
 
