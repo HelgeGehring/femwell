@@ -18,7 +18,8 @@
 #
 # To understand the propagation in a waveguide, it's often helpful to look at how the effective refractive indices of the modes change when adjusting the width of the waveguide.
 # As the modes continously change their refractive index, we can track them through their evolution.
-# We gray the area which would indicate a effective refractive index below the refractive index of the substate, as such modes would not be guided.
+# We gray the area which would indicate a effective refractive index below the refractive index of the underlying layer (commonly refered to as box), as such modes would not be guided.
+# The refractive index of the box called "cutoff", as it defines the effective refractive index level under which modes stop being guided.
 
 # %% tags=["hide-input"]
 
@@ -77,4 +78,10 @@ plt.show()
 
 # %% [markdown]
 
-# The graph shows
+# The graph shows a TE mode emerging (getting a greater effective refractive index than the box) at a width of ~750nm.
+# The second mode emerges at a wavelength of ~1700nm.
+# Thus, the waveguide is a single mode waveguide with a width within the range from ~750nm to 1700nm.
+
+# The second mode is at the width at which it emerges a TM-mode, but shows for slightly wider waveguides an anti-crossing with the emerging TE-mode.
+# After this anti-crossing, the mode with the second highest effective refracteive index is TE10-mode, while the TM00-mode keeps existing in the system with an effective refractive inded slightly above the cutoff.
+# At a  width of ~2600nm, a third TE-mode starts being guided.
