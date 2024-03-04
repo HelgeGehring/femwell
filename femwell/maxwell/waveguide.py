@@ -366,9 +366,13 @@ class Mode:
         **kwargs
     ):
         if type(field) is np.ndarray:
-            warn("The behavior of passing an array directly to `show` "
-                 + "is deprecated and will be removed in the future. "
-                 + "Use `plot` instead.", DeprecationWarning, stacklevel=2)
+            warn(
+                "The behavior of passing an array directly to `show` "
+                + "is deprecated and will be removed in the future. "
+                + "Use `plot` instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
             self.plot(field=field, **kwargs)
             plt.show()
         else:
