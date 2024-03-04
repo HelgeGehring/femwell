@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from functools import cached_property
 from typing import List, Literal, Tuple
+from warnings import warn
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -343,19 +344,68 @@ class Mode:
 
         return fig, ax
 
+    # def show(
+    #     self,
+    #     field: Literal["E", "H"] ,
+    #     part: Literal["real", "imag", "abs"] = "real",
+    #     boundaries: bool = True,
+    #     colorbar: bool = False,
+    # ):
+    #     fig, axs = plt.subplots(1, 3, subplot_kw=dict(aspect=1))
+
+    #     for id_ax, comp in enumerate("xyz"):
+    #         self.plot_component(field, comp, part, boundaries, colorbar, axs[id_ax])
+    #     plt.tight_layout()
+    #     plt.show()
+
     def show(
         self,
-        field_name: Literal["E", "H"],
-        part: Literal["real", "imag", "abs"] = "real",
-        boundaries: bool = True,
-        colorbar: bool = False,
+        field: Literal["E", "H"] | NDArray,
+        **kwargs
     ):
-        fig, axs = plt.subplots(1, 3, subplot_kw=dict(aspect=1))
+        if type(field) is np.ndarray:
+            warn("The behavior of passing an array directly to `show` "
+                 + "is deprecated and will be removed in the future. "
+                 + "Use `plot` instead.", DeprecationWarning, stacklevel=2)
+            self.plot(field=field, **kwargs)
+            plt.show()
+        else:
+            from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-        for id_ax, comp in enumerate("xyz"):
-            self.plot_component(field_name, comp, part, boundaries, colorbar, axs[id_ax])
-        plt.tight_layout()
-        plt.show()
+            part = kwargs.get("part", "real")
+            boundaries = kwargs.get("boundaries", True)
+            colorbar = kwargs.get("colorbar", False)
+            direction = kwargs.get("direction", "y")
+            plot_vectors = kwargs.get("plot_vectors", False)
+            title = kwargs.get("title", "E")
+
+            if plot_vectors is True:
+                if field == "E":
+                    mfield = self.E
+                elif field == "H":
+                    mfield = self.H
+
+                if part == "real":
+                    conv_func = np.real
+                elif part == "imag":
+                    conv_func = np.imag
+                elif part == "abs":
+                    conv_func = np.abs
+                else:
+                    raise ValueError("A valid part is 'real', 'imag' or 'abs'.")
+
+                plot_mode(
+                    self.basis, conv_func(mfield), plot_vectors=True,
+                    colorbar=colorbar, direction=direction, title=title
+                )
+            else:
+                rc = (3, 1) if direction != "x" else (1, 3)
+                fig, axs = plt.subplots(*rc, subplot_kw=dict(aspect=1))
+
+                for id_ax, comp in enumerate("xyz"):
+                    self.plot_component(field, comp, part, boundaries, colorbar, axs[id_ax])
+            plt.tight_layout()
+            plt.show()
 
     def plot_intensity(
         self,
