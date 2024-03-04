@@ -332,10 +332,6 @@ class Mode:
             raise ValueError("A valid component is 'x', 'y' or 'z'.")
 
         if boundaries:
-            # self.basis.mesh.draw(ax=ax, boundaries=True, boundaries_only=True)
-            # for subdomain in self.basis.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
-            #     self.basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True, color="w")
-            # plot_basis.mesh.draw(ax=ax, boundaries=True, boundaries_only=True)
             for subdomain in plot_basis.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
                 plot_basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True, color="k")
         if colorbar:
