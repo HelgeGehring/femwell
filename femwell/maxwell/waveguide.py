@@ -285,7 +285,7 @@ class Mode:
     def plot_component(
         self,
         field: Literal["E", "H"],
-        component: Literal["x", "y", "z"],
+        component: Literal["x", "y", "z", "n", "t"],
         part: Literal["real", "imag", "abs"] = "real",
         boundaries: bool = True,
         colorbar: bool = False,
@@ -324,13 +324,15 @@ class Mode:
                 mfield_x_basis.plot(mfield_x, ax=ax, shading="gouraud")
             else:
                 mfield_y_basis.plot(mfield_y, ax=ax, shading="gouraud")
-        elif component == "z":
-            # plot_basis = mfield_n_basis.with_element(ElementVector(ElementDG(ElementTriP1())))
+        elif component == "t":
+            plot_basis = mfield_t_basis
+            mfield_t_basis.plot(conv_func(mfield_t), ax=ax, shading="gouraud")
+        elif component == "z" or component == "n":
             plot_basis = mfield_n_basis
             mfield_z, mfield_z_basis = mfield_n, mfield_n_basis
             mfield_z_basis.plot(conv_func(mfield_z), ax=ax, shading="gouraud")
         else:
-            raise ValueError("A valid component is 'x', 'y' or 'z'.")
+            raise ValueError("A valid component is 'x', 'y', 'z', 'n' or 't'.")
 
         if boundaries:
             for subdomain in plot_basis.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
@@ -380,24 +382,11 @@ class Mode:
             title = kwargs.get("title", "E")
 
             if plot_vectors is True:
-                if field == "E":
-                    mfield = self.E
-                elif field == "H":
-                    mfield = self.H
+                rc = (2, 1) if direction != "x" else (1, 3)
+                fig, axs = plt.subplots(*rc, subplot_kw=dict(aspect=1))
 
-                if part == "real":
-                    conv_func = np.real
-                elif part == "imag":
-                    conv_func = np.imag
-                elif part == "abs":
-                    conv_func = np.abs
-                else:
-                    raise ValueError("A valid part is 'real', 'imag' or 'abs'.")
-
-                plot_mode(
-                    self.basis, conv_func(mfield), plot_vectors=True,
-                    colorbar=colorbar, direction=direction, title=title
-                )
+                self.plot_component(field, "t", part, boundaries, colorbar, axs[0])
+                self.plot_component(field, "n", part, boundaries, colorbar, axs[1])
             else:
                 rc = (3, 1) if direction != "x" else (1, 3)
                 fig, axs = plt.subplots(*rc, subplot_kw=dict(aspect=1))
