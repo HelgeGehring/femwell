@@ -283,7 +283,7 @@ class Mode:
 
     def plot_component(
         self,
-        field_name: Literal["E", "H"],
+        field: Literal["E", "H"],
         component: Literal["x", "y", "z"],
         part: Literal["real", "imag", "abs"] = "real",
         boundaries: bool = True,
@@ -306,12 +306,12 @@ class Mode:
         else:
             fig = plt.gcf()
 
-        if field_name == "E":
+        if field == "E":
             mfield = self.E
-        elif field_name == "H":
+        elif field == "H":
             mfield = self.H
         else:
-            raise ValueError("A valid field_name is 'E' or 'H'.")
+            raise ValueError("A valid field is 'E' or 'H'.")
 
         (mfield_t, mfield_t_basis), (mfield_n, mfield_n_basis) = self.basis.split(mfield)
 
@@ -343,7 +343,7 @@ class Mode:
             cax = divider.append_axes("right", size="5%", pad=0.05)
             plt.colorbar(ax.collections[-1], cax=cax)
 
-        ax.set_title(f"{field_name}{component} ({part}. part)")
+        ax.set_title(f"{field}{component} ({part}. part)")
 
         return fig, ax
 
