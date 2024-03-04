@@ -30,8 +30,17 @@ from femwell.mesh import mesh_from_OrderedDict
 from femwell.thermal import solve_thermal
 
 # %% [markdown]
-# Simulating the TiN TOPS heater in {cite}`Jacques2019`.
+# In this example we'll show how to calculate the efficiency of a thermal phase shifter based on calculating the temperature distribution on a 2D plane.
+# I.e. we make the approximation, that the thermal phase shifter is quite long, so that boundary effects will play a negligible role.
+
+# We'll reproduce the TiN TOPS heater presented in {cite}`Jacques2019`.
 # First we set up the mesh:
+
+# It consists of a substrate, with a box layer ontop.
+# On the box layer, a waveguide is structured. In this example it's a silicon waveguide, which has a quite high thermal optical coefficient.
+
+# Above the waveguide, within the deposited cladding layer, a TiN resistor is placed for heating up the thermal phase shifter.
+# We refine the mesh within the region of most intered (for very precise results, of course an even finer mesh is required).
 
 # %% tags=["remove-stderr"]
 
@@ -105,7 +114,13 @@ mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resoluti
 mesh.draw().show()
 
 # %% [markdown]
-# And then we solve it!
+# Using the previously defined geometry and the resulting mesh, we can calculate the thermal distribution!
+# For this we start with defining the current densities we want to simulate within the TiN resistor.
+# Here we use the same values as in the referenced paper.
+
+# For each temperature distribution we calculate the modes of the waveguide and track their change in effective refractive index.
+# Using the change of the effective refractive index we can calculate the phase shift accumulated within the thermal phase shifter of a given length.
+# To stay consistent with the referenced paper, we use a length of 320um.
 
 # %% tags=["remove-stderr"]
 currents = np.linspace(0.0, 7.4e-3, 10)
@@ -151,12 +166,18 @@ for current_density in tqdm(current_densities):
 
     neffs.append(np.real(modes[0].n_eff))
 
-print(f"Phase shift: {2 * np.pi / 1.55 * (neffs[-1] - neffs[0]) * 320}")
 plt.xlabel("Current / mA")
 plt.ylabel("Effective refractive index $n_{eff}$")
 plt.plot(currents * 1e3, neffs)
 plt.show()
 
+# %% [markdown]
+
+# Using the values we calculated for no applied current density and the highest applied current density, we can calculate the phase shift introduced by the current:
+
+# %% tags=["remove-stderr"]
+
+print(f"Phase shift: {2 * np.pi / 1.55 * (neffs[-1] - neffs[0]) * 320}")
 
 # %% [markdown]
 # ## Bibliography
