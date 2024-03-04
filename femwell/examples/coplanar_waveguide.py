@@ -127,7 +127,7 @@ if __name__ == "__main__":
     )
     print("propagation constants", 1 / modes.n_effs)
 
-    modes[0].show(modes[0].E.real, plot_vectors=True)
+    modes[0].show("E", part="real", plot_vectors=True)
 
     from skfem import *
     from skfem.helpers import *
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     currents = np.zeros((len(conductors), len(modes)))
 
     for mode_i, mode in enumerate(modes):
-        mode.show(mode.H.real, plot_vectors=True)
+        modes[0].show("H", part="real", plot_vectors=True)
 
         (ht, ht_basis), (hz, hz_basis) = mode.basis.split(mode.H)
         for conductors_i, conductor in enumerate(conductors):
