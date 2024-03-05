@@ -92,11 +92,7 @@ for mode in modes:
 # +
 
 # %%
-fig, ax = plt.subplots()
-modes[0].plot_intensity(ax=ax)
-plt.title("Normalized Intensity")
-plt.tight_layout()
-plt.show()
+modes[0].show("I", colorbar=True)
 
 # %% [markdown]
 # -
