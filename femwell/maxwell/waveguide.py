@@ -360,7 +360,16 @@ class Mode:
     #     plt.tight_layout()
     #     plt.show()
 
-    def show(self, field: Literal["E", "H"] | NDArray, **kwargs):
+    def show(
+        self,
+        field: Literal["E", "H"] | NDArray,
+        part: Literal["real", "imag", "abs"] = "real",
+        plot_vectors: bool = False,
+        boundaries: bool = True,
+        colorbar: bool = False,
+        direction: Literal["x", "y"] = "x",
+        title: str = "E",
+    ):
         if type(field) is np.ndarray:
             warn(
                 "The behavior of passing an array directly to `show` "
@@ -369,17 +378,10 @@ class Mode:
                 DeprecationWarning,
                 stacklevel=2,
             )
-            self.plot(field=field, **kwargs)
+            self.plot(field, plot_vectors, colorbar, direction, title)
             plt.show()
         else:
             from mpl_toolkits.axes_grid1 import make_axes_locatable
-
-            part = kwargs.get("part", "real")
-            boundaries = kwargs.get("boundaries", True)
-            colorbar = kwargs.get("colorbar", False)
-            direction = kwargs.get("direction", "y")
-            plot_vectors = kwargs.get("plot_vectors", False)
-            title = kwargs.get("title", "E")
 
             if plot_vectors is True:
                 rc = (2, 1) if direction != "x" else (1, 2)
