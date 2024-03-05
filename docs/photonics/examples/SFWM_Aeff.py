@@ -129,12 +129,12 @@ mode_p = max(modes_p, key=lambda mode: mode.te_fraction)
 mode_s = max(modes_s, key=lambda mode: mode.te_fraction)
 mode_i = max(modes_i, key=lambda mode: mode.te_fraction)
 
-A_eff = calculate_sfwm_Aeff(basis0, mode_p, mode_s, mode_i)
+A_eff = np.real(calculate_sfwm_Aeff(basis0, mode_p, mode_s, mode_i))
 print("Aeff in um2:", A_eff)
 
 # Calculation for non-linear coef
 chi_3 = 5e-21  # m^2/V^2  #7e-20?
-chi_3 = 7e-20  # ?
+#chi_3 = 7e-20  # ?
 lambda_p0_m = lambda_p0 * 1e-6  # to m
 n_p0 = np.real(mode_p.n_eff)
 A_eff_m2 = A_eff * 1e-12  # to m^2
