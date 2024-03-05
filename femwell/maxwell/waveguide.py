@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from functools import cached_property
-from typing import List, Literal, Tuple
+from typing import Callable, List, Literal, Optional, Tuple
 from warnings import warn
 
 import matplotlib.pyplot as plt
@@ -286,7 +286,7 @@ class Mode:
         self,
         field: Literal["E", "H"],
         component: Literal["x", "y", "z", "n", "t"],
-        part: Literal["real", "imag", "abs"] = "real",
+        part: Literal["real", "imag", "abs"] | Callable = "real",
         boundaries: bool = True,
         colorbar: bool = False,
         ax: Axes = None,
@@ -299,6 +299,8 @@ class Mode:
             conv_func = np.imag
         elif part == "abs":
             conv_func = np.abs
+        elif isinstance(part, Callable):
+            conv_func = part
         else:
             raise ValueError("A valid part is 'real', 'imag' or 'abs'.")
 
@@ -362,12 +364,12 @@ class Mode:
     def show(
         self,
         field: Literal["E", "H", "I"] | NDArray,
-        part: Literal["real", "imag", "abs"] = "real",
+        part: Literal["real", "imag", "abs"] | Callable = "real",
         plot_vectors: bool = False,
         boundaries: bool = True,
         colorbar: bool = False,
         direction: Literal["x", "y"] = "x",
-        title: str = "E",
+        title: Optional[str] = None,
     ):
         if type(field) is np.ndarray:
             warn(
