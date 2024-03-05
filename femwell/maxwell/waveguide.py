@@ -303,9 +303,8 @@ class Mode:
             raise ValueError("A valid part is 'real', 'imag' or 'abs'.")
 
         if ax is None:
-            fig, ax = plt.subplots()
-        else:
-            fig = plt.gcf()
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
 
         if field == "E":
             mfield = self.E
@@ -344,7 +343,7 @@ class Mode:
 
         ax.set_title(f"{field}{component} ({part}. part)")
 
-        return fig, ax
+        return ax
 
     # def show(
     #     self,
