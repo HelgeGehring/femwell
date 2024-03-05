@@ -361,7 +361,7 @@ class Mode:
 
     def show(
         self,
-        field: Literal["E", "H"] | NDArray,
+        field: Literal["E", "H", "I"] | NDArray,
         part: Literal["real", "imag", "abs"] = "real",
         plot_vectors: bool = False,
         boundaries: bool = True,
@@ -383,11 +383,18 @@ class Mode:
             from mpl_toolkits.axes_grid1 import make_axes_locatable
 
             if plot_vectors is True:
+                if field == "I":
+                    return ValueError(
+                        "'plot_vectors' is used to plot the tangential components "
+                        + "of a field. Thus it can be used only with 'E' or 'H'."
+                    )
                 rc = (2, 1) if direction != "x" else (1, 2)
                 fig, axs = plt.subplots(*rc, subplot_kw=dict(aspect=1))
 
                 self.plot_component(field, "t", part, boundaries, colorbar, axs[0])
                 self.plot_component(field, "n", part, boundaries, colorbar, axs[1])
+            elif field == "I":
+                fig, ax = self.plot_intensity(ax=None, colorbar=colorbar)
             else:
                 rc = (3, 1) if direction != "x" else (1, 3)
                 fig, axs = plt.subplots(*rc, subplot_kw=dict(aspect=1))
