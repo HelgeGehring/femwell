@@ -29,13 +29,13 @@
 
 # %% 
 
-unitcell_width = 2
-unitcell_length = 2
-unitcell_thickness = 2
+unitcell_width = 0.8
+unitcell_length = 0.8
+unitcell_thickness = 0.387
 
-fill_width = 2
-fill_length = 1
-fill_thickness = 2
+fill_width = 0.4
+fill_length = 0.4
+fill_thickness = 0.22
 
 # %% tags=["hide-input", "thebe-init", "remove-stderr"]
 using PyCall
@@ -58,11 +58,14 @@ fill_polygon = shapely.box(
 
 fill = Prism(
     polygons = fill_polygon,
-    buffers = Dict(0 => 0.0, fill_thickness => 0.0),
+    buffers = Dict(
+        unitcell_thickness / 2 - fill_thickness / 2 => 0.0,
+        unitcell_thickness / 2 + fill_thickness / 2 => 0.0,
+    ),
     model = model,
     physical_name = "fill",
     mesh_order = 1,
-    resolution = Dict("resolution" => 0.2, "SizeMax" => 1.0, "DistMax" => 1.0),
+    resolution = Dict("resolution" => 0.05, "SizeMax" => 0.2, "DistMax" => 1),
 )
 
 unitcell_polygon =
@@ -131,10 +134,30 @@ down = Prism(
     mesh_order = 0,
 )
 
+above_buffer = Dict(unitcell_thickness => 0.0, unitcell_thickness + 1 => 0.0)
+above = Prism(
+    polygons = unitcell_polygon,
+    buffers = above_buffer,
+    model = model,
+    physical_name = "above",
+    mesh_bool = false,
+    mesh_order = 0,
+)
+
+below_buffer = Dict(-1 => 0.0, 0 => 0.0)
+below = Prism(
+    polygons = unitcell_polygon,
+    buffers = below_buffer,
+    model = model,
+    physical_name = "below",
+    mesh_bool = false,
+    mesh_order = 0,
+)
+
 """
 ASSEMBLE AND NAME ENTITIES
 """
-entities = [unitcell, fill, up, down, left, right]
+entities = [unitcell, fill, up, down, left, right, above, below]
 
 mesh = model.mesh(
     entities_list = entities,
@@ -158,7 +181,7 @@ using Femwell.Thermal
 # For simplicity, we define the thermal conductivity of the unitcell to be 1 and the thermal conductivity of the fill to be 100, which is almost negligible in comparison.
 
 # %%
-thermal_conductivities = ["unitcell" => 1, "fill" => 100.0]
+thermal_conductivities = ["unitcell" => 1.4, "fill" => 400]
 
 model = GmshDiscreteModel("mesh.msh")
 Ω = Triangulation(model)
@@ -176,11 +199,6 @@ thermal_conductivities =
 # We define the temperatures at both sides of the unitcell to define the direction in which we want to estimate the thermal conductivity.
 # In other directions the boundaries are considered to be insulating/mirroring.
 
-# %% tags=["remove-stderr", "hide-output"]
-boundary_temperatures = Dict("left___unitcell" => 100.0, "right___unitcell" => 0.0)
-
-
-# %% [markdown]
 # We start with calculating the temperature distribution.
 # From this, we calculate, analog to how we calculate resistances for electrical simulations first the integral
 # $\int σ \left|\frac{\mathrm{d}T}{\mathrm{d}\vec{x}}\right|^2 dA which gives an equivalent of the power
@@ -188,6 +206,9 @@ boundary_temperatures = Dict("left___unitcell" => 100.0, "right___unitcell" => 0
 # We expect the thermal conductivity almost twice as high as the thermal conductivity of the material with lower thermal conductivity.
 
 # %% tags=["remove-stderr"]
+
+boundary_temperatures = Dict("left___unitcell" => 100.0, "right___unitcell" => 0.0)
+
 T0 = calculate_temperature(
     ϵ_conductivities ∘ τ,
     CellField(x -> 0, Ω),
@@ -205,4 +226,25 @@ println(
     "Effective thermal conductivity: ",
     (power / temperature_difference^2) /
     ((unitcell_thickness * unitcell_width) / unitcell_length),
+)
+
+boundary_temperatures = Dict("above___unitcell" => 100.0, "below___unitcell" => 0.0)
+
+T0 = calculate_temperature(
+    ϵ_conductivities ∘ τ,
+    CellField(x -> 0, Ω),
+    boundary_temperatures,
+    order = 2,
+)
+temperature_difference = abs(sum(values(boundary_temperatures) .* [-1, 1]))
+power = abs(
+    sum(
+        ∫(gradient(temperature(T0)) ⋅ (ϵ_conductivities ∘ τ) ⋅ gradient(temperature(T0)))dΩ,
+    ),
+)
+
+println(
+    "Effective thermal conductivity: ",
+    (power / temperature_difference^2) /
+    ((unitcell_length * unitcell_width) / unitcell_thickness),
 )
