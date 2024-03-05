@@ -395,6 +395,7 @@ class Mode:
                 self.plot_component(field, "n", part, boundaries, colorbar, axs[1])
             elif field == "I":
                 fig, ax = self.plot_intensity(ax=None, colorbar=colorbar)
+                ax.set_title(f"Intensity")
             else:
                 rc = (3, 1) if direction != "x" else (1, 3)
                 fig, axs = plt.subplots(*rc, subplot_kw=dict(aspect=1))
