@@ -39,8 +39,9 @@ def calculate_sfwm_Aeff(basis: Basis, mode_p, mode_s, mode_i) -> np.complex64:
     # Apply normalization factors to the electric fields for the overlap calculation
     @Functional(dtype=np.complex64)
     def sfwm_overlap(w):
-        return dot(w["E_p"][0], w["E_p"][0]) * dot(np.conj(w["E_s"][0]), np.conj(w["E_i"][0]))
-
+        #return dot(w["E_p"][0], w["E_p"][0]) * dot(np.conj(w["E_s"][0]), np.conj(w["E_i"][0]))#?
+        return dot(w["E_p"][0], np.conj(w["E_s"][0])) * dot(w["E_p"][0], np.conj(w["E_i"][0]))#??
+        #return np.dot(w["E_p"][0][1], np.conj(w["E_s"][0][1]).T) * np.dot(w["E_p"][0][1], np.conj(w["E_i"][0][1]).T)#??? X
     overlap_result = sfwm_overlap.assemble(
         basis,
         E_p=mode_p.basis.interpolate(mode_p.E * normalization_factor_mode(mode_p)),
@@ -77,8 +78,8 @@ def n_silicon_dioxide(wavelength):
 Clad = 1
 
 
-core = box(0, 0, 1.05, 0.5)  # 1050x500nm
-# core = box(0, 0, .5, 0.39)  # 500x390nm
+#core = box(0, 0, 1.05, 0.5)  # 1050x500nm
+core = box(0, 0, .5, 0.39)  # 500x390nm
 polygons = OrderedDict(
     core=core,
     box=clip_by_rect(core.buffer(1.5, resolution=4), -np.inf, -np.inf, np.inf, 0),
@@ -134,7 +135,6 @@ print("Aeff in um2:", A_eff)
 
 # Calculation for non-linear coef
 chi_3 = 5e-21  # m^2/V^2  #7e-20?
-#chi_3 = 7e-20  # ?
 lambda_p0_m = lambda_p0 * 1e-6  # to m
 n_p0 = np.real(mode_p.n_eff)
 A_eff_m2 = A_eff * 1e-12  # to m^2
