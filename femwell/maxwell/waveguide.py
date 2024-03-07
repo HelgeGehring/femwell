@@ -416,6 +416,7 @@ class Mode:
 
                 for id_ax, comp in enumerate("xyz"):
                     self.plot_component(field, comp, part, boundaries, colorbar, axs[id_ax])
+            fig.suptitle(title if title else field)
             plt.tight_layout()
             plt.show()
 
