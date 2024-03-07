@@ -343,7 +343,7 @@ class Mode:
             cax = divider.append_axes("right", size="5%", pad=0.05)
             plt.colorbar(ax.collections[-1], cax=cax)
 
-        ax.set_title(f"{field}{component} ({part}. part)")
+        ax.set_title(f"{field}{component} ({conv_func.__name__}. part)")
 
         return ax
 
@@ -371,6 +371,18 @@ class Mode:
         direction: Literal["x", "y"] = "x",
         title: Optional[str] = None,
     ):
+        """Plots the different quantities associated with a field.
+
+        Args:
+            field ("E", "H", "I"): Field of interest, can be the electric field, the magnetic field or the intensity of the mode.
+            part ("real", "imag", "abs", callable): Function to use to preprocess the field to be plotted. Defaults to "real".
+            plot_vectors (bool): If set to True, plot the normal and tangential component
+            boundaries (bool): Superimpose the mesh boundaries on the plot. Defaults to True.
+            colorbar (bool): Adds a colorbar to the plot. Defaults to False.
+            direction ("x", "y"): Orientation of the plots ("x" for horizontal and "y" for vertical) Defaults to "x".
+        Returns:
+            Tuple[Figure, Axes]: Figure and axes of the plot.
+        """
         if type(field) is np.ndarray:
             warn(
                 "The behavior of passing an array directly to `show` "
