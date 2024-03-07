@@ -95,7 +95,7 @@ for h in h_list:
 
         for mode in modes:
             if mode.tm_fraction > 0.5:
-                # mode.show(np.real(mode.E))
+                # mode.show("E", part="real")
                 print(f"Effective refractive index: {mode.n_eff:.4f}")
                 print(f"Effective mode area: {mode.calculate_effective_area(field='y'):.4f}")
                 print(f"Mode transversality: {mode.transversality}")

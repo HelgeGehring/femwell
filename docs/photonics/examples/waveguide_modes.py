@@ -83,8 +83,8 @@ wavelength = 1.55
 modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=2, order=2)
 for mode in modes:
     print(f"Effective refractive index: {mode.n_eff:.4f}")
-    mode.show(mode.E.real, colorbar=True, direction="x")
-    mode.show(mode.E.imag, colorbar=True, direction="x")
+    mode.show("E", part="real", colorbar=True)
+    mode.show("E", part="imag", colorbar=True)
 
 
 # %% [markdown]
@@ -92,11 +92,7 @@ for mode in modes:
 # +
 
 # %%
-fig, ax = plt.subplots()
-modes[0].plot_intensity(ax=ax)
-plt.title("Normalized Intensity")
-plt.tight_layout()
-plt.show()
+modes[0].show("I", colorbar=True)
 
 # %% [markdown]
 # -
