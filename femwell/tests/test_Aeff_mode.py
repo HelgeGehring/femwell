@@ -48,9 +48,9 @@ lambda_i0 = 1.686
 
 basis0 = Basis(mesh, ElementTriP0())
 
-epsilon_p = basis0.zeros(dtype=complex)
-epsilon_s = basis0.zeros(dtype=complex)
-epsilon_i = basis0.zeros(dtype=complex)
+epsilon_p = basis0.zeros()
+epsilon_s = basis0.zeros()
+epsilon_i = basis0.zeros()
 
 for wavelength, epsilon in zip([lambda_p0, lambda_s0, lambda_i0], [epsilon_p, epsilon_s, epsilon_i]):
     for subdomain, n_func in {

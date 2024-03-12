@@ -39,9 +39,23 @@ def calculate_sfwm_Aeff(basis: Basis, mode_p, mode_s, mode_i) -> np.complex64:
     # Apply normalization factors to the electric fields for the overlap calculation
     @Functional(dtype=np.complex64)
     def sfwm_overlap(w):
+
+        E_p_xy = w["E_p"][0]  # shape: (2, x, 3)
+        E_s_xy = w["E_s"][0]  # shape: (2, x, 3)
+        E_i_xy = w["E_i"][0]  # shape: (2, x, 3)
+        
+        overlap_Ex = E_p_xy[0,:,0]*E_p_xy[0,:,0]*np.conj(E_s_xy[0,:,0])*np.conj(E_i_xy[0,:,0]) + \
+                     E_p_xy[1,:,0]*E_p_xy[1,:,0]*np.conj(E_s_xy[1,:,0])*np.conj(E_i_xy[1,:,0])
+        overlap_Ey = E_p_xy[0,:,1]*E_p_xy[0,:,1]*np.conj(E_s_xy[0,:,1])*np.conj(E_i_xy[0,:,1]) + \
+                     E_p_xy[1,:,1]*E_p_xy[1,:,1]*np.conj(E_s_xy[1,:,1])*np.conj(E_i_xy[1,:,1])
+        overlap_Ez = E_p_xy[0,:,2]*E_p_xy[0,:,2]*np.conj(E_s_xy[0,:,2])*np.conj(E_i_xy[0,:,2]) + \
+                     E_p_xy[1,:,2]*E_p_xy[1,:,2]*np.conj(E_s_xy[1,:,2])*np.conj(E_i_xy[1,:,2])
+    
+        return np.array([overlap_Ex, overlap_Ey, overlap_Ez]).T
+ 
         #return dot(w["E_p"][0], w["E_p"][0]) * dot(np.conj(w["E_s"][0]), np.conj(w["E_i"][0]))#?
-        return dot(w["E_p"][0], np.conj(w["E_s"][0])) * dot(w["E_p"][0], np.conj(w["E_i"][0]))#??
-        #return np.dot(w["E_p"][0][1], np.conj(w["E_s"][0][1]).T) * np.dot(w["E_p"][0][1], np.conj(w["E_i"][0][1]).T)#??? X
+        #return dot(w["E_p"][0], np.conj(w["E_s"][0])) * dot(w["E_p"][0], np.conj(w["E_i"][0]))#??
+ 
     overlap_result = sfwm_overlap.assemble(
         basis,
         E_p=mode_p.basis.interpolate(mode_p.E * normalization_factor_mode(mode_p)),
@@ -78,8 +92,8 @@ def n_silicon_dioxide(wavelength):
 Clad = 1
 
 
-#core = box(0, 0, 1.05, 0.5)  # 1050x500nm
-core = box(0, 0, .5, 0.39)  # 500x390nm
+core = box(0, 0, 1.05, 0.5)  # 1050x500nm
+#core = box(0, 0, .5, 0.39)  # 500x390nm
 polygons = OrderedDict(
     core=core,
     box=clip_by_rect(core.buffer(1.5, resolution=4), -np.inf, -np.inf, np.inf, 0),
@@ -93,13 +107,13 @@ mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resoluti
 num_modes = 2
 
 # For SFWM we have energy conservation and momemtum(k) conservation for 2pumps and signal+idler
-lambda_p0 = 1.4
-lambda_s0 = 1.097
-lambda_i0 = 1.686
+# lambda_p0 = 1.4
+# lambda_s0 = 1.097
+# lambda_i0 = 1.686
 
-# lambda_p0 = 1.55
-# lambda_s0 = 1.55
-# lambda_i0 = 1.55
+lambda_p0 = 1.55
+lambda_s0 = 1.55
+lambda_i0 = 1.55
 
 basis0 = Basis(mesh, ElementTriP0())
 
