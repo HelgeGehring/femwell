@@ -42,6 +42,7 @@ parts:
     - file: photonics/examples/refinement.py
     - file: photonics/examples/propagation_loss.py
     - file: electronics/examples/capacitor.py
+    - file: electronics/examples/coplanar_waveguide.py
 
   - caption: Julia Examples
     chapters:
