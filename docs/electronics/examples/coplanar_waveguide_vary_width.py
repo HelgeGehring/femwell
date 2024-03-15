@@ -44,14 +44,19 @@ def mesh_waveguide(filename, wsim, hclad, hsi, wcore, hcore):
 
     polygons = OrderedDict(
         surface=LineString(combined.exterior),
-        # core_interface=core.exterior,
+        core_interface=core.buffer(hcore / 10).exterior,
         core=core,
         clad=clad,
         silicon=silicon,
     )
 
     resolutions = dict(
-        core={"resolution": wcore / 20, "distance": 2, "SizeMax": 0.5},
+        core={"resolution": min(wcore / 20, hcore / 4), "distance": 1, "SizeMax": 0.5},
+        core_interface={
+            "resolution": min(wcore / 20, hcore / 4),
+            "distance": 1,
+            "SizeMax": 0.5,
+        },
         # silicon={"resolution": 0.2, "distance": 5},
     )
 
@@ -60,30 +65,14 @@ def mesh_waveguide(filename, wsim, hclad, hsi, wcore, hcore):
 
 # %% tags=["hide-output"]
 frequencies = np.linspace(1e9, 16e9, 16)
+# widths = (0.04, 0.6, 0.8, 0.1, 0.14, 0.18, 0.25, 0.3, 0.4, 0.5, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2, 2.2, 2.6, 3,)
 widths = (
     0.04,
-    0.6,
-    0.8,
-    0.1,
-    0.14,
-    0.18,
-    0.25,
-    0.3,
     0.4,
-    0.5,
-    0.6,
-    0.8,
-    1,
-    1.2,
-    1.4,
-    1.6,
-    1.8,
-    2,
-    2.2,
-    2.6,
     3,
 )
-epsilon_effs = np.zeros((len(widths), len(frequencies), 2), dtype=complex)
+epsilon_effs = np.zeros((len(widths), len(frequencies), 1), dtype=complex)
+characteristic_impedances = np.zeros((len(widths), len(frequencies), 1), dtype=complex)
 
 for i, width in enumerate(tqdm(widths)):
     mesh = from_meshio(
@@ -121,6 +110,31 @@ for i, width in enumerate(tqdm(widths)):
 
         epsilon_effs[i, j] = modes.n_effs**2
 
+        # In work
+
+        conductors = ("core_interface",)
+
+        from skfem import Functional
+        from skfem.helpers import inner
+
+        @Functional(dtype=np.complex64)
+        def current_form(w):
+            return inner(np.array([w.n[1], -w.n[0]]), w.H)
+
+        currents = np.zeros((len(conductors), len(modes)))
+
+        for mode_i, mode in enumerate(modes):
+            # modes[0].show("H", part="real", plot_vectors=True, colorbar=True)
+
+            (ht, ht_basis), (hz, hz_basis) = mode.basis.split(mode.H)
+            for conductors_i, conductor in enumerate(conductors):
+                facet_basis = ht_basis.boundary(facets=mesh.boundaries[conductor])
+                current = abs(current_form.assemble(facet_basis, H=facet_basis.interpolate(ht)))
+                currents[conductors_i, mode_i] = current
+
+        characteristic_impedances[i, j] = np.linalg.inv(currents).T @ np.linalg.inv(currents)
+        print("characteristic impedances", characteristic_impedances[i, j])
+
 # %% tags=["hide-input"]
 plt.figure(figsize=(10, 14))
 plt.xlabel("Frequency / GHz")
@@ -129,12 +143,23 @@ plt.ylabel("Effective dielectric constant")
 for i, width in enumerate(widths):
     plt.plot(frequencies / 1e9, epsilon_effs[i, :, 0].real)
     plt.annotate(
-        xy=(frequencies[-1] / 1e9, epsilon_effs[i, :, 0].real[-1]), text=str(width), va="center"
+        xy=(frequencies[-1] / 1e9, epsilon_effs[i, :, 0].real[-1]),
+        text=str(width),
+        va="center",
     )
 
-    plt.plot(frequencies / 1e9, epsilon_effs[i, :, 1].real)
+plt.show()
+
+plt.figure(figsize=(10, 14))
+plt.xlabel("Frequency / GHz")
+plt.ylabel("Characteristic Impedance / Ohm")
+
+for i, width in enumerate(widths):
+    plt.plot(frequencies / 1e9, characteristic_impedances[i, :, 0].real)
     plt.annotate(
-        xy=(frequencies[-1] / 1e9, epsilon_effs[i, :, 1].real[-1]), text=str(width), va="center"
+        xy=(frequencies[-1] / 1e9, characteristic_impedances[i, :, 0].real[-1]),
+        text=str(width),
+        va="center",
     )
 
 plt.show()

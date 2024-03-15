@@ -72,6 +72,7 @@ def mesh_waveguide_1(filename, wsim, hclad, hsi, wcore_1, wcore_2, hcore, gap):
 # %% tags=["hide-output"]
 frequencies = np.linspace(1e9, 16e9, 16)
 gaps = [0.02, 0.06, 0.1, 0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2]
+gaps = gaps[::2]
 epsilon_effs = np.zeros((len(gaps), len(frequencies), 2), dtype=complex)
 
 for i, gap in enumerate(tqdm(gaps)):
