@@ -38,7 +38,7 @@ from femwell.mesh import mesh_from_OrderedDict
 def mesh_waveguide_1(filename, wsim, hclad, hsi, wcore_1, wcore_2, hcore, gap):
     core_l = box(-wcore_1 - gap / 2, -hcore / 2, -gap / 2, hcore / 2)
     core_r = box(gap / 2, -hcore / 2, wcore_2 + gap / 2, hcore / 2)
-    gap_b = box(-gap / 2, -hcore / 2, gap / 2, hcore / 2 + hcore * 3)
+    gap_b = box(-gap / 2, -hcore / 2, gap / 2, hcore / 2)
     clad = box(-wsim / 2, -hcore / 2, wsim / 2, -hcore / 2 + hclad)
     silicon = box(-wsim / 2, -hcore / 2, wsim / 2, -hcore / 2 - hsi)
 
@@ -56,10 +56,12 @@ def mesh_waveguide_1(filename, wsim, hclad, hsi, wcore_1, wcore_2, hcore, gap):
     )
 
     resolutions = dict(
-        core_r={"resolution": 0.01, "distance": 2},
-        core_l={"resolution": 0.01, "distance": 2},
-        gap_b={"resolution": 0.01, "distance": 2},
-        silicon={"resolution": 0.2, "distance": 5},
+        core_r={"resolution": 0.0024, "distance": 2},
+        core_l={"resolution": 0.0024, "distance": 2},
+        core_r_interface={"resolution": 0.0024, "distance": 2, "SizeMax": 1},
+        core_l_interface={"resolution": 0.0024, "distance": 2, "SizeMax": 1},
+        # gap_b={"resolution": 0.001, "distance": .01, "SizeMax": .01},
+        silicon={"resolution": 0.5, "distance": 5},
     )
 
     return mesh_from_OrderedDict(
@@ -77,7 +79,7 @@ for i, gap in enumerate(tqdm(gaps)):
         mesh_waveguide_1(
             filename="mesh.msh",
             wsim=30,
-            hclad=100,
+            hclad=30,
             hsi=0.64,
             wcore_1=0.6,
             wcore_2=0.6,
@@ -107,12 +109,11 @@ for i, gap in enumerate(tqdm(gaps)):
             wavelength=scipy.constants.speed_of_light / frequency,
             num_modes=2,
             metallic_boundaries=True,
-            order=2,
         )
-        print(f"Gap: {gap}, Frequency: {frequency/1e9} GHz")
-        print(f"Effective epsilons {modes.n_effs**2}")
-        modes[0].show("E", part="real", plot_vectors=True, colorbar=True)
-        modes[1].show("E", part="real", plot_vectors=True, colorbar=True)
+        # print(f"Gap: {gap}, Frequency: {frequency/1e9} GHz")
+        # print(f"Effective epsilons {modes.n_effs**2}")
+        # modes[0].show("E", part="real", plot_vectors=True, colorbar=True)
+        # modes[1].show("E", part="real", plot_vectors=True, colorbar=True)
 
         epsilon_effs[i, j] = modes.n_effs**2
 
