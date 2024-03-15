@@ -12,7 +12,7 @@
 #     name: python3
 # ---
 # %% [markdown]
-# # Coplanar waveguide - vary gap
+# # Coplanar waveguide - vary width
 
 # In this example we calculate effective epsilon of the coplanar waveguides from {cite}`Jansen1978`
 
@@ -35,10 +35,8 @@ from femwell.mesh import mesh_from_OrderedDict
 
 
 # %%
-def mesh_waveguide_1(filename, wsim, hclad, hsi, wcore_1, wcore_2, hcore, gap):
-    core_l = box(-wcore_1 - gap / 2, -hcore / 2, -gap / 2, hcore / 2)
-    core_r = box(gap / 2, -hcore / 2, wcore_2 + gap / 2, hcore / 2)
-    gap_b = box(-gap / 2, -hcore / 2, gap / 2, hcore / 2 + hcore * 3)
+def mesh_waveguide(filename, wsim, hclad, hsi, wcore, hcore):
+    core = box(-wcore / 2, -hcore / 2, wcore / 2, hcore / 2)
     clad = box(-wsim / 2, -hcore / 2, wsim / 2, -hcore / 2 + hclad)
     silicon = box(-wsim / 2, -hcore / 2, wsim / 2, -hcore / 2 - hsi)
 
@@ -46,43 +44,56 @@ def mesh_waveguide_1(filename, wsim, hclad, hsi, wcore_1, wcore_2, hcore, gap):
 
     polygons = OrderedDict(
         surface=LineString(combined.exterior),
-        core_l_interface=core_l.exterior,
-        core_l=core_l,
-        core_r_interface=core_r.exterior,
-        core_r=core_r,
-        gap_b=gap_b,
+        # core_interface=core.exterior,
+        core=core,
         clad=clad,
         silicon=silicon,
     )
 
     resolutions = dict(
-        core_r={"resolution": 0.01, "distance": 2},
-        core_l={"resolution": 0.01, "distance": 2},
-        gap_b={"resolution": 0.01, "distance": 2},
-        silicon={"resolution": 0.2, "distance": 5},
+        core={"resolution": wcore / 20, "distance": 2, "SizeMax": 0.5},
+        # silicon={"resolution": 0.2, "distance": 5},
     )
 
-    return mesh_from_OrderedDict(
-        polygons, resolutions, filename=filename, default_resolution_max=10
-    )
+    return mesh_from_OrderedDict(polygons, resolutions, filename=filename, default_resolution_max=5)
 
 
 # %% tags=["hide-output"]
 frequencies = np.linspace(1e9, 16e9, 16)
-gaps = [0.02, 0.06, 0.1, 0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2]
-epsilon_effs = np.zeros((len(gaps), len(frequencies), 2), dtype=complex)
+widths = (
+    0.04,
+    0.6,
+    0.8,
+    0.1,
+    0.14,
+    0.18,
+    0.25,
+    0.3,
+    0.4,
+    0.5,
+    0.6,
+    0.8,
+    1,
+    1.2,
+    1.4,
+    1.6,
+    1.8,
+    2,
+    2.2,
+    2.6,
+    3,
+)
+epsilon_effs = np.zeros((len(widths), len(frequencies), 2), dtype=complex)
 
-for i, gap in enumerate(tqdm(gaps)):
+for i, width in enumerate(tqdm(widths)):
     mesh = from_meshio(
-        mesh_waveguide_1(
+        mesh_waveguide(
             filename="mesh.msh",
-            wsim=30,
-            hclad=100,
+            wsim=10,
+            hclad=10,
             hsi=0.64,
-            wcore_1=0.6,
-            wcore_2=0.6,
+            wcore=width,
             hcore=0.005,
-            gap=gap,
         )
     )
     mesh = mesh.scaled((1e-3,) * 2)
@@ -92,11 +103,7 @@ for i, gap in enumerate(tqdm(gaps)):
         epsilon = basis0.zeros().astype(complex)
         epsilon[basis0.get_dofs(elements="silicon")] = 9.9 + 0.0005
         epsilon[basis0.get_dofs(elements="clad")] = 1.0
-        epsilon[basis0.get_dofs(elements="gap_b")] = 1.0
-        epsilon[basis0.get_dofs(elements="core_l")] = 1 - 1j * 1 / (
-            18e-6 * 1e-3
-        ) / scipy.constants.epsilon_0 / (2 * np.pi * frequency)
-        epsilon[basis0.get_dofs(elements="core_r")] = 1 - 1j * 1 / (
+        epsilon[basis0.get_dofs(elements="core")] = 1 - 1j * 1 / (
             18e-6 * 1e-3
         ) / scipy.constants.epsilon_0 / (2 * np.pi * frequency)
         # basis0.plot(np.real(epsilon), colorbar=True).show()
@@ -105,14 +112,12 @@ for i, gap in enumerate(tqdm(gaps)):
             basis0,
             epsilon,
             wavelength=scipy.constants.speed_of_light / frequency,
-            num_modes=2,
+            num_modes=1,
             metallic_boundaries=True,
-            order=2,
         )
-        print(f"Gap: {gap}, Frequency: {frequency/1e9} GHz")
+        print(f"Width: {width}, Frequency: {frequency/1e9} GHz")
         print(f"Effective epsilons {modes.n_effs**2}")
-        modes[0].show("E", part="real", plot_vectors=True, colorbar=True)
-        modes[1].show("E", part="real", plot_vectors=True, colorbar=True)
+        # modes[0].show("E", part="real", plot_vectors=True, colorbar=True)
 
         epsilon_effs[i, j] = modes.n_effs**2
 
@@ -121,15 +126,15 @@ plt.figure(figsize=(10, 14))
 plt.xlabel("Frequency / GHz")
 plt.ylabel("Effective dielectric constant")
 
-for i, gap in enumerate(gaps):
+for i, width in enumerate(widths):
     plt.plot(frequencies / 1e9, epsilon_effs[i, :, 0].real)
     plt.annotate(
-        xy=(frequencies[-1] / 1e9, epsilon_effs[i, :, 0].real[-1]), text=str(gap), va="center"
+        xy=(frequencies[-1] / 1e9, epsilon_effs[i, :, 0].real[-1]), text=str(width), va="center"
     )
 
     plt.plot(frequencies / 1e9, epsilon_effs[i, :, 1].real)
     plt.annotate(
-        xy=(frequencies[-1] / 1e9, epsilon_effs[i, :, 1].real[-1]), text=str(gap), va="center"
+        xy=(frequencies[-1] / 1e9, epsilon_effs[i, :, 1].real[-1]), text=str(width), va="center"
     )
 
 plt.show()
