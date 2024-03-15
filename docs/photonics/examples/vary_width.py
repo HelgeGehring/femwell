@@ -65,7 +65,6 @@ for i, width in enumerate(tqdm(widths)):
     all_te_fracs[i, :] = [mode.te_fraction for mode in modes]
 
 # %% tags=["hide-input"]
-plt.figure()
 all_neffs = np.real(all_neffs)
 plt.xlabel("Width of waveguide / µm")
 plt.ylabel("Effective refractive index")
