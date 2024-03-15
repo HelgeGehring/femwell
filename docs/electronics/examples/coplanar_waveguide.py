@@ -110,8 +110,8 @@ for i, gap in enumerate(tqdm(gaps)):
             order=2,
         )
         print("effective epsilons", modes.n_effs**2)
-        # modes[0].show("E", part="real", plot_vectors=True, colorbar=True)
-        # modes[1].show("E", part="real", plot_vectors=True, colorbar=True)
+        modes[0].show("E", part="real", plot_vectors=True, colorbar=True)
+        modes[1].show("E", part="real", plot_vectors=True, colorbar=True)
 
         epsilon_effs[i, j] = modes.n_effs**2
 
