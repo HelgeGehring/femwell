@@ -116,7 +116,7 @@ for i, gap in enumerate(tqdm(gaps)):
         epsilon_effs[i, j] = modes.n_effs**2
 
 # %% tags=["hide-input"]
-plt.figure(figsize=(10, 8))
+plt.figure(figsize=(10, 10))
 plt.xlabel("Frequency / GHz")
 plt.ylabel("Effective dielectric constant")
 
