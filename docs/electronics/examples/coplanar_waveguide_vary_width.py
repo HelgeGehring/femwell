@@ -163,5 +163,10 @@ for i, width in enumerate(widths):
     )
 
 plt.show()
-
-# %%
+# %% [markdown]
+# ## Bibliography
+#
+# ```{bibliography}
+# :style: unsrt
+# :filter: docname in docnames
+# ```

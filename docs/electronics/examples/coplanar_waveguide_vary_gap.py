@@ -136,4 +136,10 @@ for i, gap in enumerate(gaps):
 
 plt.show()
 
-# %%
+# %% [markdown]
+# ## Bibliography
+#
+# ```{bibliography}
+# :style: unsrt
+# :filter: docname in docnames
+# ```
