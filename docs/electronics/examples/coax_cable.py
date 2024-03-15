@@ -17,7 +17,7 @@
 # In this example we calculate the propagation constant and the characteristic impedance of a RG-6 coaxial cable.
 # The cable has an 18 AWG (1.024 mm) center conductor and is designed to have a characteristic impedance of $75\Omega$.
 
-tags = ["hide-input"]
+# %% tags = ["hide-input"]
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
