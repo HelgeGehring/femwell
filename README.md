@@ -7,7 +7,7 @@
 [![PiPy](https://img.shields.io/pypi/v/femwell)](https://pypi.org/project/femwell/)
 [![Downloads](https://static.pepy.tech/badge/femwell/month)](https://pepy.tech/project/femwell)
 
-# Welcome to FEMWELL!
+## Welcome to FEMWELL!
 
 FEMWELL is a physics simulation tool that utilises the Finite Element Method (FEM). With FEMWELL, you can simulate integrated circuits, electronic and photonic systems, and so much more. 
 The project is created to provide an Open-Source FEM solver. You are welcome to contribute to FEMWELL or just use it. Any feedback and input are valuable and will make FEMWELL better!
