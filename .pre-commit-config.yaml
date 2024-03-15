@@ -21,7 +21,7 @@ repos:
       - id: poetry-check
 
   - repo: "https://github.com/domluna/JuliaFormatter.jl"
-    rev: "v1.0.50"
+    rev: "v1.0.54"
     hooks:
       - id: "julia-formatter"
 
