@@ -109,7 +109,8 @@ for i, gap in enumerate(tqdm(gaps)):
             metallic_boundaries=True,
             order=2,
         )
-        print("effective epsilons", modes.n_effs**2)
+        print(f"Gap: {gap}, Frequency: {frequency/1e9} GHz")
+        print(f"Effective epsilons {modes.n_effs**2}")
         modes[0].show("E", part="real", plot_vectors=True, colorbar=True)
         modes[1].show("E", part="real", plot_vectors=True, colorbar=True)
 
