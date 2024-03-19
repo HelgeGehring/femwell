@@ -247,3 +247,11 @@ for subdomain in basis_fig_f.mesh.subdomains.keys() - {"gmsh:bounding_entities"}
 
 fig.tight_layout()
 plt.show()
+
+# %% [markdown]
+# ## Bibliography
+#
+# ```{bibliography}
+# :style: unsrt
+# :filter: docname in docnames
+# ```
