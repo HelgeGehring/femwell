@@ -1,4 +1,23 @@
-"""Aeff analysis based on https://optics.ansys.com/hc/en-us/articles/15100783091731-Spontaneous-Four-wave-Mixing-SWFM-Microring-Resonator-Photon-Source."""
+# ---
+# jupyter:
+#   jupytext:
+#     formats: py:percent,md:myst
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.15.0
+#   kernelspec:
+#     display_name: Python 3
+#     name: python3
+# ---
+
+# %% [markdown]
+# # Optimisation of spontaneous four-wave mixing in a ring microcavity
+
+# Here we reproduce {cite}`Chuprina2017`
+
+# %% tags=["remove-stderr", "hide-input", "thebe-init"]
 from collections import OrderedDict
 
 import numpy as np
@@ -12,7 +31,28 @@ from skfem.io.meshio import from_meshio
 from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
 
+# %% [markdown]
+#
+# $$
+# \int\int\left|u(x,y)\right|^{2}\mathrm{d}x\mathrm{d}y=1
+# $$
+#
+# $$
+# A_{\mathrm{eff}}
+# =
+# \frac{1}{
+#   \displaystyle
+#   \int\int
+#   \mathrm{d}x \mathrm{d}y
+#   u_{\mathrm{p}}(x,y)
+#   u_{\mathrm{p}}(x,y)
+#   u_{\mathrm{s}}^{*}(x,y)
+#   u_{\mathrm{i}}^{*}(x,y)
+# }
+# $$
 
+
+# %%
 def calculate_sfwm_Aeff(basis: Basis, mode_p, mode_s, mode_i) -> np.complex64:
     """
     Calculates the overlap integral for SFWM process by considering the interactions
@@ -43,19 +83,22 @@ def calculate_sfwm_Aeff(basis: Basis, mode_p, mode_s, mode_i) -> np.complex64:
         E_p_xy = w["E_p"][0]  # shape: (2, x, 3)
         E_s_xy = w["E_s"][0]  # shape: (2, x, 3)
         E_i_xy = w["E_i"][0]  # shape: (2, x, 3)
-        
-        overlap_Ex = E_p_xy[0,:,0]*E_p_xy[0,:,0]*np.conj(E_s_xy[0,:,0])*np.conj(E_i_xy[0,:,0]) + \
-                     E_p_xy[1,:,0]*E_p_xy[1,:,0]*np.conj(E_s_xy[1,:,0])*np.conj(E_i_xy[1,:,0])
-        overlap_Ey = E_p_xy[0,:,1]*E_p_xy[0,:,1]*np.conj(E_s_xy[0,:,1])*np.conj(E_i_xy[0,:,1]) + \
-                     E_p_xy[1,:,1]*E_p_xy[1,:,1]*np.conj(E_s_xy[1,:,1])*np.conj(E_i_xy[1,:,1])
-        overlap_Ez = E_p_xy[0,:,2]*E_p_xy[0,:,2]*np.conj(E_s_xy[0,:,2])*np.conj(E_i_xy[0,:,2]) + \
-                     E_p_xy[1,:,2]*E_p_xy[1,:,2]*np.conj(E_s_xy[1,:,2])*np.conj(E_i_xy[1,:,2])
-    
+
+        overlap_Ex = E_p_xy[0, :, 0] * E_p_xy[0, :, 0] * np.conj(E_s_xy[0, :, 0]) * np.conj(
+            E_i_xy[0, :, 0]
+        ) + E_p_xy[1, :, 0] * E_p_xy[1, :, 0] * np.conj(E_s_xy[1, :, 0]) * np.conj(E_i_xy[1, :, 0])
+        overlap_Ey = E_p_xy[0, :, 1] * E_p_xy[0, :, 1] * np.conj(E_s_xy[0, :, 1]) * np.conj(
+            E_i_xy[0, :, 1]
+        ) + E_p_xy[1, :, 1] * E_p_xy[1, :, 1] * np.conj(E_s_xy[1, :, 1]) * np.conj(E_i_xy[1, :, 1])
+        overlap_Ez = E_p_xy[0, :, 2] * E_p_xy[0, :, 2] * np.conj(E_s_xy[0, :, 2]) * np.conj(
+            E_i_xy[0, :, 2]
+        ) + E_p_xy[1, :, 2] * E_p_xy[1, :, 2] * np.conj(E_s_xy[1, :, 2]) * np.conj(E_i_xy[1, :, 2])
+
         return np.array([overlap_Ex, overlap_Ey, overlap_Ez]).T
- 
-        #return dot(w["E_p"][0], w["E_p"][0]) * dot(np.conj(w["E_s"][0]), np.conj(w["E_i"][0]))#?
-        #return dot(w["E_p"][0], np.conj(w["E_s"][0])) * dot(w["E_p"][0], np.conj(w["E_i"][0]))#??
- 
+
+        # return dot(w["E_p"][0], w["E_p"][0]) * dot(np.conj(w["E_s"][0]), np.conj(w["E_i"][0]))#?
+        # return dot(w["E_p"][0], np.conj(w["E_s"][0])) * dot(w["E_p"][0], np.conj(w["E_i"][0]))#??
+
     overlap_result = sfwm_overlap.assemble(
         basis,
         E_p=mode_p.basis.interpolate(mode_p.E * normalization_factor_mode(mode_p)),
@@ -66,8 +109,13 @@ def calculate_sfwm_Aeff(basis: Basis, mode_p, mode_s, mode_i) -> np.complex64:
     return 1 / overlap_result
 
 
+# %% [markdown]
+#
 # Dispersion relations of materials
-# Core
+# Silicon nitride {cite}`Luke2015`
+
+
+# %%
 def n_X(wavelength):
     x = wavelength
     return (
@@ -78,7 +126,12 @@ def n_X(wavelength):
     ) ** 0.5
 
 
-# Box
+# %% [markdown]
+#
+# Box {cite}`Malitson1965`
+
+
+# %%
 def n_silicon_dioxide(wavelength):
     x = wavelength
     return (
@@ -91,9 +144,14 @@ def n_silicon_dioxide(wavelength):
 
 Clad = 1
 
+# %% [markdown]
+#
+# Waveguide dimensions 1050x500nm
 
-core = box(0, 0, 1.05, 0.5)  # 1050x500nm
-#core = box(0, 0, .5, 0.39)  # 500x390nm
+# %%
+
+core = box(0, 0, 1.05, 0.5)
+# core = box(0, 0, .5, 0.39)  # 500x390nm
 polygons = OrderedDict(
     core=core,
     box=clip_by_rect(core.buffer(1.5, resolution=4), -np.inf, -np.inf, np.inf, 0),
@@ -155,6 +213,21 @@ A_eff_m2 = A_eff * 1e-12  # to m^2
 
 omega_p0 = 2 * np.pi * c / lambda_p0_m
 
+# %% [markdown]
+# $$
+# \gamma=\frac{3\chi^{(3)}\omega_{\mathrm{p}}}{4\varepsilon_{0}c^{2}n_{\mathrm{p0}}^{2}A_{\mathrm{eff}}}
+# $$
+
+# %%
+
 gamma = (3 * chi_3 * omega_p0) / (4 * epsilon_0 * c**2 * n_p0**2 * A_eff_m2)
 
 print("gamma:", gamma)
+
+# %% [markdown]
+# ## Bibliography
+#
+# ```{bibliography}
+# :style: unsrt
+# :filter: docname in docnames
+# ```
