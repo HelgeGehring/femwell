@@ -651,7 +651,9 @@ def calculate_overlap(
     def overlap(w):
         return cross(np.conj(w["E_i"][0]), w["H_j"][0]) + cross(w["E_j"][0], np.conj(w["H_i"][0]))
 
-    if basis_i == basis_j:
+    if basis_i == basis_j or (
+        np.isclose(basis_i.X, basis_j.X).all() and np.isclose(basis_i.W, basis_j.W).all()
+    ):
         return 0.5 * overlap.assemble(
             basis_i,
             E_i=basis_i.interpolate(E_i),
