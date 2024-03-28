@@ -23,7 +23,7 @@ jobs:
           python-version: "3.12"
       - uses: julia-actions/setup-julia@v1
         with:
-          version: '1.9.2'
+          version: '1.10.2'
       - uses: julia-actions/cache@v1
       - name: Install JuliaFormatter and format
         run: |
