@@ -201,11 +201,8 @@ function calculate_temperature_transient(
     θ = 0.5
     ode_solver = ThetaMethod(solver, Δt, θ)
 
-    @show "beginning interpolation"
     u₀ = interpolate_everywhere(T0, U(0.0))
-    @show "beginning solve"
     uₕₜ = solve(ode_solver, op_C, u₀, 0, t_end)
-    @show "end solve"
 
     return uₕₜ
 end
