@@ -244,7 +244,7 @@ electrical_conductivity = [
     "metal3#e1" => 3.77e7,
     "metal3#e2" => 3.77e7,
 ]
-thermal_conductivities = [
+thermal_conductivities_base = [
     "core" => 90,
     "box" => 1.38,
     "clad" => 1.38,
@@ -255,6 +255,18 @@ thermal_conductivities = [
     "metal3" => 400,
     "metal3#e1" => 400,
     "metal3#e2" => 400,
+]
+thermal_conductivities_linear= [
+    "core" => 0.05*10, 
+    "box" => 0.01*10,
+    "clad" => 0.01*10,
+    "heater" => 0.1*10,
+    "via2" => 0.1*10,
+    "metal2" => 0.1*10,
+    "via1" => 0.1*10,
+    "metal3" => 0.1*10,
+    "metal3#e1" => 0.1*10,
+    "metal3#e2" => 0.1*10,
 ]
 thermal_diffisitivities = [
     "core" => 90 / 711 / 2330,
@@ -280,17 +292,21 @@ labels = get_face_labeling(model)
 tags = get_face_tag(labels, num_cell_dims(model))
 τ = CellField(tags, Ω)
 
+# Decide whether to use a nonlinear or linear thermal solve 
+nonlinear_flag = true
+
 electrical_conductivity =
     Dict(get_tag_from_name(labels, u) => v for (u, v) in electrical_conductivity)
 ϵ_electrical_conductivity(tag) = electrical_conductivity[tag]
 
-thermal_conductivities =
-    Dict(get_tag_from_name(labels, u) => v for (u, v) in thermal_conductivities)
-ϵ_conductivities(tag) = thermal_conductivities[tag]
-
+thermal_conductivities_base =
+    Dict(get_tag_from_name(labels, u) => v for (u, v) in thermal_conductivities_base)
+thermal_conductivities_linear =
+    Dict(get_tag_from_name(labels, u) => v for (u, v) in thermal_conductivities_linear)
 thermal_diffisitivities =
     Dict(get_tag_from_name(labels, u) => v for (u, v) in thermal_diffisitivities)
 ϵ_diffisitivities(tag) = thermal_diffisitivities[tag]
+
 
 # %% [markdown]
 # The next step is to define the boundary conditions, this can be done simply via julia-dicts:
@@ -313,7 +329,20 @@ println("Current: ", @sprintf("%.2f mA", current * 1e3))
 println("Power: ", @sprintf("%.2f mW", power * 1e3))
 
 # %% tags=["remove-stderr"]
-T0 = calculate_temperature(ϵ_conductivities ∘ τ, power_density(p0), boundary_temperatures)
+T0, ϵ_conductivities = if nonlinear_flag
+    ϵ_conductivities_base(tag) = thermal_conductivities_base[tag]
+    ϵ_conductivities_linear(tag) = thermal_conductivities_linear[tag]
+    ϵ_conductivities = u -> (ϵ_conductivities_base ∘ τ) + (ϵ_conductivities_linear ∘ τ) * u
+    Gridap.gradient(::typeof(ϵ_conductivities), du) = (ϵ_conductivities_linear ∘ τ) * du
+
+    T0 = calculate_temperature(ϵ_conductivities, power_density(p0), boundary_temperatures; solver=NLSolver(method=:newton))
+    T0, ϵ_conductivities
+else
+    ϵ_conductivities = tag -> thermal_conductivities_base[tag]
+
+    T0 = calculate_temperature(ϵ_conductivities ∘ τ, power_density(p0), boundary_temperatures; solver=BackslashSolver())
+    T0, ϵ_conductivities ∘ τ
+end
 
 # %% [markdown]
 # Yay, now we have both fields simulated! Let's get the average temperature of the silicon waveguide.
@@ -405,7 +434,7 @@ ax = Axis(
 # %% tags=["remove-stderr", "hide-output"]
 Δt = 2e-7
 t_end = 2e-4
-plot_every = 200
+plot_every = 250
 timestamps = collect(Δt:Δt*plot_every:t_end)
 total_render_time = 5.0
 fps = ceil(Int, length(timestamps) / total_render_time)
@@ -413,13 +442,14 @@ html_sources = String[]
 lins = CairoMakie.Lines[]
 for (label, power_factor, temperature_factor) in [("heatup", 1, 0), ("cooldown", 0, 1)]
     uₕₜ = calculate_temperature_transient(
-        ϵ_conductivities ∘ τ,
+        ϵ_conductivities,
         ϵ_diffisitivities ∘ τ,
         power_density(p0) * power_factor,
         boundary_temperatures,
         temperature(T0) * temperature_factor,
         Δt,
         t_end,
+        solver=ifelse(nonlinear_flag, NLSolver(method=:newton), LUSolver()),
     )
 
     # Create animation
