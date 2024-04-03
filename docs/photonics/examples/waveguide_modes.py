@@ -13,7 +13,7 @@
 # ---
 
 # %% [markdown]
-# # Modes of a rectangular waveguide
+# # Optical waveguide modes
 
 # %% tags=["remove-stderr", "hide-input", "thebe-init"]
 from collections import OrderedDict
