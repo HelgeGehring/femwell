@@ -21,14 +21,16 @@ parts:
   - caption: Examples
     chapters:
     - file: photonics/examples/waveguide_modes.py
-    #- file: photonics/examples/leaky_waveguide.py
-    #- file: photonics/examples/bent_waveguide.py
-    - file: photonics/examples/vary_width.py
-    - file: photonics/examples/vary_wavelength.py
-    - file: photonics/examples/selecting_modes.py
-    - file: photonics/examples/calculate_GVD.py
-    - file: photonics/examples/fiber_overlap.py
-    - file: photonics/examples/crosstalk.py
+      sections:
+      #- file: photonics/examples/leaky_waveguide.py
+      #- file: photonics/examples/bent_waveguide.py
+      - file: photonics/examples/vary_width.py
+      - file: photonics/examples/vary_wavelength.py
+      - file: photonics/examples/selecting_modes.py
+      - file: photonics/examples/calculate_GVD.py
+      - file: photonics/examples/fiber_overlap.py
+      - file: photonics/examples/crosstalk.py
+      - file: photonics/examples/propagation_loss.py
     - file: photonics/examples/metal_heater_phase_shifter.py
     - file: photonics/examples/metal_heater_phase_shifter_transient.py
     - file: photonics/examples/si_heater_phase_shifter.py
@@ -40,7 +42,6 @@ parts:
     - file: photonics/examples/depletion_waveguide.py
     - file: photonics/examples/effective_area.py
     - file: photonics/examples/refinement.py
-    - file: photonics/examples/propagation_loss.py
     - file: electronics/examples/capacitor.py
     - file: electronics/examples/coax_cable.py
     - file: electronics/examples/coplanar_waveguide_vary_width.py
