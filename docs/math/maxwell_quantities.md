@@ -118,3 +118,8 @@ $$
 
     Z_c = [I^{-1}]^T P I^{-1}
 $$
+
+```{bibliography}
+:style: unsrt
+:filter: docname in docnames
+```
