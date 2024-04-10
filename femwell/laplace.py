@@ -2,7 +2,6 @@
 
 from collections import OrderedDict
 
-import matplotlib
 import numpy as np
 from shapely import LineString, box
 from skfem import (
