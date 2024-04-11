@@ -34,13 +34,15 @@ def lhs(u, v, w):
 def rhs(u, v, w):
     return inner(u, v)
 
-if __name__ == "__main__": 
+
+if __name__ == "__main__":
 
     A = lhs.assemble(basis, epsilon=basis_epsilon.interpolate(epsilon))
     B = rhs.assemble(basis)
 
     lams, xs = solve(
-        *condense(A, B, D=basis.get_dofs()), solver=solver_eigen_scipy_sym(sigma=3.55**2, which="LM")
+        *condense(A, B, D=basis.get_dofs()),
+        solver=solver_eigen_scipy_sym(sigma=3.55**2, which="LM")
     )
 
     print(np.sqrt(lams))
