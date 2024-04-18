@@ -364,9 +364,18 @@ def mesh_from_OrderedDict(
             gmsh.model.mesh.field.add("Threshold", n + 3)
             gmsh.model.mesh.field.setNumber(n + 3, "InField", n + 2)
             gmsh.model.mesh.field.setNumber(n + 3, "SizeMin", mesh_resolution)
-            gmsh.model.mesh.field.setNumber(n + 3, "SizeMax", default_resolution_max)
+            gmsh.model.mesh.field.setNumber(
+                n + 3,
+                "SizeMax",
+                (
+                    default_resolution_max
+                    if "SizeMax" not in mesh_setting
+                    else mesh_setting["SizeMax"]
+                ),
+            )
             gmsh.model.mesh.field.setNumber(n + 3, "DistMin", 0)
             gmsh.model.mesh.field.setNumber(n + 3, "DistMax", mesh_distance)
+            gmsh.model.mesh.field.setNumber(n + 3, "StopAtDistMax", 1)
             # Save and increment
             refinement_fields.append(n + 1)
             refinement_fields.append(n + 3)

@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.1.11
+- Add SizeMax to meshing resolution settings
+- Add examples for coplanar waveguides and crosstalk
+- Improve plotting function
+
 ## v0.1.10
 - Add backward compatability for "Fix Typo: Culomb -> Coulomb" until the end of the year
 

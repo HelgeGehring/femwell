@@ -2,7 +2,8 @@
 
 from dataclasses import dataclass
 from functools import cached_property
-from typing import List, Tuple
+from typing import Callable, List, Literal, Optional, Tuple
+from warnings import warn
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -281,9 +282,152 @@ class Mode:
             direction=direction,
         )
 
-    def show(self, field, **kwargs):
-        self.plot(field=field, **kwargs)
-        plt.show()
+    def plot_component(
+        self,
+        field: Literal["E", "H"],
+        component: Literal["x", "y", "z", "n", "t"],
+        part: Literal["real", "imag", "abs"] | Callable = "real",
+        boundaries: bool = True,
+        colorbar: bool = False,
+        ax: Axes = None,
+    ):
+        """Plots a component of the electric or magnetic field.
+
+        Args:
+            field ("E", "H"): Field of interest, can be the electric field or the magnetic field.
+            component ("x", "y", "z", "n", "t"): Component of the field to plot.
+            part ("real", "imag", "abs", callable): Function to use to preprocess the field to be plotted. Defaults to "real".
+            boundaries (bool): Superimpose the mesh boundaries on the plot. Defaults to True.
+            colorbar (bool): Adds a colorbar to the plot. Defaults to False.
+            ax (Axes, optional): Axes onto which the plot is drawn. Defaults to None.
+        """
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+        if part == "real":
+            conv_func = np.real
+        elif part == "imag":
+            conv_func = np.imag
+        elif part == "abs":
+            conv_func = np.abs
+        elif isinstance(part, Callable):
+            conv_func = part
+        else:
+            raise ValueError("A valid part is 'real', 'imag' or 'abs'.")
+
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+
+        if field == "E":
+            mfield = self.E
+        elif field == "H":
+            mfield = self.H
+        else:
+            raise ValueError("A valid field is 'E' or 'H'.")
+
+        (mfield_t, mfield_t_basis), (mfield_n, mfield_n_basis) = self.basis.split(mfield)
+
+        if component == "x" or component == "y":
+            plot_basis = mfield_t_basis.with_element(ElementVector(ElementDG(ElementTriP1())))
+            mfield_xy = plot_basis.project(mfield_t_basis.interpolate(conv_func(mfield_t)))
+            (mfield_x, mfield_x_basis), (mfield_y, mfield_y_basis) = plot_basis.split(mfield_xy)
+            if component == "x":
+                mfield_x_basis.plot(mfield_x, ax=ax, shading="gouraud")
+            else:
+                mfield_y_basis.plot(mfield_y, ax=ax, shading="gouraud")
+        elif component == "t":
+            plot_basis = mfield_t_basis
+            mfield_t_basis.plot(conv_func(mfield_t), ax=ax, shading="gouraud")
+        elif component == "z" or component == "n":
+            plot_basis = mfield_n_basis
+            mfield_z, mfield_z_basis = mfield_n, mfield_n_basis
+            mfield_z_basis.plot(conv_func(mfield_z), ax=ax, shading="gouraud")
+        else:
+            raise ValueError("A valid component is 'x', 'y', 'z', 'n' or 't'.")
+
+        if boundaries:
+            for subdomain in plot_basis.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
+                plot_basis.mesh.restrict(subdomain).draw(ax=ax, boundaries_only=True, color="k")
+        if colorbar:
+            divider = make_axes_locatable(ax)
+            cax = divider.append_axes("right", size="5%", pad=0.05)
+            plt.colorbar(ax.collections[-1], cax=cax)
+
+        ax.set_title(f"{field}{component} ({conv_func.__name__}. part)")
+
+        return ax
+
+    # def show(
+    #     self,
+    #     field: Literal["E", "H"] ,
+    #     part: Literal["real", "imag", "abs"] = "real",
+    #     boundaries: bool = True,
+    #     colorbar: bool = False,
+    # ):
+    #     fig, axs = plt.subplots(1, 3, subplot_kw=dict(aspect=1))
+
+    #     for id_ax, comp in enumerate("xyz"):
+    #         self.plot_component(field, comp, part, boundaries, colorbar, axs[id_ax])
+    #     plt.tight_layout()
+    #     plt.show()
+
+    def show(
+        self,
+        field: Literal["E", "H", "I"] | NDArray,
+        part: Literal["real", "imag", "abs"] | Callable = "real",
+        plot_vectors: bool = False,
+        boundaries: bool = True,
+        colorbar: bool = False,
+        direction: Literal["x", "y"] = "x",
+        title: Optional[str] = None,
+    ):
+        """Plots the different quantities associated with a field.
+
+        Args:
+            field ("E", "H", "I"): Field of interest, can be the electric field, the magnetic field or the intensity of the mode.
+            part ("real", "imag", "abs", callable): Function to use to preprocess the field to be plotted. Defaults to "real".
+            plot_vectors (bool): If set to True, plot the normal and tangential component
+            boundaries (bool): Superimpose the mesh boundaries on the plot. Defaults to True.
+            colorbar (bool): Adds a colorbar to the plot. Defaults to False.
+            direction ("x", "y"): Orientation of the plots ("x" for horizontal and "y" for vertical) Defaults to "x".
+        Returns:
+            Tuple[Figure, Axes]: Figure and axes of the plot.
+        """
+        if type(field) is np.ndarray:
+            warn(
+                "The behavior of passing an array directly to `show` "
+                + "is deprecated and will be removed in the future. "
+                + "Use `plot` instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            self.plot(field, plot_vectors, colorbar, direction, title)
+            plt.show()
+        else:
+            from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+            if plot_vectors is True:
+                if field == "I":
+                    return ValueError(
+                        "'plot_vectors' is used to plot the tangential components "
+                        + "of a field. Thus it can be used only with 'E' or 'H'."
+                    )
+                rc = (2, 1) if direction != "x" else (1, 2)
+                fig, axs = plt.subplots(*rc, subplot_kw=dict(aspect=1))
+
+                self.plot_component(field, "t", part, boundaries, colorbar, axs[0])
+                self.plot_component(field, "n", part, boundaries, colorbar, axs[1])
+            elif field == "I":
+                fig, ax = self.plot_intensity(ax=None, colorbar=colorbar)
+            else:
+                rc = (3, 1) if direction != "x" else (1, 3)
+                fig, axs = plt.subplots(*rc, subplot_kw=dict(aspect=1))
+
+                for id_ax, comp in enumerate("xyz"):
+                    self.plot_component(field, comp, part, boundaries, colorbar, axs[id_ax])
+            fig.suptitle(title if title else field)
+            plt.tight_layout()
+            plt.show()
 
     def plot_intensity(
         self,
@@ -323,6 +467,7 @@ class Mode:
 @dataclass(frozen=True)
 class Modes:
     modes: List
+    """List of modes"""
 
     def __getitem__(self, idx) -> Mode:
         return self.modes[idx]
@@ -355,6 +500,21 @@ def compute_modes(
     n_guess=None,
     solver="scipy",
 ) -> Modes:
+    """Computes the modes of a waveguide.
+
+    Args:
+        basis_epsilon_r (Basis): Basis on which epsilon_r is defined.
+        epsilon_r (NDArray): Relative permittivity of the waveguide.
+        wavelength (float): Wavelength of the light.
+        mu_r (float, optional): Relative permeability of the waveguide. Defaults to 1.
+        num_modes (int, optional): Number of modes to compute. Defaults to 1.
+        order (int, optional): Order of the basis functions. Defaults to 1.
+        metallic_boundaries (bool, optional): If True, the boundaries are considered to be metallic. Defaults to False.
+        radius (float, optional): Radius of the waveguide. Defaults to np.inf.
+        n_guess (float, optional): Initial guess for the effective index. Defaults to None.
+        solver (str, optional): Solver to use. Defaults to "scipy".
+    """
+
     if solver == "scipy":
         solver = solver_eigen_scipy
     elif solver == "slepc":
@@ -517,7 +677,9 @@ def calculate_overlap(
     def overlap(w):
         return cross(np.conj(w["E_i"][0]), w["H_j"][0]) + cross(w["E_j"][0], np.conj(w["H_i"][0]))
 
-    if basis_i == basis_j:
+    if basis_i == basis_j or (
+        np.isclose(basis_i.X, basis_j.X).all() and np.isclose(basis_i.W, basis_j.W).all()
+    ):
         return 0.5 * overlap.assemble(
             basis_i,
             E_i=basis_i.interpolate(E_i),
@@ -574,6 +736,16 @@ def calculate_scalar_product(basis_i, E_i, basis_j, H_j):
 
 
 def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title="E", direction="y"):
+    """Plots a mode.
+
+    Args:
+        basis (Basis): Basis of the mode.
+        mode (np.ndarray): Mode to plot.
+        plot_vectors (bool, optional): If True, plot the normal and tangential components. Defaults to False.
+        colorbar (bool, optional): Adds a colorbar to the plot. Defaults to True.
+        title (str, optional): Title of the plot. Defaults to "E".
+
+    """
     from mpl_toolkits.axes_grid1 import make_axes_locatable
 
     (et, et_basis), (ez, ez_basis) = basis.split(mode)
@@ -639,7 +811,7 @@ def eval_error_estimator(basis, u):
 
     # facet jump
     fbasis = [InteriorFacetBasis(basis.mesh, basis.elem, side=i) for i in [0, 1]]
-    w = {"u" + str(i + 1): fbasis[i].interpolate(u) for i in [0, 1]}
+    w = {f"u{str(i + 1)}": fbasis[i].interpolate(u) for i in [0, 1]}
 
     @Functional
     def edge_jump(w):

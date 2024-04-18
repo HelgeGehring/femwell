@@ -85,3 +85,5 @@ plt.show()
 # The second mode is at the width at which it emerges a TM-mode, but shows for slightly wider waveguides an anti-crossing with the emerging TE-mode.
 # After this anti-crossing, the mode with the second highest effective refracteive index is TE10-mode, while the TM00-mode keeps existing in the system with an effective refractive inded slightly above the cutoff.
 # At a  width of ~2600nm, a third TE-mode starts being guided.
+
+# %%

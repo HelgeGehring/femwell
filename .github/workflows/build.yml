@@ -21,9 +21,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - uses: julia-actions/setup-julia@v1
+      - uses: julia-actions/setup-julia@v2
         with:
-          version: '1.9.2'
+          version: '1.10.2'
       - uses: julia-actions/cache@v1
       - name: Install JuliaFormatter and format
         run: |
