@@ -13,7 +13,7 @@
 # ---
 
 # %% [markdown]
-# # Bent waveguide losses
+# # Crosstalk reduction
 # This example reproduces Figure 3 from {cite}`Yang2020`` in which the crosstalk between adjacent waveguides is suppressed.
 
 # %% tags=["hide-input"]
