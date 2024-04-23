@@ -33,6 +33,7 @@ parts:
       - file: photonics/examples/crosstalk.py
       - file: photonics/examples/propagation_loss.py
       - file: photonics/examples/effective_area.py
+      - file: photonics/examples/crosstalk_reduction/crosstalk_reduction.py
     - file: photonics/examples/metal_heater_phase_shifter.py
     - file: photonics/examples/metal_heater_phase_shifter_transient.py
     - file: photonics/examples/si_heater_phase_shifter.py
