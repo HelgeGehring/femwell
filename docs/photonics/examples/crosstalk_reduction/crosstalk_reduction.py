@@ -36,7 +36,6 @@ w_core_1 = 0.5
 w_core_2 = 0.5
 gap = 0.5
 h_core = 0.22
-h_rib = 0.05
 w_core_c = 0.2
 num_c = 2
 
@@ -85,7 +84,6 @@ for num_c, reference in zip([1, 2], references):
                 )
                 for i in range(num_c)
             },
-            # rib=box(-w_sim / 2, 0, w_sim / 2, h_rib),
             clad=Polygon(
                 [(-w_sim / 2, 0), (-w_sim / 2, h_clad), (w_sim / 2, h_clad), (w_sim / 2, 0)]
             ),
@@ -122,7 +120,7 @@ for num_c, reference in zip([1, 2], references):
         # modes_both[0].show("E", direction="x")
         # modes_both[1].show("E", direction="x")
         coupling_length = wavelength / (2 * np.real(modes_both[0].n_eff - modes_both[1].n_eff))
-        print(f"Maximum power transfer after {coupling_length} um prop length")
+        # print(f"Maximum power transfer after {coupling_length} um prop length")
         coupling_lengths.append(coupling_length)
 
     plt.plot(*reference_data, label="Reference")
