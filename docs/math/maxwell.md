@@ -244,13 +244,13 @@ $$
 
 Again this is a scalar equation. Now we have four equations for three free parameters $E_x,E_y,E_Z$, hence our system is overestimated. Hence, we can skip one equation, as discussed later
 
-We 
+We use the definiton
 
 $$
     E_e^{\text{new}} = i \beta E_z
 $$
 
-to rewrite 
+to rewrite the equations to 
 
 $$\begin{aligned}
     &
