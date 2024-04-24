@@ -247,7 +247,7 @@ Again this is a scalar equation. Now we have four equations for three free param
 We use the definiton
 
 $$
-    E_e^{\text{new}} = i \beta E_z
+    E_3^{\text{new}} = i \beta E_z
 $$
 
 to rewrite the equations to 
