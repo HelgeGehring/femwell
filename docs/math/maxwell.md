@@ -173,7 +173,7 @@ In these equations we have used $\mathbf{D}=\varepsilon_0\varepsilon\mathbf{E}$ 
 These equations sometimes referd to as boundary conditions. It should be noted, that here boundary refers to the behaviour of the fields at the interface between two materials in contrast to boundary conditions at the edge of a simulation box.While the calculations can be done with keeping $\varepsilon(\mathbf{r})$, the boundary conditions can give a useful sanity check. They also indicate, that at interface a fine grid is required, while at areas of homogeneous materials larger grid can be chosen. 
 
 
-# Reduction two 2-Dimensions
+# Reduction to two dimensions
 
 Often structures are constructed in such a way, that they are strongly patterned in a plane (e.g. the $xy$-plane) and are uniform in the direction perpendicular to the plane. This already holds for the simple
 example of a waveguide, which has interface within the plane, but is (almost) infinitely extended in the perpendicular direction.
@@ -187,14 +187,14 @@ $$\mathbf{E}(\mathbf{r},t) = \mathbf{E}(\mathbf{r}) e^{-i(\omega t- \mathbf{k} \
 Now we assume that the wave propagates along the $z$-direction. The electric field is only structured in the $x,y$-plane and thus depends only on $\mathbf{r}_{\perp }=(x,y) $. Along the propagation direction we assume it to be homogeneous. Then the fields are 
 
 $$
-    mathbf{E}(\mathbf{r})  \to  \mathbf{E} ( \mathbf{r}_{ \perp }) = \left(\mathbf{E}_{ \perp }(\mathbf{r}_{ \perp } ),E_z( \mathbf{r}_{\perp})\right) g 
+    \mathbf{E}(\mathbf{r})  \to  \mathbf{E} ( \mathbf{r}_{ \perp }) = \left(\mathbf{E}_{ \perp }(\mathbf{r}_{ \perp } ),E_z( \mathbf{r}_{\perp})\right) g 
 $$
 
 $$
 	\mathbf{k} \to  k_z 
 $$ 
 
-We further separate the amplitude into the amplitude within the $xy$-plane $\mathbf{E}_{ \perp }=(E_x,E_y,0)$ and along the propagation direction $E_z$. Note that $\vE$ is a 2D vector in the xy plane with , while $E_z$ is a scalar. Both amplitudes depend only on $\mathbf{r}_{ \perp }$, while in the $z$- direction we assume a homogeneous system described by a plane wave
+We further separate the amplitude into the amplitude within the $xy$-plane $\mathbf{E}_{ \perp }=(E_x,E_y,0)$ and along the propagation direction $E_z$. Note that $\vec{E}$ is a 2D vector in the xy plane with , while $E_z$ is a scalar. Both amplitudes depend only on $\mathbf{r}_{ \perp }$, while in the $z$- direction we assume a homogeneous system described by a plane wave
 ansatz.
 
 $$
@@ -222,8 +222,8 @@ amplitudes enter and obtain two equations
 $$\begin{aligned}
      & \mathbf{\nabla} \times \frac{1}{\mu(\mathbf{r}_{ \perp } ) } \mathbf{\nabla} \times \mathbf{E}_{ \perp }(\mathbf{r}_{ \perp } )  
 		- \left[ \omega^2 \varepsilon(\mathbf{r}_{ \perp }) +\frac{k_z^2}{\varepsilon(\mathbf{r}_{ \perp })} \right] 
-          \mathbf{E}_{\perp}(\mathbf{r}_{ \perp }) + i \frac{k_z}{\mu(\mathbf{r}_{ \perp })} \grad E_z(\mathbf{r}_{ \perp })= 0 {#eq:2D_wave1 label="eq:2D_wave1"}}\\ 
-     \div \left( \varepsilon(\mathbf{r}_{\perp}) \grad E_z (\mathbf{r}_{\perp}) \right) + \omega^2 \varepsilon(\mathbf{r}_{\perp})  E_z (\mathbf{r}_{\perp}) - i k_z \div \left( \frac{1}{\mu(\mathbf{r}_{\perp})} \mathbf{E}_{\perp}(\mathbf{r}_{\perp}) \right) = 0 {#eq:2D_wave2 label="eq:2D_wave2"}
+          \mathbf{E}_{\perp}(\mathbf{r}_{ \perp }) + i \frac{k_z}{\mu(\mathbf{r}_{ \perp })} \nabla E_z(\mathbf{r}_{ \perp })= 0 \\ 
+     &\nabla \cdot \left( \varepsilon(\mathbf{r}_{\perp}) \nabla \cdot E_z (\mathbf{r}_{\perp}) \right) + \omega^2 \varepsilon(\mathbf{r}_{\perp})  E_z (\mathbf{r}_{\perp}) - i k_z \nabla \cdot \left( \frac{1}{\mu(\mathbf{r}_{\perp})} \mathbf{E}_{\perp}(\mathbf{r}_{\perp}) \right) = 0 
  \end{aligned} 
 $$
 
@@ -242,10 +242,9 @@ $$
 		+ i k_z \varepsilon(\mathbf{r}_{ \perp }) E_z(\mathbf{r}_{ \perp })=0 
 $$
 
-Again this is a scalar equation. Now we have four equations for three free parameters $E_x,E_y,E_Z$, hence our system is overestimated. Hence, we can skip one equation, which we choose to be
-Eq. [\[eq:2D_wave2\]](#eq:2D_wave2){reference-type="ref" reference="eq:2D_wave2"}.
+Again this is a scalar equation. Now we have four equations for three free parameters $E_x,E_y,E_Z$, hence our system is overestimated. Hence, we can skip one equation, as discussed later
 
-We use the definition
+We 
 
 $$
     E_e^{\text{new}} = i \beta E_z
@@ -289,7 +288,7 @@ $$\begin{aligned}
     =
     0  \end{aligned}
 $$
-$$
+
 
 ## PML
 
@@ -299,6 +298,7 @@ $$
 
 The mode profiles of bent waveguides can be calculated using the previously
 derived math with an transformed effective refractive index defined as
+
 {cite}`AzizurRahman2013,shyroki2006exact,Jedidi2007,Xiao2012,Dehghannasiri2017`
 
 $$
