@@ -173,141 +173,122 @@ In these equations we have used $\mathbf{D}=\varepsilon_0\varepsilon\mathbf{E}$ 
 These equations sometimes referd to as boundary conditions. It should be noted, that here boundary refers to the behaviour of the fields at the interface between two materials in contrast to boundary conditions at the edge of a simulation box.While the calculations can be done with keeping $\varepsilon(\mathbf{r})$, the boundary conditions can give a useful sanity check. They also indicate, that at interface a fine grid is required, while at areas of homogeneous materials larger grid can be chosen. 
 
 
-## Eigenvectors propagating in $x_3$-direction
+# Reduction to two dimensions
 
-Assuming no sources and currents present, Maxwell's simplifies to
+Often structures are constructed in such a way, that they are strongly patterned in a plane (e.g. the $xy$-plane) and are uniform in the direction perpendicular to the plane. This already holds for the simple
+example of a waveguide, which has interface within the plane, but is (almost) infinitely extended in the perpendicular direction.
 
-$$    \begin{aligned} &\nabla\cdot \left(\varepsilon\vec{\mathcal{E}}\right) = 0 \\
-    & \nabla\cdot \left(\mu\vec{\mathcal{H}}\right) = 0  \\
-    & \nabla\times\vec{\mathcal{E}} = - \mu \frac{\partial \vec{\mathcal{H}}}{\partial t} \\
-    & \nabla\times\vec{\mathcal{H}} =  \varepsilon \frac{\partial \vec{\mathcal{E}}}{\partial t}  \end{aligned} 
-$$(maxwell_no_sources)
+For simulations, just solving the equation within the plane can reduce the problem greatly, also from the computational point of view. The equation also reduce to a much simpler version, which we derive here.
 
-By combining the latter two equations of {eq}`maxwell_no_sources`
-we get for the $\mathcal{E}$
+We will discuss only the electric field here. Equations for the magnetic field can be derived in a similar way. We will make a plane wave ansatz assuming a monochromatic wave with frequency $\omega$ via
 
-$$
-    &
-    \nabla\cdot \left(\varepsilon\vec{\mathcal{E}}\right)
-    =
-    0
+$$\mathbf{E}(\mathbf{r},t) = \mathbf{E}(\mathbf{r}) e^{-i(\omega t- \mathbf{k} \cdot \mathbf{r})}$$
 
-    &
-    \nabla\times \left( \frac{1}{\mu}\nabla\times\vec{\mathcal{E}} \right)
-    = - \varepsilon \frac{\partial^2 \vec{\mathcal{E}}}{\partial t^2}
-$$ (maxwell_telegraph)
-
-If we restrict the problem to a 2D-plane $\Omega \in \mathbb{R}^2$ like done in
-{cite}`Vardapetyan2003,Vardapetyan2002,Vardapetyan2002_2`,
-i.e. a plane with $\vec{x}=(x_1,x_2)$ and
-assuming propagation only in $x_3$-direction with a propagation constant $\beta$,
-the equations simplify for the harmonic case with a frequency of $\omega$ to:
+Now we assume that the wave propagates along the $z$-direction. The electric field is only structured in the $x,y$-plane and thus depends only on $\mathbf{r}_{\perp }=(x,y) $. Along the propagation direction we assume it to be homogeneous. Then the fields are 
 
 $$
-    \mathcal{E}(\vec{x},x_3,t)
-    =
-    (\vec{E}(\vec{x}),E_3(\vec{x}))\mathrm{e}^{i(\beta x_3 - \omega t)}
-
-    \mathcal{H}(\vec{x},x_3,t)
-    =
-    (\vec{H}(\vec{x}),H_3(\vec{x}))\mathrm{e}^{i(\beta x_3 - \omega t)}
+    \mathbf{E}(\mathbf{r})  \to  \mathbf{E} ( \mathbf{r}_{ \perp }) = \left(\mathbf{E}_{ \perp }(\mathbf{r}_{ \perp } ),E_z( \mathbf{r}_{\perp})\right) g 
 $$
 
-Using these, the curl can be written as
+$$
+	\mathbf{k} \to  k_z 
+$$ 
+
+We further separate the amplitude into the amplitude within the $xy$-plane $\mathbf{E}_{ \perp }=(E_x,E_y,0)$ and along the propagation direction $E_z$. Note that $\vec{E}$ is a 2D vector in the xy plane with , while $E_z$ is a scalar. Both amplitudes depend only on $\mathbf{r}_{ \perp }$, while in the $z$- direction we assume a homogeneous system described by a plane wave
+ansatz.
 
 $$
-    \nabla \times
-    =
-    \begin{pmatrix}
-    0 & -i \beta & \partial_y \\
-    i \beta & 0 & -\partial_x \\
-    -\partial_y & \partial_x & 0
-    \end{pmatrix}
+\mathbf{E}(\mathbf{r},t) \to \left(\mathbf{E}_{ \perp }(\mathbf{r}_{ \perp }),E_z(\mathbf{r}_{ \perp })\right) e^{-i(\omega t- k_z z)}
 $$
 
-and the derivative with respect to time becomes
+With these assumption we can reduce the Maxwell and wave equation respectively. For the derivations in these equations appearing we have
+
+$$ \begin{aligned}
+\partial_z \mathbf{E}(\mathbf{r},t) = i k_z \mathbf{E}(\mathbf{r},t) \\
+	\partial_t \mathbf{E}(\mathbf{r},t) = -i \omega \mathbf{E}(\mathbf{r},t)
+\end{aligned}$$
+
+where $\partial_i = \partial/\partial i$ is the partial derivative after the quantity $i$.
+
+Now we use these assumptions to rewrite the wave equation 
 
 $$
-    \frac{\partial}{\partial t}
-    = - i \omega
+\mathbf{\nabla}\times  \left( \frac{1}{\mu(\mathbf{r})} \mathbf{\nabla} \times \mathbf{E}(\mathbf{r},t)\right)  - \partial_t^2 \mathbf{E}(\mathbf{r},t) = 0 
 $$
 
-This leads to the equations
+We remove the time dependence of the fields, such that only the field
+amplitudes enter and obtain two equations 
 
-$$
-    &
-    \nabla \times \left(\frac{1}{\mu} \nabla \times \vec{E}\right)
-    - \omega^2 \epsilon \vec{E}
-    + \frac{\beta^2}{\mu}\vec{E}
-    + \frac{i \beta}{\mu} \nabla E_3
-    = 0
-
-    &
-    \nabla \cdot \left(\frac{1}{\mu} \nabla E_3\right)
-    + \omega^2 \epsilon E_3
-    - i \beta \nabla \cdot \left( \frac{1}{\mu} \vec{E} \right)
-    = 0
-
-    &
-    \nabla \cdot \left( \epsilon \vec{E} \right)
-    + i \beta \epsilon E_3
-    = 0
+$$\begin{aligned}
+     & \mathbf{\nabla} \times \frac{1}{\mu(\mathbf{r}_{ \perp } ) } \mathbf{\nabla} \times \mathbf{E}_{ \perp }(\mathbf{r}_{ \perp } )  
+		- \left[ \omega^2 \varepsilon(\mathbf{r}_{ \perp }) +\frac{k_z^2}{\varepsilon(\mathbf{r}_{ \perp })} \right] 
+          \mathbf{E}_{\perp}(\mathbf{r}_{ \perp }) + i \frac{k_z}{\mu(\mathbf{r}_{ \perp })} \nabla E_z(\mathbf{r}_{ \perp })= 0 \\ 
+     &\nabla \cdot \left( \varepsilon(\mathbf{r}_{\perp}) \nabla \cdot E_z (\mathbf{r}_{\perp}) \right) + \omega^2 \varepsilon(\mathbf{r}_{\perp})  E_z (\mathbf{r}_{\perp}) - i k_z \nabla \cdot \left( \frac{1}{\mu(\mathbf{r}_{\perp})} \mathbf{E}_{\perp}(\mathbf{r}_{\perp}) \right) = 0 
+ \end{aligned} 
 $$
 
-and the boundary conditions at $\partial\Omega$,
-where $\vec{n}$ is the unit vector orthogonal to the boundary:
+Note that the top equation is a 2D equation, in the sense that it acts only in the $(x,y)$ plane, while the bottom equation is just a scalar equation.
+
+We can proceed analogously for the Maxwell's equation 
 
 $$
-    &\vec{E} \times \vec{n} = 0
-
-    &E_3 = 0
+    \mathbf{\nabla} \left( \varepsilon(\mathbf{r})\mathbf{E}(\mathbf{r},t)  \right) =0
 $$
 
-Defining
+and remove the time dependence from the equations simplifying it to
 
 $$
-    E_3^{\text{new}} = i \beta E_3
+     \mathbf{\nabla} \left( \varepsilon(\mathbf{r}_{ \perp }) \mathbf{E}_{\perp}(\mathbf{r}_{ \perp })\right)
+		+ i k_z \varepsilon(\mathbf{r}_{ \perp }) E_z(\mathbf{r}_{ \perp })=0 
 $$
 
-converts the problem to a eigenvalue problem with the eigenvalue $\beta^2$
+Again this is a scalar equation. Now we have four equations for three free parameters $E_x,E_y,E_Z$, hence our system is overestimated. Hence, we can skip one equation, as discussed later
+
+We use the definiton
 
 $$
+    E_3^{\text{new}} = i \beta E_z
+$$
+
+to rewrite the equations to 
+
+$$\begin{aligned}
     &
     \nabla \times \left(\frac{1}{\mu} \nabla \times \vec{E}\right)
     - \omega^2 \epsilon \vec{E}
     + \frac{\beta^2}{\mu}\vec{E}
     + \frac{1}{\mu} \nabla E_3^{\text{new}}
-    = 0
-
+    = 0\\
     &
     \nabla \cdot \left(\frac{1}{\mu} \nabla E_3^{\text{new}}\right)
     + \omega^2 \epsilon E_3^{\text{new}}
     + \beta^2 \nabla \cdot \left( \frac{1}{\mu} \vec{E} \right)
-    = 0
-
+    = 0\\
     &
     \nabla \cdot \left( \epsilon \vec{E} \right)
     + \epsilon E_3^{\text{new}}
-    = 0
+    = 0 \end{aligned}
 $$
+
+and convert the problem to an eigenvalue problem with the eigenvalue $\beta^2$
 
 Variational problem:
 
-$$
+$$\begin{aligned}
     &
     \left( \frac{1}{\mu} \nabla \times \vec{E}, \nabla \times \vec{F} \right)
     - \omega^2 \left( \epsilon \vec{E}, \vec{F} \right)
     + \left( \frac{1}{\mu} \nabla E_3^{\text{new}}, \vec{F} \right)
     =
-    - \beta^2 \left( \frac{1}{\mu} \vec{E}, \vec{F} \right)
-
+    - \beta^2 \left( \frac{1}{\mu} \vec{E}, \vec{F} \right)\\
     &
     \left( \epsilon \vec{E}, \nabla q \right)
     -
     \left( \epsilon E_3^{\text{new}}, q \right)
     =
-    0
+    0  \end{aligned}
 $$
+
 
 ## PML
 
@@ -317,6 +298,7 @@ $$
 
 The mode profiles of bent waveguides can be calculated using the previously
 derived math with an transformed effective refractive index defined as
+
 {cite}`AzizurRahman2013,shyroki2006exact,Jedidi2007,Xiao2012,Dehghannasiri2017`
 
 $$
