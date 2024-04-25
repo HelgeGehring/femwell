@@ -28,7 +28,7 @@ from skfem.io import from_meshio
 from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
 
-# %%
+# %% tags=["hide-output"]
 w_sim = 4
 h_clad = 1
 h_box = 1
@@ -123,6 +123,7 @@ for num_c, reference in zip([1, 2], references):
         # print(f"Maximum power transfer after {coupling_length} um prop length")
         coupling_lengths.append(coupling_length)
 
+    # %%
     plt.xlabel("Width / μm")
     plt.ylabel("Coupling length / μm")
     plt.plot(*reference_data, label="Reference")
