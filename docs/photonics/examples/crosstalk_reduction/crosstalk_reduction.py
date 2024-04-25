@@ -123,6 +123,8 @@ for num_c, reference in zip([1, 2], references):
         # print(f"Maximum power transfer after {coupling_length} um prop length")
         coupling_lengths.append(coupling_length)
 
+    plt.xlabel("Width / μm")
+    plt.ylabel("Coupling length / μm")
     plt.plot(*reference_data, label="Reference")
     plt.plot(w_core_cs * 1e3, coupling_lengths, "ro", label="Calculated")
     plt.legend()
