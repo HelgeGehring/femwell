@@ -76,7 +76,7 @@ def k_to_alpha_dB(k, wavelength):
     """Converts extinction coefficient (unitless) to absorption coefficient (dB/cm), given wavelength (um)."""
     wavelength = wavelength * 1e-6  # convert to m
     alpha = 4 * np.pi * k / wavelength
-    return 10 * np.log10(np.exp(1)) * alpha * 1e-2  # convert to /cm
+    return 10 * np.log10(np.exp(alpha * 1e-2))  # convert to /cm
 
 
 # Physical constants (in cm)
