@@ -37,7 +37,7 @@ jobs:
           installer-parallel: true
       - name: Install dependencies
         run: |
-          sudo apt-get install -y libglu1-mesa
+          sudo apt-get install -y libglu1-mesa xvfb
           poetry install --no-interaction
           pip install --upgrade scipy
           mamba install slepc4py=*=complex* -y
@@ -55,10 +55,13 @@ jobs:
           cache-name: ${{ runner.os }}-${{ steps.get-date.outputs.date }}
           cache-compiled: "true"
       - uses: julia-actions/julia-buildpkg@v1
-      - name: Install dependencies
+      - name: Install julia dependencies
         run: |
           pip install juliacall
           julia -e 'using Pkg; Pkg.add("PythonCall")'
+      - name: Precompile julia dependencies
+        run: |
+          julia -e 'using Pkg; Pkg.precomplile()'
       - uses: actions/cache@v4
         with:
           path: |
