@@ -61,7 +61,7 @@ jobs:
           julia -e 'using Pkg; Pkg.add("PythonCall")'
       - name: Precompile julia dependencies
         run: |
-          julia -e 'using Pkg; Pkg.precomplile()'
+          julia -e 'using Pkg; Pkg.precompile()'
       - uses: actions/cache@v4
         with:
           path: |
