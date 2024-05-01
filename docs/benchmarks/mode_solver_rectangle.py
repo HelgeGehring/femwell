@@ -62,8 +62,8 @@ basis0 = Basis(mesh, ElementTriP0())
 
 for epsilons, boundaries in zip(epsilons_paper, boundaries):
     epsilon = basis0.zeros()
-    for subdomain, e in epsilons.items():
-        epsilon[basis0.get_dofs(elements=subdomain)] = e
+    for subdomain, epsilon in epsilons.items():
+        epsilon[basis0.get_dofs(elements=subdomain)] = epsilon
 
     modes = compute_modes(
         basis0,
