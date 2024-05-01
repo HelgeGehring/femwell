@@ -60,6 +60,7 @@ jobs:
           pip install juliacall
           julia -e 'using Pkg; Pkg.add("PythonCall")'
       - name: Precompile julia dependencies
+        continue-on-error: true
         run: |
           julia --project=~/work/femwell/femwell -e 'using Pkg; Pkg.precompile()'
       - uses: actions/cache@v4
