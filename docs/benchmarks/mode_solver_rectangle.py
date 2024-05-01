@@ -107,7 +107,7 @@ pd.DataFrame(
         "background-color: green" if abs(float(difference)) < 5e-6 else "background-color: red"
         for difference in differences
     ],
-    subset=["difference slepc", "difference scipy"],
+    subset=["Difference slepc", "Difference scipy"],
 )
 
 # %% [markdown]
