@@ -101,9 +101,9 @@ thermal_diffisitivities =
 # The next step is to define the boundary conditions, this can be done simply via julia-dicts:
 
 # %% tags=["remove-stderr", "hide-output"]
-boundary_potentials = Dict(["metal3#e1___None" => 0.4, "metal3#e2___None" => 0.0])
+boundary_potentials = Dict(["metal3#e1___clad" => 0.4, "metal3#e2___clad" => 0.0])
 boundary_temperatures =
-    Dict("metal3#e1___None" => 0.4, "metal3#e2___None" => 0.0, "box___None" => 0.0)
+    Dict("metal3#e1___None" => 0.0, "metal3#e2___None" => 0.0, "box___None" => 0.0)
 
 # %% [markdown]
 # Now we're ready to do the simulations! First we simulate the electrical potential,
@@ -136,9 +136,10 @@ println(
 )
 
 # %% [markdown]
-# And we write the fields to a file for visualisation using paraview:
+# And we write the fields to a vtu-file for visualisation using paraview:
 
 # %% tags=["remove-stderr", "hide-output"]
+Base.zero(::Type{String}) = ""
 writevtk(
     Ω,
     "results",
@@ -148,6 +149,7 @@ writevtk(
         "temperature" => temperature(T0),
         "heat flux" => heat_flux(T0),
         "tags" => τ,
+        "tag_name" => (tag -> get_tag_name(labels, tag)) ∘ τ,
     ],
 )
 

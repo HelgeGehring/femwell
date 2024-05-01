@@ -2,7 +2,8 @@ module Electrostatic
 
 using Gridap
 using Gridap.Algebra
-using GridapMakie, CairoMakie
+using CairoMakie
+using GridapMakie
 
 export compute_potential, current_density, power_density, potential, plot_potential
 
