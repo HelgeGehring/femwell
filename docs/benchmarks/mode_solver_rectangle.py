@@ -62,8 +62,8 @@ basis0 = Basis(mesh, ElementTriP0())
 
 for epsilons, boundaries in zip(epsilons_paper, boundaries):
     epsilon = basis0.zeros()
-    for subdomain, epsilon in epsilons.items():
-        epsilon[basis0.get_dofs(elements=subdomain)] = epsilon
+    for subdomain, e in epsilons.items():
+        epsilon[basis0.get_dofs(elements=subdomain)] = e
 
     modes = compute_modes(
         basis0,
@@ -89,16 +89,16 @@ for epsilons, boundaries in zip(epsilons_paper, boundaries):
 
 pd.DataFrame(
     {
-        "epsilons": [
+        "Epsilons": [
             f"{epsilons['core']:.2f} / {epsilons['clad']:.2f}" for epsilons in epsilons_paper
         ],
-        "reference value": (f"{n:.8f}" for n in neff_values_paper),
-        "calculated value slepc": (f"{n:.8f}" for n in neff_values_femwell_slepc),
-        "difference slepc": (
+        "Reference value": (f"{n:.8f}" for n in neff_values_paper),
+        "Calculated value slepc": (f"{n:.8f}" for n in neff_values_femwell_slepc),
+        "Difference slepc": (
             f"{n1-n2:.8f}" for n1, n2 in zip(neff_values_paper, neff_values_femwell_slepc)
         ),
-        "calculated value scipy": (f"{n:.8f}" for n in neff_values_femwell_scipy),
-        "difference scipy": (
+        "Calculated value scipy": (f"{n:.8f}" for n in neff_values_femwell_scipy),
+        "Difference scipy": (
             f"{n1-n2:.8f}" for n1, n2 in zip(neff_values_paper, neff_values_femwell_scipy)
         ),
     }
