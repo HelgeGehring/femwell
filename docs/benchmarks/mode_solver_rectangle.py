@@ -1,26 +1,28 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: py:light,md:myst
+#     formats: py:percent,md:myst
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.14.4
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.15.0
 #   kernelspec:
 #     display_name: Python 3
 #     name: python3
 # ---
 
+# %% [markdown]
 # # Benchmark of the mode solver 1
 
+# %% [markdown]
 # Reproducing {cite}`Hadley2002`, where the modes of a analytically solvable geometry are calculated.
 # The error for all modes is calculated to be smaller than $\pm 1 \cdot 10^{-8}$.
 # We'll show that we get pretty close, but will stop at a resonable resolution to keep the runtime sensible.
 # Getting even higher accurancy will be left open for adaptive refinement.
 # The results are presented here:
 
-# + tags=["remove-stderr", "hide-input"]
+# %% tags=["remove-stderr", "hide-input"]
 from collections import OrderedDict
 
 import numpy as np
@@ -107,8 +109,8 @@ pd.DataFrame(
     ],
     subset=["difference slepc", "difference scipy"],
 )
-# -
 
+# %% [markdown]
 # ## Bibliography
 #
 # ```{bibliography}
