@@ -33,7 +33,7 @@ with the four fields (note that a bold letter indicates a vector)
 
 -   $\mathbf{B}\left(\mathbf{r},t\right)$: magnetic field
 
-In the equations $\varrho_{\text{ext}}$ and $\mathbf{J}_{\text{ext}}$ are the external charge and current density. These are macroscopic equations, i.e., local average over microscopic quantities.
+In the equations $\varrho_{\text{ext}}$ and $\mathbf{J}_{\text{ext}}$ are the external charge and current density. These are macroscopic equations, i.e., local averages over microscopic quantities.
 
 The coupling to matter can be described in the macroscopic equations via the polarisation $\mathbf{P}$ and the magnetisation $\mathbf{M}$
 
@@ -42,10 +42,10 @@ $$\begin{aligned}
     \mathbf{H}\left(\mathbf{r},t\right) &=& \frac{1}{\mu_0} \mathbf{B}\left(\mathbf{r},t\right)- \mathbf{M}\left(\mathbf{r},t\right)    
 \end{aligned}$$ 
 
-with $\varepsilon_0$ the electric permittivity and $\mu_0$ the magnetic permeability. The polarisation $\mathbf{P}$ describes the dipole moment per unit cell of the material
+with $\varepsilon_0$ the electric permittivity and $\mu_0$ the magnetic permeability. The polarisation $\mathbf{P}$ describes the dipole moment of the material connected to the internal charge density $\varrho_{\text{int}}(\mathbf{r})$
 
 $$\begin{aligned}
-    \mathbf{\nabla}\cdot\mathbf{P}\left(\mathbf{r},t\right) = - \varrho_{\text{int}}\left(\mathbf{r},t\right) \notag
+    \mathbf{\nabla}\cdot\mathbf{P}\left(\mathbf{r},t\right) = - \varrho_{\text{int}}\left(\mathbf{r},t\right)
 \end{aligned}$$ 
 
 Now putting these back in the Maxwell equations we obtain 
@@ -53,35 +53,38 @@ Now putting these back in the Maxwell equations we obtain
 $$\begin{aligned}
     \mathbf{\nabla}\cdot\mathbf{D}\left(\mathbf{r},t\right)=& \mathbf{\nabla}\cdot\left(\varepsilon_0 \mathbf{E}\left(\mathbf{r},t\right) + \mathbf{P}\left(\mathbf{r},t\right) \right) \\
         \Rightarrow 
-        \mathbf{\nabla}\cdot\mathbf{E}\left(\mathbf{r},t\right) =& \frac{1}{\varepsilon_0} \left(  \mathbf{\nabla}\cdot\mathbf{D}\left(\mathbf{r},t\right) -  \mathbf{\nabla}\cdot\mathbf{P}\left(\mathbf{r},t\right) \right)
-        = \frac{1}{\varepsilon_0} \left( \rho_{\text{ext}}\left(\mathbf{r},t\right)+\rho_{\text{int}}\left(\mathbf{r},t\right) \right) 
-        = \frac{1}{\varepsilon_0} \rho\left(\mathbf{r},t\right) 
+        \mathbf{\nabla}\cdot\mathbf{E}\left(\mathbf{r},t\right) =& \frac{1}{\varepsilon_0} \left(  \mathbf{\nabla}\cdot\mathbf{D}\left(\mathbf{r},t\right) -  \mathbf{\nabla}\cdot\mathbf{P}\left(\mathbf{r},t\right) \right)\\
+        =& \frac{1}{\varepsilon_0} \left( \varrho_{\text{ext}}\left(\mathbf{r},t\right)+\varrho_{\text{int}}\left(\mathbf{r},t\right) \right) 
+        = \frac{1}{\varepsilon_0} \varrho\left(\mathbf{r},t\right) 
 \end{aligned}$$ 
 
-which constitutes a link between the electric field $\mathbf{E}$ and all polarization effects. Here $\rho=\rho_{\text{ext}}+\rho_{\text{int}}$ is the sum of the external and internal charges. 
+which constitutes a link between the electric field $\mathbf{E}$ and all polarization effects. Here $\varrho=\varrho_{\text{ext}}+\varrho_{\text{int}}$ is the sum of the external and internal charges. 
 
-For most effects in light-matter interaction, it is sufficient to consider linear materials, i.e., the relation between the polarisation and the electric field is given by a constant. For isotropic materials these constant is called *dielectric susceptibility* $\chi$ constant, while for anisotropic materials $\underline{\underline{\chi}}$ is a tensor. For the purpose of modelling dielectric materials, we assume that the polarization has the same time dependence that the electric field. We will keep the dependence on the space coordinate to account for composities of materials to bet modelling in a device, i.e., we account for inhomogeneous materials. 
+For most effects in light-matter interaction, it is sufficient to consider linear materials, i.e., the relation between the polarisation and the electric field is given by a constant. For isotropic materials these constant is called *dielectric susceptibility* $\chi$ constant, while for anisotropic materials $\underline{\underline{\chi}}$ is a tensor. For the purpose of modelling dielectric materials, we assume that the polarization has the same time dependence that the electric field. We will keep the dependence on the space coordinate to account for composities of materials to bet modelling in a device, i.e., we account for spatially inhomogeneous (or structured) materials. 
 
 $$\mathbf{P}\left(\mathbf{r},t\right) = \varepsilon_0 \chi\left(\mathbf{r}\right) \mathbf{E}\left(\mathbf{r},t\right) \,.$$ 
 
 With this we can write 
 
 $$\begin{aligned}
-    \mathbf{D}\left(\mathbf{r},t\right)= \varepsilon_0 \mathbf{E}\left(\mathbf{r},t\right) + \mathbf{P}\left(\mathbf{r},t\right) = ( \varepsilon_0 + \varepsilon_0 \chi\left(\mathbf{r}\right)) \mathbf{E}\left(\mathbf{r},t\right)  = \varepsilon_0 (1+\chi\left(\mathbf{r}\right))\mathbf{E}\left(\mathbf{r},t\right)=  \varepsilon_0 \varepsilon_r\left(\mathbf{r}\right) \mathbf{E}\left(\mathbf{r},t\right)
+    \mathbf{D}\left(\mathbf{r},t\right)= & \varepsilon_0 \mathbf{E}\left(\mathbf{r},t\right) + \mathbf{P}\left(\mathbf{r},t\right) \\
+     =& ( \varepsilon_0 + \varepsilon_0 \chi\left(\mathbf{r}\right)) \mathbf{E}\left(\mathbf{r},t\right)  \\
+     =& \varepsilon_0 (1+\chi\left(\mathbf{r}\right))\mathbf{E}\left(\mathbf{r},t\right) \\
+     =&  \varepsilon_0 \varepsilon_r\left(\mathbf{r}\right) \mathbf{E}\left(\mathbf{r},t\right)
 \end{aligned}$$ 
 
 using the dielectric displacement $\varepsilon=1+ \chi$, also called dielectric constant. The dielectric constant is often given to quantify the response of a material to an external field, hence, it is an important quantity. Note that for the magnetic field, assuming again isotropic, linear materials, it holds analogously
 
 $$\mathbf{B}\left(\mathbf{r},t\right) = \mu_0 \mu_r\left(\mathbf{r}\right) \mathbf{H}\left(\mathbf{r},t\right)$$ 
 
-with the permeablitiy $\mu_r$. For materials are non-magnetic, such that we have $\mu_R=1$. We summarize 
+with the permeablitiy $\mu_r$. Most materials are non-magnetic, such that $\mu_r=1$. We summarize 
 
 $$\begin{aligned}
     \varepsilon\left(\mathbf{r}\right) = \varepsilon_0 \varepsilon_r\left(\mathbf{r}\right)\\
     \mu\left(\mathbf{r}\right) = \mu_0 \mu_r\left(\mathbf{r}\right)
 \end{aligned}$$ 
 
-We remind that it holds that 
+We remind of the relation
 
 $$\begin{aligned}
     c^2=\frac{1}{\mu_0\varepsilon_0}
