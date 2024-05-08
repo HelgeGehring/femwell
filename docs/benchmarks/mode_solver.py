@@ -1,26 +1,28 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: py:light,md:myst
+#     formats: py:percent,md:myst
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.14.4
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.16.1
 #   kernelspec:
 #     display_name: Python 3
 #     name: python3
 # ---
 
+# %% [markdown]
 # # Benchmark of the mode solver 2
 
+# %% [markdown]
 # Reproducing {cite}`Hadley2002`, where the modes of a strip and
 # several rib waveguide were calculated and presented with an error value.
 # The error for all modes is calculated to be smaller than $\pm 3 \cdot 10^{-6}$,
 # thus this should be the maximum derivation for our simulations.
 # The results are presented here:
 
-# + tags=["remove-stderr", "hide-input", "hide-output"]
+# %% tags=["remove-stderr", "hide-input", "hide-output"]
 from collections import OrderedDict
 
 import numpy as np
@@ -135,7 +137,7 @@ for slab_thickness in slab_thicknesses:
     neff_values_femwell_scipy.append(np.real(modes[0].n_eff))
 
 
-# + tags=["remove-stderr", "hide-input"]
+# %% tags=["remove-stderr", "hide-input"]
 pd.DataFrame(
     {
         "slab_thickness": slab_thicknesses,
@@ -160,8 +162,8 @@ pd.DataFrame(
     ],
     subset=["difference scipy", "difference julia"],  # "difference slepc",
 )
-# -
 
+# %% [markdown]
 # ## Bibliography
 #
 # ```{bibliography}

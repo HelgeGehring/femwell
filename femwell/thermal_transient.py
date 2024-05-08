@@ -23,6 +23,20 @@ def solve_thermal_transient(
     dt,
     steps,
 ):
+    """Thermal transient simulation.
+
+    Args:
+        basis0: Basis of the thermal_conductivity.
+        thermal_conductivity_p0: thermal conductivity in W/m‧K.
+        thermal_diffusivity_p0: thermal diffusivity in m^2/s.
+        specific_conductivity: specific conductivity in S/m.
+        current_densities_0: current densities at time 0.
+        current_densities: current densities as a function of time.
+        fixed_boundaries: fixed boundaries.
+        dt: time step.
+        steps: number of steps.
+
+    """
     basis, temperature = solve_thermal(
         basis0,
         thermal_conductivity_p0,

@@ -1,26 +1,28 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: py:light,md:myst
+#     formats: py:percent,md:myst
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.14.4
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.15.0
 #   kernelspec:
 #     display_name: Python 3
 #     name: python3
 # ---
 
+# %% [markdown]
 # # Benchmark of the mode solver 1
 
+# %% [markdown]
 # Reproducing {cite}`Hadley2002`, where the modes of a analytically solvable geometry are calculated.
 # The error for all modes is calculated to be smaller than $\pm 1 \cdot 10^{-8}$.
 # We'll show that we get pretty close, but will stop at a resonable resolution to keep the runtime sensible.
 # Getting even higher accurancy will be left open for adaptive refinement.
 # The results are presented here:
 
-# + tags=["remove-stderr", "hide-input"]
+# %% tags=["remove-stderr", "hide-input"]
 from collections import OrderedDict
 
 import numpy as np
@@ -87,16 +89,16 @@ for epsilons, boundaries in zip(epsilons_paper, boundaries):
 
 pd.DataFrame(
     {
-        "epsilons": [
+        "Epsilons": [
             f"{epsilons['core']:.2f} / {epsilons['clad']:.2f}" for epsilons in epsilons_paper
         ],
-        "reference value": (f"{n:.8f}" for n in neff_values_paper),
-        "calculated value slepc": (f"{n:.8f}" for n in neff_values_femwell_slepc),
-        "difference slepc": (
+        "Reference value": (f"{n:.8f}" for n in neff_values_paper),
+        "Calculated value slepc": (f"{n:.8f}" for n in neff_values_femwell_slepc),
+        "Difference slepc": (
             f"{n1-n2:.8f}" for n1, n2 in zip(neff_values_paper, neff_values_femwell_slepc)
         ),
-        "calculated value scipy": (f"{n:.8f}" for n in neff_values_femwell_scipy),
-        "difference scipy": (
+        "Calculated value scipy": (f"{n:.8f}" for n in neff_values_femwell_scipy),
+        "Difference scipy": (
             f"{n1-n2:.8f}" for n1, n2 in zip(neff_values_paper, neff_values_femwell_scipy)
         ),
     }
@@ -105,10 +107,10 @@ pd.DataFrame(
         "background-color: green" if abs(float(difference)) < 5e-6 else "background-color: red"
         for difference in differences
     ],
-    subset=["difference slepc", "difference scipy"],
+    subset=["Difference slepc", "Difference scipy"],
 )
-# -
 
+# %% [markdown]
 # ## Bibliography
 #
 # ```{bibliography}

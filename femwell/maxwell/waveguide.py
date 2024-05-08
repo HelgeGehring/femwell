@@ -291,6 +291,16 @@ class Mode:
         colorbar: bool = False,
         ax: Axes = None,
     ):
+        """Plots a component of the electric or magnetic field.
+
+        Args:
+            field ("E", "H"): Field of interest, can be the electric field or the magnetic field.
+            component ("x", "y", "z", "n", "t"): Component of the field to plot.
+            part ("real", "imag", "abs", callable): Function to use to preprocess the field to be plotted. Defaults to "real".
+            boundaries (bool): Superimpose the mesh boundaries on the plot. Defaults to True.
+            colorbar (bool): Adds a colorbar to the plot. Defaults to False.
+            ax (Axes, optional): Axes onto which the plot is drawn. Defaults to None.
+        """
         from mpl_toolkits.axes_grid1 import make_axes_locatable
 
         if part == "real":
@@ -457,6 +467,7 @@ class Mode:
 @dataclass(frozen=True)
 class Modes:
     modes: List
+    """List of modes"""
 
     def __getitem__(self, idx) -> Mode:
         return self.modes[idx]
@@ -489,6 +500,21 @@ def compute_modes(
     n_guess=None,
     solver="scipy",
 ) -> Modes:
+    """Computes the modes of a waveguide.
+
+    Args:
+        basis_epsilon_r (Basis): Basis on which epsilon_r is defined.
+        epsilon_r (NDArray): Relative permittivity of the waveguide.
+        wavelength (float): Wavelength of the light.
+        mu_r (float, optional): Relative permeability of the waveguide. Defaults to 1.
+        num_modes (int, optional): Number of modes to compute. Defaults to 1.
+        order (int, optional): Order of the basis functions. Defaults to 1.
+        metallic_boundaries (bool, optional): If True, the boundaries are considered to be metallic. Defaults to False.
+        radius (float, optional): Radius of the waveguide. Defaults to np.inf.
+        n_guess (float, optional): Initial guess for the effective index. Defaults to None.
+        solver (str, optional): Solver to use. Defaults to "scipy".
+    """
+
     if solver == "scipy":
         solver = solver_eigen_scipy
     elif solver == "slepc":
@@ -710,6 +736,16 @@ def calculate_scalar_product(basis_i, E_i, basis_j, H_j):
 
 
 def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title="E", direction="y"):
+    """Plots a mode.
+
+    Args:
+        basis (Basis): Basis of the mode.
+        mode (np.ndarray): Mode to plot.
+        plot_vectors (bool, optional): If True, plot the normal and tangential components. Defaults to False.
+        colorbar (bool, optional): Adds a colorbar to the plot. Defaults to True.
+        title (str, optional): Title of the plot. Defaults to "E".
+
+    """
     from mpl_toolkits.axes_grid1 import make_axes_locatable
 
     (et, et_basis), (ez, ez_basis) = basis.split(mode)
@@ -775,7 +811,7 @@ def eval_error_estimator(basis, u):
 
     # facet jump
     fbasis = [InteriorFacetBasis(basis.mesh, basis.elem, side=i) for i in [0, 1]]
-    w = {"u" + str(i + 1): fbasis[i].interpolate(u) for i in [0, 1]}
+    w = {f"u{str(i + 1)}": fbasis[i].interpolate(u) for i in [0, 1]}
 
     @Functional
     def edge_jump(w):

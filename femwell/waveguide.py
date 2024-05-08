@@ -13,6 +13,16 @@ from femwell.mesh import mesh_from_OrderedDict
 
 
 def mesh_waveguide(filename, wsim, hclad, hbox, wcore, hcore):
+    """Create a mesh for a waveguide.
+
+    Args:
+        filename: path to save the mesh.
+        wsim: width of the simulation window.
+        hclad: height of the cladding.
+        hbox: height of the box.
+        wcore: width of the core.
+        hcore: height of the core.
+    """
     polygons = OrderedDict(
         core=Polygon(
             [
