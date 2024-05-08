@@ -9,15 +9,15 @@ parts:
       - file: install
   - caption: Derivation of the equations
     chapters:
-      - file: math/maxwell
-        sections:
-        - file: math/maxwell_quantities
-        - file: math/waveguide_port
-        - file: math/overlap_integrals
-      - file: math/thermal
-      - file: math/dispersion
-      - file: math/coupled_mode_theory
-      - file: math/schroedinger
+    - file: math/maxwell
+      sections:
+      - file: math/maxwell_quantities
+      - file: math/waveguide_port
+      - file: math/overlap_integrals
+    - file: math/thermal
+    - file: math/dispersion
+    - file: math/coupled_mode_theory
+    - file: math/schroedinger
     
   - caption: Examples
     chapters:
