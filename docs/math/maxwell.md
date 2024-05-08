@@ -200,7 +200,7 @@ $$ \begin{aligned}
 	\frac{\partial}{\partial t} \mathbf{E}(\mathbf{r},t) = -i \omega \mathbf{E}(\mathbf{r},t)
 \end{aligned}$$
 
-where $\partial_i = \partial/\partial i$ is the partial derivative after the quantity $i$. We enter this into the the wave equation
+We enter this into the the wave equation
 $$
 \mathbf{\nabla}\times  \left( \frac{1}{\mu(\mathbf{r})} \mathbf{\nabla} \times \mathbf{E}(\mathbf{r},t)\right)  - \frac{\partial^2}{\partial t^2} \mathbf{E}(\mathbf{r},t) = 0 \,.
 $$
