@@ -8,7 +8,7 @@ from gplugins.gmsh.get_mesh import get_mesh
 
 # Choose some component
 c = gf.component.Component()
-waveguide = c << gf.get_component(gf.components.straight_heater_metal(length=40))
+waveguide = c << gf.get_component(gf.components.straight_heater_metal(length=80))
 e1 = c << gf.components.straight(1, cross_section="xs_m3")
 e1.connect(e1["e1"], waveguide["l_e1"])
 e2 = c << gf.components.straight(1, cross_section="xs_m3")
