@@ -33,9 +33,7 @@ def dn_carriers(wavelength: float, dN: float, dP: float) -> float:
         return -2.98 * 1e-22 * np.power(dN, 1.016) - 1.25 * 1e-18 * np.power(dP, 0.835)
     else:
         wavelength *= 1e-6
-        return -3.64 * 1e-10 * wavelength**2 * dN - 3.51 * 1e-6 * wavelength**2 * np.power(
-            dP, 0.8
-        )
+        return -3.64 * 1e-10 * wavelength**2 * dN - 3.51 * 1e-6 * wavelength**2 * np.power(dP, 0.8)
 
 
 def dalpha_carriers(wavelength: float, dN: float, dP: float) -> float:
@@ -78,7 +76,7 @@ def k_to_alpha_dB(k, wavelength):
     """Converts extinction coefficient (unitless) to absorption coefficient (dB/cm), given wavelength (um)."""
     wavelength = wavelength * 1e-6  # convert to m
     alpha = 4 * np.pi * k / wavelength
-    return 10 * np.log10(np.exp(1)) * alpha * 1e-2  # convert to /cm
+    return 10 * np.log10(np.exp(alpha * 1e-2))  # convert to /cm
 
 
 # Physical constants (in cm)

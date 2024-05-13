@@ -64,6 +64,16 @@ def solve_periodic(basis_epsilon_r, epsilon_r, k0):
 
 
 def plot_periodic(k, a, basis_phi, phi, num, ax):
+    """Plot the periodic mode.
+
+    Args:
+        k (float): The wavenumber.
+        a (float): The period.
+        basis_phi (Basis): The basis for the periodic function.
+        phi (np.ndarray): The periodic function.
+        num (int): The number of periods to plot.
+        ax (matplotlib.axes.Axes): The axes to plot on.
+    """
     vminmax = np.max(np.abs(basis_phi.interpolate(phi)))
     for i_plot in range(num):
         phases = basis_phi.project(

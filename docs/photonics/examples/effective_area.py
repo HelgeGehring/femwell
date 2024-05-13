@@ -12,17 +12,18 @@
 #     name: python3
 # ---
 # %% [markdown]
-# # Effective area and effective refractive index of a Si-NCs waveguide from {cite}`Rukhlenko2012`.
+# # Effective area of a Si-NCs waveguide
+
+# In this example we calculate the effective area and the effective refractive index of a Si-NCs waveguide from {cite}`Rukhlenko2012`
+
 # %% tags=["hide-input"]
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import shapely.affinity
 from matplotlib.ticker import MultipleLocator
-from shapely.ops import clip_by_rect
-from skfem import Basis, ElementTriP0
+from skfem import Basis, ElementTriP0, Functional
 from skfem.io.meshio import from_meshio
 
 from femwell.maxwell.waveguide import compute_modes
@@ -47,11 +48,17 @@ n_silica = 1.45
 w_list = [x for x in range(250, 700, 100)]
 neff_dict = dict()
 aeff_dict = dict()
+aeff1_dict = dict()
+aeff3_dict = dict()
 tm_dict = dict()
+p_dict = dict()
 for h in h_list:
     neff_list = []
     aeff_list = []
+    aeff1_list = []
+    aeff3_list = []
     tm_list = []
+    p_list = []
     for width in w_list:
         width = width * 1e-3
         nc = shapely.geometry.box(
@@ -88,99 +95,163 @@ for h in h_list:
 
         for mode in modes:
             if mode.tm_fraction > 0.5:
-                # mode.show(np.real(mode.E))
+                # mode.show("E", part="real")
                 print(f"Effective refractive index: {mode.n_eff:.4f}")
                 print(f"Effective mode area: {mode.calculate_effective_area(field='y'):.4f}")
                 print(f"Mode transversality: {mode.transversality}")
                 neff_list.append(np.real(mode.n_eff))
                 aeff_list.append(mode.calculate_effective_area())
                 tm_list.append(mode.transversality)
+                p_list.append(mode.Sz)
+
+                @Functional
+                def I(w):
+                    return 1
+
+                @Functional
+                def Sz(w):
+                    return w["Sz"]
+
+                @Functional
+                def Sz2(w):
+                    return w["Sz"] ** 2
+
+                Sz_basis, Sz_vec = mode.Sz
+
+                int_Sz = Sz.assemble(Sz_basis, Sz=Sz_basis.interpolate(Sz_vec))
+                print("int(Sz)", int_Sz)  # 1 as it's normalized
+                int_I = I.assemble(Sz_basis.with_elements("core"))
+                print("int_core(1)", int_I)  # area of core
+
+                int_Sz_core = Sz.assemble(
+                    Sz_basis.with_elements("core"),
+                    Sz=Sz_basis.with_elements("core").interpolate(Sz_vec),
+                )
+                print(
+                    "int_core(Sz)",
+                    int_Sz_core,
+                )
+                int_Sz2 = Sz2.assemble(Sz_basis, Sz=Sz_basis.interpolate(Sz_vec))
+                print("int(Sz^2)", int_Sz2)
+
+                aeff1_list.append(int_Sz**2 / int_Sz2)
+                aeff3_list.append(int_I * int_Sz / int_Sz_core)
                 break
         else:
             print(f"no TM mode found for {width}")
     neff_dict[str(h)] = neff_list
+    aeff1_dict[str(h)] = aeff1_list
     aeff_dict[str(h)] = aeff_list
+    aeff3_dict[str(h)] = aeff3_list
     tm_dict[str(h)] = tm_list
+    p_dict[str(h)] = p_list
 # %% [markdown]
 # Plot the result
 
 # %%
-reference_neff_500nm = pd.read_csv(
-    "../reference_data/Rukhlenko/fig_1c_neff/h_500nm.csv", dtype=np.float64
-)
-reference_aeff_500nm = pd.read_csv(
-    "../reference_data/Rukhlenko/fig_1b_aeff/0.5_Eq2.csv", dtype=np.float64
-)
-reference_tm_500nm = pd.read_csv(
-    "../reference_data/Rukhlenko/fig_1c_neff/tm_h_500nm.csv", dtype=np.float64
-)
+path = "../reference_data/Rukhlenko"
 
-reference_neff_700nm = pd.read_csv(
-    "../reference_data/Rukhlenko/fig_1c_neff/h_700nm.csv", dtype=np.float64
-)
-reference_aeff_700nm = pd.read_csv(
-    "../reference_data/Rukhlenko/fig_1b_aeff/0.7_Eq2.csv", dtype=np.float64
-)
-reference_tm_700nm = pd.read_csv(
-    "../reference_data/Rukhlenko/fig_1c_neff/tm_h_700nm.csv", dtype=np.float64
-)
+fig, axs = plt.subplots(4, 1, figsize=(9, 20))
 
-ref_neff_500nm_x, ref_neff_500nm_y = np.split(reference_neff_500nm.values, 2, axis=1)
-ref_aeff_500nm_x, ref_aeff_500nm_y = np.split(reference_aeff_500nm.values, 2, axis=1)
-ref_tm_500nm_x, ref_tm_500nm_y = np.split(reference_tm_500nm.values, 2, axis=1)
+for t1, t2, ax1, ax2 in [("0.5", "500", *axs[0:2]), ("0.7", "700", *axs[2:4])]:
+    reference_neff = np.loadtxt(path + f"/fig_1c_neff/h_{t2}nm.csv", delimiter=",")
+    reference_aeff1 = np.loadtxt(path + f"/fig_1b_aeff/{t1}_Eq1.csv", delimiter=",")
+    reference_aeff2 = np.loadtxt(path + f"/fig_1b_aeff/{t1}_Eq2.csv", delimiter=",")
+    reference_aeff3 = np.loadtxt(path + f"/fig_1b_aeff/{t1}_Eq3.csv", delimiter=",")
+    reference_tm = np.loadtxt(path + f"/fig_1c_neff/tm_h_{t2}nm.csv", delimiter=",")
 
-ref_neff_700nm_x, ref_neff_700nm_y = np.split(reference_neff_700nm.values, 2, axis=1)
-ref_aeff_700nm_x, ref_aeff_700nm_y = np.split(reference_aeff_700nm.values, 2, axis=1)
-ref_tm_700nm_x, ref_tm_700nm_y = np.split(reference_tm_700nm.values, 2, axis=1)
+    ax1.scatter(w_list, aeff_dict[t1], c="r", label="stimulated, eq2")
+    ax1.plot(reference_aeff2[:, 0], reference_aeff2[:, 1], c="b", label="reference, eq2")
 
-fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(9, 20))
+    ax1.scatter(w_list, aeff1_dict[t1], c="green", label="stimulated, eq1")
+    ax1.plot(reference_aeff1[:, 0], reference_aeff1[:, 1], c="orange", label="reference, eq1")
 
-ax1.plot(w_list, aeff_dict["0.5"], "-o", c="r", label="stimulated aeff")
-ax1.scatter(ref_aeff_500nm_x, ref_aeff_500nm_y, c="b", label="reference aeff")
-ax1.set_title("aeff at h = 500nm")
-ax1.yaxis.set_major_locator(MultipleLocator(0.05))
-ax1.yaxis.set_minor_locator(MultipleLocator(0.01))
-ax1.set_ylim(0, 0.3)
-ax1.legend()
+    ax1.scatter(w_list, aeff3_dict[t1], c="purple", label="stimulated, eq3")
+    ax1.plot(reference_aeff3[:, 0], reference_aeff3[:, 1], c="brown", label="reference, eq3")
 
-ax2b = ax2.twinx()
-ax2b.set_ylabel("mode transversality")
-ax2b.scatter(ref_tm_500nm_x, ref_tm_500nm_y, marker="v", c="b", label="reference transversality")
-ax2b.plot(w_list, tm_dict["0.5"], "-v", c="r", label="stimulated transversality")
-ax2b.set_ylim(0.775, 1)
-ax2b.legend()
+    ax1.set_title(f"aeff at h = {t2}nm")
+    ax1.yaxis.set_major_locator(MultipleLocator(0.05))
+    ax1.yaxis.set_minor_locator(MultipleLocator(0.01))
+    ax1.set_ylim(0, 0.3)
+    ax1.legend(loc="upper right")
 
-ax2.plot(w_list, neff_dict["0.5"], "-o", c="r", label="stimulated neff")
-ax2.scatter(ref_neff_500nm_x, ref_neff_500nm_y, c="b", label="reference neff")
-ax2.set_title("neff and mode transversality at h = 500nm")
-ax2.set_ylabel("neff")
-ax2.yaxis.set_major_locator(MultipleLocator(0.4))
-ax2.yaxis.set_minor_locator(MultipleLocator(0.2))
-ax2.set_ylim(0, 2.8)
-ax2.legend()
+    ax2b = ax2.twinx()
+    ax2b.set_ylabel("mode transversality")
+    ax2b.scatter(
+        reference_tm[:, 0],
+        reference_tm[:, 1],
+        marker="v",
+        c="b",
+        label="reference transversality",
+    )
+    ax2b.plot(w_list, tm_dict[t1], "-v", c="r", label="stimulated transversality")
+    ax2b.set_ylim(0.775, 1)
+    ax2b.legend()
 
-ax3.plot(w_list, aeff_dict["0.7"], "-o", c="r", label="stimulated aeff")
-ax3.scatter(ref_aeff_700nm_x, ref_aeff_700nm_y, c="b", label="reference aeff")
-ax3.set_title("aeff at h = 700nm")
-ax3.yaxis.set_major_locator(MultipleLocator(0.05))
-ax3.yaxis.set_minor_locator(MultipleLocator(0.01))
-ax3.set_ylim(0, 0.3)
-ax3.legend()
-
-ax4b = ax4.twinx()
-ax4b.set_ylabel("mode transversality")
-ax4b.scatter(ref_tm_700nm_x, ref_tm_700nm_y, marker="v", c="b", label="reference transversality")
-ax4b.plot(w_list, tm_dict["0.7"], "-v", c="r", label="stimulated transversality")
-ax4b.set_ylim(0.775, 1)
-ax4b.legend()
-
-
-ax4.plot(w_list, neff_dict["0.7"], "-o", c="r", label="stimulated aeff")
-ax4.scatter(ref_neff_700nm_x, ref_neff_700nm_y, c="b", label="reference aeff")
-ax4.set_title("neff and mode transversality at h = 700nm")
-ax2.yaxis.set_major_locator(MultipleLocator(0.4))
-ax2.yaxis.set_minor_locator(MultipleLocator(0.2))
-ax4.set_ylim(0, 2.8)
-ax4.legend()
+    ax2.plot(w_list, neff_dict[t1], "-o", c="r", label="stimulated neff")
+    ax2.scatter(reference_neff[:, 0], reference_neff[:, 1], c="b", label="reference neff")
+    ax2.set_title(f"neff and mode transversality at h = {t2}nm")
+    ax2.set_ylabel("neff")
+    ax2.yaxis.set_major_locator(MultipleLocator(0.4))
+    ax2.yaxis.set_minor_locator(MultipleLocator(0.2))
+    ax2.set_ylim(0, 2.8)
+    ax2.legend()
 
 plt.show()
+
+# %% [markdown]
+# We can also plot the modes to compare them with the reference article
+
+# %%
+# Data figure h
+w_fig_h = 500
+idx_fig_h = min(range(len(w_list)), key=lambda x: abs(w_list[x] - w_fig_h))
+h_fig_h = 0.7
+basis_fig_h, Pz_fig_h = p_dict[str(h_fig_h)][idx_fig_h]
+
+# Data figure f
+w_fig_f = 600
+idx_fig_f = min(range(len(w_list)), key=lambda x: abs(w_list[x] - w_fig_f))
+h_fig_f = 0.5
+basis_fig_f, Pz_fig_f = p_dict[str(h_fig_f)][idx_fig_f]
+
+fig, ax = plt.subplots(1, 2)
+
+basis_fig_h.plot(np.abs(Pz_fig_h), ax=ax[0], aspect="equal")
+ax[0].set_title(
+    f"Poynting vector $S_z$\nfor h = {h_fig_h}μm & w = {w_fig_h}nm\n(Reproduction of Fig.1.h)"
+)
+ax[0].set_xlim(-w_fig_h * 1e-3 / 2 - 0.1, w_fig_h * 1e-3 / 2 + 0.1)
+ax[0].set_ylim(capital_h - 0.1, capital_h + h_fig_h + 0.1)
+# Turn off the axis wrt to the article figure
+ax[0].axis("off")
+# Add the contour
+for subdomain in basis_fig_h.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
+    basis_fig_h.mesh.restrict(subdomain).draw(
+        ax=ax[0], boundaries_only=True, color="k", linewidth=1.0
+    )
+
+basis_fig_f.plot(np.abs(Pz_fig_f), ax=ax[1], aspect="equal")
+ax[1].set_title(
+    f"Poynting vector $S_z$\nfor h = {h_fig_f}μm & w = {w_fig_f}nm\n(Reproduction of Fig.1.f)"
+)
+ax[1].set_xlim(-w_list[idx_fig_f] * 1e-3 / 2 - 0.1, w_list[idx_fig_f] * 1e-3 / 2 + 0.1)
+ax[1].set_ylim(capital_h - 0.1, capital_h + h_fig_f + 0.1)
+# Turn off the axis wrt to the article figure
+ax[1].axis("off")
+# Add the contour
+for subdomain in basis_fig_f.mesh.subdomains.keys() - {"gmsh:bounding_entities"}:
+    basis_fig_f.mesh.restrict(subdomain).draw(
+        ax=ax[1], boundaries_only=True, color="k", linewidth=1.0
+    )
+
+fig.tight_layout()
+plt.show()
+
+# %% [markdown]
+# ## Bibliography
+#
+# ```{bibliography}
+# :style: unsrt
+# :filter: docname in docnames
+# ```

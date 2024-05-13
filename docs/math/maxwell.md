@@ -33,7 +33,7 @@ with the four fields (note that a bold letter indicates a vector)
 
 -   $\mathbf{B}\left(\mathbf{r},t\right)$: magnetic field
 
-In the equations $\varrho_{\text{ext}}$ and $\mathbf{J}_{\text{ext}}$ are the external charge and current density. These are macroscopic equations, i.e., local average over microscopic quantities.
+In the equations $\varrho_{\text{ext}}$ and $\mathbf{J}_{\text{ext}}$ are the external charge and current density. These are macroscopic equations, i.e., local averages over microscopic quantities.
 
 The coupling to matter can be described in the macroscopic equations via the polarisation $\mathbf{P}$ and the magnetisation $\mathbf{M}$
 
@@ -42,10 +42,10 @@ $$\begin{aligned}
     \mathbf{H}\left(\mathbf{r},t\right) &=& \frac{1}{\mu_0} \mathbf{B}\left(\mathbf{r},t\right)- \mathbf{M}\left(\mathbf{r},t\right)    
 \end{aligned}$$ 
 
-with $\varepsilon_0$ the electric permittivity and $\mu_0$ the magnetic permeability. The polarisation $\mathbf{P}$ describes the dipole moment per unit cell of the material
+with $\varepsilon_0$ the electric permittivity and $\mu_0$ the magnetic permeability. The polarisation $\mathbf{P}$ describes the dipole moment of the material connected to the internal charge density $\varrho_{\text{int}}(\mathbf{r})$
 
 $$\begin{aligned}
-    \mathbf{\nabla}\cdot\mathbf{P}\left(\mathbf{r},t\right) = - \varrho_{\text{int}}\left(\mathbf{r},t\right) \notag
+    \mathbf{\nabla}\cdot\mathbf{P}\left(\mathbf{r},t\right) = - \varrho_{\text{int}}\left(\mathbf{r},t\right)
 \end{aligned}$$ 
 
 Now putting these back in the Maxwell equations we obtain 
@@ -53,35 +53,38 @@ Now putting these back in the Maxwell equations we obtain
 $$\begin{aligned}
     \mathbf{\nabla}\cdot\mathbf{D}\left(\mathbf{r},t\right)=& \mathbf{\nabla}\cdot\left(\varepsilon_0 \mathbf{E}\left(\mathbf{r},t\right) + \mathbf{P}\left(\mathbf{r},t\right) \right) \\
         \Rightarrow 
-        \mathbf{\nabla}\cdot\mathbf{E}\left(\mathbf{r},t\right) =& \frac{1}{\varepsilon_0} \left(  \mathbf{\nabla}\cdot\mathbf{D}\left(\mathbf{r},t\right) -  \mathbf{\nabla}\cdot\mathbf{P}\left(\mathbf{r},t\right) \right)
-        = \frac{1}{\varepsilon_0} \left( \rho_{\text{ext}}\left(\mathbf{r},t\right)+\rho_{\text{int}}\left(\mathbf{r},t\right) \right) 
-        = \frac{1}{\varepsilon_0} \rho\left(\mathbf{r},t\right) 
+        \mathbf{\nabla}\cdot\mathbf{E}\left(\mathbf{r},t\right) =& \frac{1}{\varepsilon_0} \left(  \mathbf{\nabla}\cdot\mathbf{D}\left(\mathbf{r},t\right) -  \mathbf{\nabla}\cdot\mathbf{P}\left(\mathbf{r},t\right) \right)\\
+        =& \frac{1}{\varepsilon_0} \left( \varrho_{\text{ext}}\left(\mathbf{r},t\right)+\varrho_{\text{int}}\left(\mathbf{r},t\right) \right) 
+        = \frac{1}{\varepsilon_0} \varrho\left(\mathbf{r},t\right) 
 \end{aligned}$$ 
 
-which constitutes a link between the electric field $\mathbf{E}$ and all polarization effects. Here $\rho=\rho_{\text{ext}}+\rho_{\text{int}}$ is the sum of the external and internal charges. 
+which constitutes a link between the electric field $\mathbf{E}$ and all polarization effects. Here $\varrho=\varrho_{\text{ext}}+\varrho_{\text{int}}$ is the sum of the external and internal charges. 
 
-For most effects in light-matter interaction, it is sufficient to consider linear materials, i.e., the relation between the polarisation and the electric field is given by a constant. For isotropic materials these constant is called *dielectric susceptibility* $\chi$ constant, while for anisotropic materials $\underline{\underline{\chi}}$ is a tensor. For the purpose of modelling dielectric materials, we assume that the polarization has the same time dependence that the electric field. We will keep the dependence on the space coordinate to account for composities of materials to bet modelling in a device, i.e., we account for inhomogeneous materials. 
+For most effects in light-matter interaction, it is sufficient to consider linear materials, i.e., the relation between the polarisation and the electric field is given by a constant. For isotropic materials these constant is called *dielectric susceptibility* $\chi$ constant, while for anisotropic materials $\underline{\underline{\chi}}$ is a tensor. For the purpose of modelling dielectric materials, we assume that the polarization has the same time dependence that the electric field. We will keep the dependence on the space coordinate to account for composities of materials to bet modelling in a device, i.e., we account for spatially inhomogeneous (or structured) materials. 
 
 $$\mathbf{P}\left(\mathbf{r},t\right) = \varepsilon_0 \chi\left(\mathbf{r}\right) \mathbf{E}\left(\mathbf{r},t\right) \,.$$ 
 
 With this we can write 
 
 $$\begin{aligned}
-    \mathbf{D}\left(\mathbf{r},t\right)= \varepsilon_0 \mathbf{E}\left(\mathbf{r},t\right) + \mathbf{P}\left(\mathbf{r},t\right) = ( \varepsilon_0 + \varepsilon_0 \chi\left(\mathbf{r}\right)) \mathbf{E}\left(\mathbf{r},t\right)  = \varepsilon_0 (1+\chi\left(\mathbf{r}\right))\mathbf{E}\left(\mathbf{r},t\right)=  \varepsilon_0 \varepsilon_r\left(\mathbf{r}\right) \mathbf{E}\left(\mathbf{r},t\right)
+    \mathbf{D}\left(\mathbf{r},t\right)= & \varepsilon_0 \mathbf{E}\left(\mathbf{r},t\right) + \mathbf{P}\left(\mathbf{r},t\right) \\
+     =& ( \varepsilon_0 + \varepsilon_0 \chi\left(\mathbf{r}\right)) \mathbf{E}\left(\mathbf{r},t\right)  \\
+     =& \varepsilon_0 (1+\chi\left(\mathbf{r}\right))\mathbf{E}\left(\mathbf{r},t\right) \\
+     =&  \varepsilon_0 \varepsilon_r\left(\mathbf{r}\right) \mathbf{E}\left(\mathbf{r},t\right)
 \end{aligned}$$ 
 
 using the dielectric displacement $\varepsilon=1+ \chi$, also called dielectric constant. The dielectric constant is often given to quantify the response of a material to an external field, hence, it is an important quantity. Note that for the magnetic field, assuming again isotropic, linear materials, it holds analogously
 
 $$\mathbf{B}\left(\mathbf{r},t\right) = \mu_0 \mu_r\left(\mathbf{r}\right) \mathbf{H}\left(\mathbf{r},t\right)$$ 
 
-with the permeablitiy $\mu_r$. For materials are non-magnetic, such that we have $\mu_R=1$. We summarize 
+with the permeablitiy $\mu_r$. Most materials are non-magnetic, such that $\mu_r=1$. We summarize 
 
 $$\begin{aligned}
     \varepsilon\left(\mathbf{r}\right) = \varepsilon_0 \varepsilon_r\left(\mathbf{r}\right)\\
     \mu\left(\mathbf{r}\right) = \mu_0 \mu_r\left(\mathbf{r}\right)
 \end{aligned}$$ 
 
-We remind that it holds that 
+We remind of the relation
 
 $$\begin{aligned}
     c^2=\frac{1}{\mu_0\varepsilon_0}
@@ -98,47 +101,47 @@ $$\begin{aligned}
 
 ## Wave equation
 
-From Maxwell's equation equations we can derive the wave equation. We start in the simplest case when there are no external sources, i.e., we set $\rho = 0$ and $\vec{J}=0$ and assume homogeneous $\varepsilon$ and $\mu$. Now we combine two of Maxwell's equations, namely $\vec{\nabla}\times \vec{E} = - \mu \frac{\partial \vec{H}}{\partial t}$ and
-$\varepsilon \vec{\nabla}\times \vec{H} = \frac{\partial \vec{E}}{\partial t}$ in the
+From Maxwell's equation equations we can derive the wave equation. We start in the simplest case when there are no external sources, i.e., we set $\rho = 0$ and $\mathbf{J}=0$ and assume homogeneous $\varepsilon$ and $\mu$. Now we combine two of Maxwell's equations, namely $\mathbf{\nabla}\times \mathbf{E} = - \mu \frac{\partial \mathbf{H}}{\partial t}$ and
+$\varepsilon \mathbf{\nabla}\times \mathbf{H} = \frac{\partial \mathbf{E}}{\partial t}$ in the
 following way 
 
 $$\begin{aligned}
-    \vec{\nabla}\times \vec{\nabla}\times \vec{E} = \vec{\nabla}\times \left( - \mu \frac{\partial H}{\partial t}\right) = 
-        -\mu \varepsilon \frac{\partial^2 \vec{E}}{\partial t^2} 
+    \mathbf{\nabla}\times \mathbf{\nabla}\times \mathbf{E} = \mathbf{\nabla}\times \left( - \mu \frac{\partial \mathbf{H}}{\partial t}\right) = 
+        -\mu \varepsilon \frac{\partial^2 \mathbf{E}}{\partial t^2} 
 \end{aligned}$$ 
 
-For the rotation we can use the known vector identity for the nable opertaor $\vec{\nabla}\times \vec{\nabla}\times \vec{E} =  \vec{\nabla} (\vec{\nabla}\cdot \vec{E}) - \Delta \vec{E}$.
-We can further make use of Maxwell's equation that $\vec{\nabla} \vec{E} = 0$ in the case without sources. This leads us to the wave equation
+For the rotation we can use the known vector identity for the nabla operator $\mathbf{\nabla}\times \mathbf{\nabla}\times \mathbf{E} =  \mathbf{\nabla} (\mathbf{\nabla}\cdot \mathbf{E}) - \Delta \mathbf{E}$.
+We can further make use of Maxwell's equation that $\mathbf{\nabla}\cdot \mathbf{E} = 0$ in the case without sources. This leads us to the wave equation
 
 $$\begin{aligned}
-    \Delta \vec{E} - \frac{1}{c_{n}} \frac{\partial^2 \vec{E}}{\partial t^2} =0
+    \Delta \mathbf{E} - \frac{1}{c_{n}} \frac{\partial^2 \mathbf{E}}{\partial t^2} =0
 \end{aligned}$$
 
 We have introduced the important relation that the
 light velocity in a medium is given by $c_n=1/\sqrt{\varepsilon\mu}$. In
-vacuum, we obtain the speed of light $c_n=1/\sqrt{\varepsilon_0\mu_0}$,
+vacuum, we obtain the speed of light $c=1/\sqrt{\varepsilon_0\mu_0}$,
 while in matter the velocity is reduced by the refractive index via
-$c_n=c/n$.
+$c_n=c/n$ with the refractive index $n=\sqrt{\varepsilon_r \mu_r}$.
 
 Solutions of the wave equation can be given in the basis of
 monochromatic plane waves 
 
 $$\begin{aligned}
-    \vec{E} &=& \vec{E}_0 \cos(\vec{k} \cdot \vec{r} - \omega t + \varphi) \,, \notag 
+    \mathbf{E} &=& \mathbf{E}_0 \cos(\mathbf{k} \cdot \mathbf{r} - \omega t + \varphi) \,. 
 \end{aligned}$$ 
 
-Here, $\vec{k}$ is the wave vector and indicates the propagation direction. $E_0$ is the amplitude of the wave. Because of Maxwell's equation in free space, all waves are transversal, i.e., the
-amplitude vector is perpendicular to the propagation direction $\vec{E}_0 \perp \vec{k}$. Note that this can be different in matter, in particular for nanostructured systems. The frequency is denoted by $\omega$ and there can be an additional phase $\phi$.
+Here, $\mathbf{k}$ is the wave vector and indicates the propagation direction. $E_0$ is the amplitude of the wave. Because of Maxwell's equation in free space, all waves are transversal, i.e., the
+amplitude vector is perpendicular to the propagation direction $\mathbf{E}_0 \perp \mathbf{k}$. Note that this can be different in matter, in particular for nanostructured systems. The frequency is denoted by $\omega$ and there can be an additional phase $\varphi$.
 
 In many situations it is useful to write the solution as complex light
 field 
 
 $$\begin{aligned}
-    \vec{E} &=& \vec{\tilde{E}}_0 e^{i(\vec{k} \cdot \vec{r}- \omega t  + \varphi)} \,
+    \mathbf{E} &=& \mathbf{\tilde{E}}_0 e^{i(\mathbf{k} \cdot \mathbf{r}- \omega t  + \varphi)} \,
 \end{aligned}$$
 
 
-### Interface between piecewise constant materials 
+## Interface between piecewise constant materials 
 It is instructive to consider the well-known case of an interface $I$ between two dielectric materials, which appear in many devices. We assume an interface between two materials called $1$ with dielectric constant $\varepsilon_1$ and $2$ with dielectric constant $\varepsilon_2$. The surface is defined by the normal vector of the interface $\mathbf{n}_{I}$ and there are no external surface charges or currents. For simplicity, we surpress the dependencies $\left(\mathbf{r},t\right)$ here. 
 
 All fields can then be split into the component parallel to the interface (hence perpendicular to the normal vector) and perpendicular to the interface (hence parallel to the normal vector). For example we consider the electric field: Define the normalized field vector $\hat{\mathbf{E}}=\mathbf{E}/E$ we split it into
@@ -170,144 +173,112 @@ $$\mathbf{B}^{\perp}_1 =  \mathbf{B}^{\perp}_2  \quad \Leftrightarrow \quad
 
 In these equations we have used $\mathbf{D}=\varepsilon_0\varepsilon\mathbf{E}$ and $\mathbf{H}=\frac{1}{\mu_0}\mathbf{B} $.
 
-These equations sometimes referd to as boundary conditions. It should be noted, that here boundary refers to the behaviour of the fields at the interface between two materials in contrast to boundary conditions at the edge of a simulation box.While the calculations can be done with keeping $\varepsilon(\mathbf{r})$, the boundary conditions can give a useful sanity check. They also indicate, that at interface a fine grid is required, while at areas of homogeneous materials larger grid can be chosen. 
+These equations are sometimes referred to as boundary conditions. It should be noted, that here boundary refers to the behaviour of the fields at the interface between two materials in contrast to boundary conditions at the edge of a simulation box.While the calculations can be done with keeping $\varepsilon(\mathbf{r})$, the boundary conditions can give a useful sanity check. They also indicate, that at interface a fine grid is required, while at areas of homogeneous materials larger grid can be chosen. 
 
 
-## Eigenvectors propagating in $x_3$-direction
+## Reduction to two dimensions
 
-Assuming no sources and currents present, Maxwell's simplifies to
+Often structures are constructed in such a way, that they are strongly patterned in a plane (e.g. the $xy$-plane) and are uniform in the direction perpendicular to the plane. This already holds for the simple
+example of a waveguide, which has interface within the plane, but is (almost) infinitely extended in the perpendicular direction.
 
-$$    \begin{aligned} &\nabla\cdot \left(\varepsilon\vec{\mathcal{E}}\right) = 0 \\
-    & \nabla\cdot \left(\mu\vec{\mathcal{H}}\right) = 0  \\
-    & \nabla\times\vec{\mathcal{E}} = - \mu \frac{\partial \vec{\mathcal{H}}}{\partial t} \\
-    & \nabla\times\vec{\mathcal{H}} =  \varepsilon \frac{\partial \vec{\mathcal{E}}}{\partial t}  \end{aligned} 
-$$(maxwell_no_sources)
+For simulations, just solving the equation within the plane can reduce the problem greatly, also from the computational point of view. The equation also reduce to a much simpler version, which we derive here.
 
-By combining the latter two equations of {eq}`maxwell_no_sources`
-we get for the $\mathcal{E}$
+We will discuss only the electric field here. Equations for the magnetic field can be derived in a similar way. We will make a plane wave ansatz assuming a monochromatic wave with frequency $\omega$ via
 
-$$
-    &
-    \nabla\cdot \left(\varepsilon\vec{\mathcal{E}}\right)
-    =
-    0
+$$\mathbf{E}(\mathbf{r},t) = \mathbf{E}(\mathbf{r}) e^{i(\mathbf{k} \cdot \mathbf{r}-\omega t)}$$
 
-    &
-    \nabla\times \left( \frac{1}{\mu}\nabla\times\vec{\mathcal{E}} \right)
-    = - \varepsilon \frac{\partial^2 \vec{\mathcal{E}}}{\partial t^2}
-$$ (maxwell_telegraph)
-
-If we restrict the problem to a 2D-plane $\Omega \in \mathbb{R}^2$ like done in
-{cite}`Vardapetyan2003,Vardapetyan2002,Vardapetyan2002_2`,
-i.e. a plane with $\vec{x}=(x_1,x_2)$ and
-assuming propagation only in $x_3$-direction with a propagation constant $\beta$,
-the equations simplify for the harmonic case with a frequency of $\omega$ to:
+Now we assume that the wave propagates along the $z$-direction and, thus, $\mathbf{k} \to  k_z $. The electric field is only structured in the $x,y$-plane and depends only on $\mathbf{r}_{\perp }=(x,y) $ while in the $z$- direction the field is homogeneous in this ansatz. We separate the amplitude into the amplitude within the $xy$-plane $\mathbf{E}_{ \perp }=(E_x,E_y,0)$ and along the propagation direction $E_z$, that is we take $    \mathbf{E}(\mathbf{r})  \to  \mathbf{E} ( \mathbf{r}_{ \perp }) = \left(\mathbf{E}_{ \perp }(\mathbf{r}_{ \perp } ),E_z( \mathbf{r}_{\perp})\right) $. Note that $\mathbf{E}$ is a 2D vector in the xy plane, while $E_z$ is a scalar and that both amplitudes depend on $\mathbf{r}_{ \perp }$. 
 
 $$
-    \mathcal{E}(\vec{x},x_3,t)
-    =
-    (\vec{E}(\vec{x}),E_3(\vec{x}))\mathrm{e}^{i(\beta x_3 - \omega t)}
-
-    \mathcal{H}(\vec{x},x_3,t)
-    =
-    (\vec{H}(\vec{x}),H_3(\vec{x}))\mathrm{e}^{i(\beta x_3 - \omega t)}
+\mathbf{E}(\mathbf{r},t) \to \left(\mathbf{E}_{ \perp }(\mathbf{r}_{ \perp }),E_z(\mathbf{r}_{ \perp })\right) e^{i(k_z z- \omega t )}
 $$
 
-Using these, the curl can be written as
+With these assumption we can reduce the Maxwell and wave equation respectively. For the derivations in these equations appearing we have
 
+$$ \begin{aligned}
+\frac{\partial}{\partial z}\mathbf{E}(\mathbf{r},t) = i k_z \mathbf{E}(\mathbf{r},t) \\
+	\frac{\partial}{\partial t} \mathbf{E}(\mathbf{r},t) = -i \omega \mathbf{E}(\mathbf{r},t)
+\end{aligned}$$
+
+We enter this into the the wave equation
 $$
-    \nabla \times
-    =
-    \begin{pmatrix}
-    0 & -i \beta & \partial_y \\
-    i \beta & 0 & -\partial_x \\
-    -\partial_y & \partial_x & 0
-    \end{pmatrix}
+\mathbf{\nabla}\times  \left( \frac{1}{\mu(\mathbf{r})} \mathbf{\nabla} \times \mathbf{E}(\mathbf{r},t)\right)  - \frac{\partial^2}{\partial t^2} \mathbf{E}(\mathbf{r},t) = 0 \,.
 $$
+Removing the time dependence of the fields, only the field
+amplitudes enter and we obtain two equations 
 
-and the derivative with respect to time becomes
-
-$$
-    \frac{\partial}{\partial t}
-    = - i \omega
-$$
-
-This leads to the equations
-
-$$
-    &
-    \nabla \times \left(\frac{1}{\mu} \nabla \times \vec{E}\right)
-    - \omega^2 \epsilon \vec{E}
-    + \frac{\beta^2}{\mu}\vec{E}
-    + \frac{i \beta}{\mu} \nabla E_3
-    = 0
-
-    &
-    \nabla \cdot \left(\frac{1}{\mu} \nabla E_3\right)
-    + \omega^2 \epsilon E_3
-    - i \beta \nabla \cdot \left( \frac{1}{\mu} \vec{E} \right)
-    = 0
-
-    &
-    \nabla \cdot \left( \epsilon \vec{E} \right)
-    + i \beta \epsilon E_3
-    = 0
+$$\begin{aligned}
+     \Rightarrow & \mathbf{\nabla} \times \frac{1}{\mu(\mathbf{r}_{ \perp } ) } \mathbf{\nabla} \times \mathbf{E}_{ \perp }(\mathbf{r}_{ \perp } )  
+		- \left[ \omega^2 \varepsilon(\mathbf{r}_{ \perp }) +\frac{k_z^2}{\mu(\mathbf{r}_{ \perp })} \right] 
+          \mathbf{E}_{\perp}(\mathbf{r}_{ \perp }) - i \frac{k_z}{\mu(\mathbf{r}_{ \perp })} \nabla E_z(\mathbf{r}_{ \perp })= 0 \\ 
+     &\nabla \cdot \left( \varepsilon(\mathbf{r}_{\perp}) \nabla \cdot E_z (\mathbf{r}_{\perp}) \right) + \omega^2 \varepsilon(\mathbf{r}_{\perp})  E_z (\mathbf{r}_{\perp}) - i k_z \nabla \cdot \left( \frac{1}{\mu(\mathbf{r}_{\perp})} \mathbf{E}_{\perp}(\mathbf{r}_{\perp}) \right) = 0 
+ \end{aligned} 
 $$
 
-and the boundary conditions at $\partial\Omega$,
-where $\vec{n}$ is the unit vector orthogonal to the boundary:
+Note that the top equation is a 2D equation within the $(x,y)$ plane, while the bottom equation is just a scalar equation.
+
+We can proceed analogously for the Maxwell's equation 
 
 $$
-    &\vec{E} \times \vec{n} = 0
-
-    &E_3 = 0
+    \mathbf{\nabla} \left( \varepsilon(\mathbf{r})\mathbf{E}(\mathbf{r},t)  \right) =0
 $$
 
+and remove the time dependence from the equations simplifying it to
+
+$$
+     \Rightarrow  \mathbf{\nabla} \left( \varepsilon(\mathbf{r}_{ \perp }) \mathbf{E}_{\perp}(\mathbf{r}_{ \perp })\right)
+		+ i k_z \varepsilon(\mathbf{r}_{ \perp }) E_z(\mathbf{r}_{ \perp })=0 
+$$
+
+Again this is a scalar equation. Now we have four equations for three free parameters $E_x,E_y,E_z$, hence our system is overestimated. Hence, we can skip one equation, which we chose to be the scalar equation from the wave equation. 
 Defining
 
 $$
-    E_3^{\text{new}} = i \beta E_3
+    E_3 = i k_z E_z
 $$
+and dropping the indices $\perp,z$ we obtain the following two equations
 
-converts the problem to a eigenvalue problem with the eigenvalue $\beta^2$
-
+$$\begin{aligned}
+    &
+    \mathbf{\nabla} \times \left(\frac{1}{\mu(\mathbf{r})} \mathbf{\nabla} \times \mathbf{E}(\mathbf{r})\right)
+    - \omega^2 \varepsilon(\mathbf{r}) \mathbf{E}(\mathbf{r})
+    - \frac{1}{\mu(\mathbf{r})} \mathbf{\nabla} E_3(\mathbf{r})
+    =- \frac{k^2}{\mu(\mathbf{r})}\mathbf{E}(\mathbf{r})\\
+    &
+    \mathbf{\nabla} \cdot \left( \epsilon(\mathbf{r}) \mathbf{E}(\mathbf{r}) \right)
+    + \epsilon E_3(\mathbf{r})
+    = 0 \end{aligned}
 $$
-    &
-    \nabla \times \left(\frac{1}{\mu} \nabla \times \vec{E}\right)
-    - \omega^2 \epsilon \vec{E}
-    + \frac{\beta^2}{\mu}\vec{E}
-    + \frac{1}{\mu} \nabla E_3^{\text{new}}
-    = 0
+Now we have reduced the system to two dimensions by excuting the derivatives. 
 
-    &
-    \nabla \cdot \left(\frac{1}{\mu} \nabla E_3^{\text{new}}\right)
-    + \omega^2 \epsilon E_3^{\text{new}}
-    + \beta^2 \nabla \cdot \left( \frac{1}{\mu} \vec{E} \right)
-    = 0
+### Variational eigenvalue problem
+In FEM simulations, we solve these equations by a variational ansatz. That means, we take test functions, that are defined on the same space that the wave functions, and search for the optimum. To efficiently solve this, we rewrite the equations from above into an eigenvalue problem. 
 
-    &
-    \nabla \cdot \left( \epsilon \vec{E} \right)
-    + \epsilon E_3^{\text{new}}
-    = 0
+For this, we define the test functions $\mathbf{F}$ and $q$ and the inner product 
 $$
-
-Variational problem:
-
+ \left( \mathbf{F}, \mathbf{G}\right) = \int_\Omega dr^2 \mathbf{F}\cdot \mathbf{G}^*
 $$
+with $g^*$ being the complex conjugated and $\Omega$ is the area. We now use this inner product to convert the equations (we drop the $\mathbf{r}$ dependence here for clarity) to
+
+$$\begin{aligned}
     &
-    \left( \frac{1}{\mu} \nabla \times \vec{E}, \nabla \times \vec{F} \right)
-    - \omega^2 \left( \epsilon \vec{E}, \vec{F} \right)
-    + \left( \frac{1}{\mu} \nabla E_3^{\text{new}}, \vec{F} \right)
+    \left( \frac{1}{\mu} \mathbf{\nabla} \times \mathbf{E}, \mathbf{\nabla} \times \mathbf{F} \right)
+    - \omega^2 \left( \varepsilon \mathbf{E}, \mathbf{F} \right)
+    + \left( \frac{1}{\mu} \mathbf{\nabla} E_3, \mathbf{F} \right)
     =
-    - \beta^2 \left( \frac{1}{\mu} \vec{E}, \vec{F} \right)
-
+    - k^2 \left( \frac{1}{\mu} \mathbf{E}, \mathbf{F} \right)\\
     &
-    \left( \epsilon \vec{E}, \nabla q \right)
+    \left( \epsilon \mathbf{E}, \mathbf{\nabla} q \right)
     -
-    \left( \epsilon E_3^{\text{new}}, q \right)
+    \left( \varepsilon E_3, q \right)
     =
-    0
+    0  \end{aligned}
 $$
+
+This an eigenvalue-equation for $k$ and under certain assumption, it can be shown that $k=0$ is not an eigenvalues as well and the solution is stable for $\omega \to 0$. 
+
+This is the equation we solve in the FEM.
+
 
 ## PML
 
@@ -317,6 +288,7 @@ $$
 
 The mode profiles of bent waveguides can be calculated using the previously
 derived math with an transformed effective refractive index defined as
+
 {cite}`AzizurRahman2013,shyroki2006exact,Jedidi2007,Xiao2012,Dehghannasiri2017`
 
 $$
@@ -328,125 +300,6 @@ $$
 where $R$ is the radius of curvature in $x$-direction.
 
 See discussion on choice of R in {cite}`Masi:10`
-
-## TE/TM Polarization Fraction
-
-$$
-    \mathrm{TEfrac}
-    &=
-    \frac{
-        \int \left| E_{x_1} \right|^2 \mathrm{d}x\mathrm{d}y
-    }{
-        \int \left| E_{x_1} \right|^2 + \left| E_{x_2} \right|^2 \mathrm{d}x \mathrm{d}y
-    }
-
-    \mathrm{TMfrac}
-    &=
-    \frac{
-        \int \left| E_{x_2} \right|^2 \mathrm{d}x\mathrm{d}y
-    }{
-        \int \left| E_{x_1} \right|^2 + \left| E_{x_2} \right|^2 \mathrm{d}x \mathrm{d}y
-    }
-$$
-
-## Loss per meter [dB/m]
-
-$$
-    \text{Loss at }x_3\text{ [dB]}
-    &=-10 \log_{10} \frac{\left|E(x_3)\right|^2}{\left|E(x_3=0)\right|^2}
-    \\
-    &=-20 \log_{10} \frac{\left|E(x_3)\right|}{\left|E(x_3=0)\right|}
-    \\
-    &=-20 \log_{10} \mathrm{e}^{\Im\beta x_3}
-    \\
-    &=-20 \frac{\log_{\mathrm{e}} \mathrm{e}^{\Im\beta x_3}}{\ln 10}
-    \\
-    &=\frac{-20}{\ln 10} \Im\beta x_3
-    \\
-    \\
-    \text{Loss [dB/m]}
-    &=
-    \frac{-20}{\ln 10} \Im\beta \, 1\mathrm{m}
-$$
-
-## Effective Area
-
-As defined in {cite}`Agrawal2019`
-
-$$
-    A_{\text{eff}}
-    =
-    \frac{
-        \left( \int \left| \vec{\mathcal{E}} \right|^2 \mathrm{d}A \right)^2
-    }{
-        \int \left| \vec{\mathcal{E}} \right|^4 \mathrm{d}A
-    }
-$$
-
-## Confinement coefficient
-
-As defined in {cite}`Robinson2008`
-(and generalized for varying refractive indices in the active area)
-
-$$
-    \Gamma
-    =
-    \frac{
-        c \epsilon_0 \int n(\vec{x}) \left| \vec{\mathcal{E}} \right|^2 \mathrm{d}A
-    }{
-        \left( \int \vec{\mathcal{E}}^* \times \vec{\mathcal{H}}
-        +
-        \vec{\mathcal{E}} \times \vec{\mathcal{H}}^*
-        \mathrm{d}A \right) / 2
-    }
-$$
-
-## Overlap coefficient
-
-$$
-    c_{\nu\mu}
-    =
-    \frac{
-        \int \vec{\mathcal{E}}_\nu^* \times \vec{\mathcal{H}}_\mu
-        +
-        \vec{\mathcal{E}}_\nu \times \vec{\mathcal{H}}_\mu^* \mathrm{d}A
-    }{
-        \prod_{i=\{\mu,\nu\}}
-        \sqrt{
-            \int \vec{\mathcal{E}}_i^* \times \vec{\mathcal{H}}_i
-            +
-            \vec{\mathcal{E}}_i \times \vec{\mathcal{H}}_i^* \mathrm{d}A
-        }
-    }
-    =
-    c_{\mu\nu}^*
-$$
-
-## Characteristic impedance
-
-<https://ieeexplore.ieee.org/document/108320>
-
-Power and current:
-
-$$
-    P_k
-    =
-    \delta_{jk}
-    \int
-    \left(
-        \vec{\mathcal{E}}_j^* \times \vec{\mathcal{H}}_k
-    \right) \cdot \hat{x}_3
-
-    I_{zik} = \oint_{C_i} \mathcal{H} \ cdot
-$$
-
-Characteristic impedance:
-
-$$
-    P = I^T Z_c I
-
-    Z_c = [I^{-1}]^T P I^{-1}
-$$
 
 ## Calculating static potentials
 

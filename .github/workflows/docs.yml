@@ -32,13 +32,14 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.6.1
+          version: 1.8.1
           virtualenvs-create: false
           installer-parallel: true
       - name: Install dependencies
         run: |
-          sudo apt-get install -y libglu1-mesa
+          sudo apt-get install -y libglu1-mesa xvfb
           poetry install --no-interaction
+          pip install --upgrade scipy
           mamba install slepc4py=*=complex* -y
           mamba install julia
           pip install jupyter-book
@@ -46,18 +47,22 @@ jobs:
           pip install gdsfactory gplugins
           pip list
       
-      - uses: julia-actions/setup-julia@v1
+      - uses: julia-actions/setup-julia@v2
         with:
-          version: '1.9.3'
-      - uses: julia-actions/cache@v1
+          version: '1.10.3'
+      - uses: julia-actions/cache@v2
         with:
           cache-name: ${{ runner.os }}-${{ steps.get-date.outputs.date }}
           cache-compiled: "true"
       - uses: julia-actions/julia-buildpkg@v1
-      - name: Install dependencies
+      - name: Install julia dependencies
         run: |
           pip install juliacall
           julia -e 'using Pkg; Pkg.add("PythonCall")'
+      - name: Precompile julia dependencies
+        continue-on-error: true
+        run: |
+          julia --project=~/work/femwell/femwell -e 'using Pkg; Pkg.precompile()'
       - uses: actions/cache@v4
         with:
           path: |

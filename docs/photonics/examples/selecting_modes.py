@@ -124,7 +124,7 @@ epsilon[basis0.get_dofs(elements=("sin"))] = 1.973**2
 modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=4)
 
 for mode in modes:
-    mode.show(mode.E.real, direction="x")
+    mode.show("E", part="real")
 
 print(f"The effective index of the SiN mode is {np.real(modes[2].n_eff)}")
 
@@ -158,7 +158,7 @@ epsilon[basis0.get_dofs(elements=("sin"))] = 1.973**2
 modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=2)
 
 for mode in modes:
-    mode.show(mode.E.real, direction="x")
+    mode.show("E", part="real")
 
 print(f"The effective index of the SiN mode is {np.real(modes[0].n_eff)}")
 
@@ -180,7 +180,7 @@ epsilon[basis0.get_dofs(elements=("sin"))] = 1.973**2
 modes = compute_modes(basis0, epsilon, wavelength=wavelength, num_modes=2, n_guess=1.62)
 
 for mode in modes:
-    mode.show(mode.E.real, direction="x")
+    mode.show("E", part="real")
 
 print(f"The effective index of the SiN mode is {np.real(modes[1].n_eff)}")
 

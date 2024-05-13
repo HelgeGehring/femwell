@@ -34,6 +34,8 @@ def solve_thermal(
         thermal_conductivity: thermal conductivity in W/m‧K.
         specific_conductivity: specific conductivity in S/m.
         current_densities: current densities flowing through the layer in A.
+        fixed_boundaries: fixed boundaries.
+        order: order of the basis.
 
     Returns:
         basis, temperature profile

@@ -9,26 +9,31 @@ parts:
       - file: install
   - caption: Derivation of the equations
     chapters:
-      - file: math/maxwell
-        sections:
-        - file: math/waveguide_port
-        - file: math/overlap_integrals
-      - file: math/thermal
-      - file: math/dispersion
-      - file: math/coupled_mode_theory
-      - file: math/schroedinger
+    - file: math/maxwell.md
+      sections:
+      - file: math/maxwell_quantities.md
+      - file: math/waveguide_port.md
+      - file: math/overlap_integrals.md
+    - file: math/thermal.md.md
+    - file: math/dispersion.md
+    - file: math/coupled_mode_theory.md
+    - file: math/schroedinger.md
     
   - caption: Examples
     chapters:
     - file: photonics/examples/waveguide_modes.py
-    #- file: photonics/examples/leaky_waveguide.py
-    #- file: photonics/examples/bent_waveguide.py
-    - file: photonics/examples/vary_width.py
-    - file: photonics/examples/vary_wavelength.py
-    - file: photonics/examples/selecting_modes.py
-    - file: photonics/examples/calculate_GVD.py
-    - file: photonics/examples/fiber_overlap.py
-    - file: photonics/examples/crosstalk.py
+      sections:
+      #- file: photonics/examples/leaky_waveguide.py
+      #- file: photonics/examples/bent_waveguide.py
+      - file: photonics/examples/vary_width.py
+      - file: photonics/examples/vary_wavelength.py
+      - file: photonics/examples/selecting_modes.py
+      - file: photonics/examples/calculate_GVD.py
+      - file: photonics/examples/fiber_overlap.py
+      - file: photonics/examples/crosstalk.py
+      - file: photonics/examples/propagation_loss.py
+      - file: photonics/examples/effective_area.py
+      - file: photonics/examples/crosstalk_reduction/crosstalk_reduction.py
     - file: photonics/examples/metal_heater_phase_shifter.py
     - file: photonics/examples/metal_heater_phase_shifter_transient.py
     - file: photonics/examples/si_heater_phase_shifter.py
@@ -38,10 +43,11 @@ parts:
     - file: photonics/examples/grating_coupler.py
     - file: photonics/examples/coupled_mode_theory.py
     - file: photonics/examples/depletion_waveguide.py
-    - file: photonics/examples/effective_area.py
     - file: photonics/examples/refinement.py
-    - file: photonics/examples/propagation_loss.py
     - file: electronics/examples/capacitor.py
+    - file: electronics/examples/coax_cable.py
+    - file: electronics/examples/coplanar_waveguide_vary_width.py
+    - file: electronics/examples/coplanar_waveguide_vary_gap.py
 
   - caption: Julia Examples
     chapters:
@@ -52,6 +58,7 @@ parts:
     - file: julia/lithium_niobate_phase_shifter.jl
     - file: julia/thermal_simple.jl
     - file: julia/heater_3d.jl
+    - file: julia/thermal_fill.jl
 
   - caption: Benchmarks
     chapters:

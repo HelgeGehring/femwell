@@ -24,16 +24,14 @@ def mpc_symmetric(
 ) -> CondensedSystem:
     """Apply a multipoint constraint on the linear system.
 
-    Parameters
-    ----------
-    A
-    b
-        The linear system to constrain.
-    S
-    M
-    T
-    g
-        The constraint is of the form `x[S] = T @ x[M] + g`.
+    Args:
+        A: spmatrix.
+        b: ndarray.
+        S: ndarray.
+        M: ndarray.
+        T
+        g
+            The constraint is of the form `x[S] = T @ x[M] + g`.
 
     """
     if M is None:
@@ -67,9 +65,9 @@ def mpc_symmetric(
 
     if b.ndim == 1:
         y = np.concatenate((b[U] - A[U][:, S] @ g, b[M] - A[M][:, S] @ g))
+    elif np.any(np.nonzero(g)):
+        raise NotImplementedError("Not yet implemented for g != 0")
     else:
-        if np.any(np.nonzero(g)):
-            raise NotImplementedError("Not yet implemented for g != 0")
         y = bmat(
             [
                 [
@@ -101,7 +99,7 @@ def inside_bbox(bbox):
     given bounding box coordinates.
 
     Args:
-        bbox: 4 element list with [xmin, ymin, xmax, ymax]
+        bbox: 4 element list with [xmin, ymin, xmax, ymax].
     """
 
     def sel_fun(x):
