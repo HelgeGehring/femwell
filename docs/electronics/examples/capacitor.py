@@ -223,7 +223,7 @@ def capacitance(
 # %% tags=["remove-stderr", "hide-output"]
 import tqdm
 
-widths = np.linspace(1, 50, 11)
+widths = np.linspace(1, 50, 21)
 Cs_dict = {}
 for dielectric_epsilon in [1, 3.9, 16]:
     Cs = []
