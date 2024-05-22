@@ -253,8 +253,8 @@ for dielectric_epsilon, color in zip([1, 3.9, 16], colors):
     plt.plot(
         widths, np.array(widths) * dielectric_epsilon / separation, color=color, linestyle="--"
     )
-    plt.xlabel("Width (a.u.)")
-    plt.ylabel(r"Capacitance per unit length / $\epsilon_0$ (a.u.)")
+    plt.xlabel("Width / a.u.")
+    plt.ylabel(r"Capacitance per unit length / $\epsilon_0$ / a.u.")
 
 plt.legend(title="Dielectric")
 
@@ -271,8 +271,8 @@ for dielectric_epsilon, color in zip([1, 3.9, 16], colors):
         linestyle="-",
         label=dielectric_epsilon,
     )
-    plt.xlabel("Width (a.u.)")
-    plt.ylabel(r"Relative error in capacitance per unit length / $\epsilon_0$ (a.u.)")
+    plt.xlabel("Width / a.u.")
+    plt.ylabel(r"Relative error in capacitance per unit length / $\epsilon_0$ / a.u.")
 
 plt.legend(title="Dielectric")
 
