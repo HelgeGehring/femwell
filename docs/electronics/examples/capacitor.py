@@ -59,7 +59,7 @@ delta_voltage = 1
 # </div>
 
 
-# %% tags=["remove-stderr"]
+# %% tags=["remove-stderr", "hide-output"]
 def parallel_plate_capacitor_mesh(
     width,
     separation=separation,
@@ -220,7 +220,7 @@ def capacitance(
     return C
 
 
-# %% tags=["remove-stderr", "hide-stdout"]
+# %% tags=["remove-stderr", "hide-output"]
 import tqdm
 
 widths = np.linspace(1, 50, 11)
