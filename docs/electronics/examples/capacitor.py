@@ -239,7 +239,7 @@ for dielectric_epsilon in [1, 3.9, 16]:
         )
     Cs_dict[dielectric_epsilon] = Cs
 
-# +
+# %%
 colors = ["tab:blue", "tab:orange", "tab:green"]
 
 for dielectric_epsilon, color in zip([1, 3.9, 16], colors):
