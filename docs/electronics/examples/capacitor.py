@@ -257,6 +257,7 @@ for dielectric_epsilon, color in zip([1, 3.9, 16], colors):
     plt.ylabel(r"Capacitance per unit length / $\epsilon_0$ / a.u.")
 
 plt.legend(title="Dielectric")
+plt.show()
 
 # %%
 colors = ["tab:blue", "tab:orange", "tab:green"]
@@ -275,6 +276,7 @@ for dielectric_epsilon, color in zip([1, 3.9, 16], colors):
     plt.ylabel(r"Relative error in capacitance per unit length / $\epsilon_0$ / a.u.")
 
 plt.legend(title="Dielectric")
+plt.show()
 
 
 # %% [markdown]
