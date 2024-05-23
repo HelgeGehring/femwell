@@ -14,7 +14,7 @@ from shapely.geometry import (
     Point,
     Polygon,
 )
-from shapely.ops import linemerge, polygonize, split, unary_union
+from shapely.ops import linemerge, polygonize, split, unary_union, snap
 
 from femwell.mesh.meshtracker import MeshTracker
 
@@ -31,7 +31,7 @@ def break_line_(line, other_line):
         ):
             # if type == "", intersection.type != 'Point':
             if intersection.geom_type == "Point":
-                line = linemerge(split(line, intersection))
+                line = snap(line, intersection, 0.1)
             else:
                 new_coords_start, new_coords_end = intersection.boundary.geoms
                 line = linemerge(split(line, new_coords_start))
