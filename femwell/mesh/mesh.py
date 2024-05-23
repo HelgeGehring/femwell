@@ -73,7 +73,7 @@ def mesh_from_Dict(
         rings = [
             LineString(list(object.exterior.coords))
             for object in listpoly
-            if not (object.geom_type in ["Point", "LineString"] or object.is_empty)
+            if not (object.geom_type in ["Point", "LineString", "MultiLineString"] or object.is_empty)
         ]
 
         union = unary_union(rings)
