@@ -21,7 +21,7 @@ from femwell.mesh.meshtracker import MeshTracker
 initial_settings = np.seterr()  # remove when shapely updated to more recent geos
 
 
-def break_line_(line, other_line, snap_tol = 0.1):
+def break_line_(line, other_line, snap_tol):
     np.seterr(invalid="ignore")
     intersections = line.intersection(other_line)
     np.seterr(**initial_settings)
@@ -252,7 +252,7 @@ def mesh_from_OrderedDict(
                             )
                             first_exterior_line = break_line_(
                                 first_exterior_line, second_exterior_line,
-                            snap_tol = meshtracker.atol)
+                            meshtracker.atol)
                             # Second line interiors
                             for second_interior_line in (
                                 second_shape.interiors
@@ -262,7 +262,7 @@ def mesh_from_OrderedDict(
                                 second_interior_line = LineString(second_interior_line)
                                 first_exterior_line = break_line_(
                                     first_exterior_line, second_interior_line,
-                                snap_tol = meshtracker.atol)
+                                meshtracker.atol)
                 # First line interiors
                 if first_shape.geom_type in ["Polygon", "MultiPolygon"]:
                     first_shape_interiors = []
@@ -288,7 +288,7 @@ def mesh_from_OrderedDict(
                                     )
                                     first_interior_line = break_line_(
                                         first_interior_line, second_exterior_line,
-                                    snap_tol = meshtracker.atol)
+                                    meshtracker.atol)
                                     # Interiors
                                     for second_interior_line in (
                                         second_shape.interiors
@@ -303,7 +303,7 @@ def mesh_from_OrderedDict(
                                         np.seterr(**initial_settings)
                                         first_interior_line = break_line_(
                                             first_interior_line, second_interior_line,
-                                        snap_tol = meshtracker.atol)
+                                        meshtracker.atol)
                         first_shape_interiors.append(first_interior_line)
                 if first_shape.geom_type in ["Polygon", "MultiPolygon"]:
                     broken_shapes.append(Polygon(first_exterior_line, holes=first_shape_interiors))
