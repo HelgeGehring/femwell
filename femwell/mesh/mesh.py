@@ -31,7 +31,7 @@ def break_line_(line, other_line):
         ):
             # if type == "", intersection.type != 'Point':
             if intersection.geom_type == "Point":
-                line = snap(line, intersection, 0.1)
+                line = snap(line, intersection, MeshTracker.atol)
             else:
                 new_coords_start, new_coords_end = intersection.boundary.geoms
                 line = linemerge(split(line, new_coords_start))
