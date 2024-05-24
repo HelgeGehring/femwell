@@ -21,7 +21,7 @@ from femwell.mesh.meshtracker import MeshTracker
 initial_settings = np.seterr()  # remove when shapely updated to more recent geos
 
 
-def break_line_(line, other_line):
+def break_line_(line, other_line, snap_tol = 0.1):
     np.seterr(invalid="ignore")
     intersections = line.intersection(other_line)
     np.seterr(**initial_settings)
@@ -31,7 +31,7 @@ def break_line_(line, other_line):
         ):
             # if type == "", intersection.type != 'Point':
             if intersection.geom_type == "Point":
-                line = snap(line, intersection, MeshTracker.atol)
+                line = snap(line, intersection, snap_tol)
             else:
                 new_coords_start, new_coords_end = intersection.boundary.geoms
                 line = linemerge(split(line, new_coords_start))
@@ -204,7 +204,8 @@ def mesh_from_OrderedDict(
         gmsh.option.setNumber("Mesh.Algorithm", gmsh_algorithm)
 
         model = geometry
-
+        meshtracker = MeshTracker(model=model)
+        
         # Break up shapes in order so that plane is tiled with non-overlapping layers, overriding shapes according to an order
         shapes_tiled_dict = OrderedDict()
         for lower_index, (lower_name, lower_shape) in reversed(
@@ -250,8 +251,8 @@ def mesh_from_OrderedDict(
                                 else second_shape
                             )
                             first_exterior_line = break_line_(
-                                first_exterior_line, second_exterior_line
-                            )
+                                first_exterior_line, second_exterior_line,
+                            snap_tol = meshtracker.atol)
                             # Second line interiors
                             for second_interior_line in (
                                 second_shape.interiors
@@ -260,8 +261,8 @@ def mesh_from_OrderedDict(
                             ):
                                 second_interior_line = LineString(second_interior_line)
                                 first_exterior_line = break_line_(
-                                    first_exterior_line, second_interior_line
-                                )
+                                    first_exterior_line, second_interior_line,
+                                snap_tol = meshtracker.atol)
                 # First line interiors
                 if first_shape.geom_type in ["Polygon", "MultiPolygon"]:
                     first_shape_interiors = []
@@ -286,8 +287,8 @@ def mesh_from_OrderedDict(
                                         else second_shape
                                     )
                                     first_interior_line = break_line_(
-                                        first_interior_line, second_exterior_line
-                                    )
+                                        first_interior_line, second_exterior_line,
+                                    snap_tol = meshtracker.atol)
                                     # Interiors
                                     for second_interior_line in (
                                         second_shape.interiors
@@ -301,8 +302,8 @@ def mesh_from_OrderedDict(
                                         )
                                         np.seterr(**initial_settings)
                                         first_interior_line = break_line_(
-                                            first_interior_line, second_interior_line
-                                        )
+                                            first_interior_line, second_interior_line,
+                                        snap_tol = meshtracker.atol)
                         first_shape_interiors.append(first_interior_line)
                 if first_shape.geom_type in ["Polygon", "MultiPolygon"]:
                     broken_shapes.append(Polygon(first_exterior_line, holes=first_shape_interiors))
@@ -318,7 +319,7 @@ def mesh_from_OrderedDict(
                 )
 
         # Add lines, reusing line segments
-        meshtracker = MeshTracker(model=model)
+        
         for line_name, line in lines_broken_dict.items():
             meshtracker.add_get_xy_line(line, line_name)
 
