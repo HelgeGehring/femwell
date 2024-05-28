@@ -62,10 +62,6 @@ The documentation is lagging behind the state of code, so there's several featur
 - Calculation of overlap-integrals and confinement-factors
 - Bragg grating cells
 - Grating coupler cells
-- Eigenmode of a coaxial cable and its specific impedance
-- Eigenmodes of electric transmission lines
-  and determining their propagation constant (in work)
-- Static electric fields
 - Overlap integrals between waveguide modes
 - Overlap integral between a waveguide mode and a fiber mode
 - Coupled mode theory - coupling between adjacent waveguides
@@ -76,6 +72,14 @@ The documentation is lagging behind the state of code, so there's several featur
 ### Heat transport 
 - Static thermal profiles
 - Transient thermal behavior
+
+### Electronics problems
+
+- Coplanar waveguide RF design
+- Eigenmode of a coaxial cable and its specific impedance
+- Eigenmodes of electric transmission lines
+  and determining their propagation constant (in work)
+- Static electric fields
 
 Something missing? Feel free to open an [issue](https://github.com/HelgeGehring/femwell/issues) :)
 
@@ -93,6 +97,7 @@ Something missing? Feel free to open an [issue](https://github.com/HelgeGehring/
 - Markus DeMartini (Google)
 - Lucas Grosjean (Google, Femto-ST Institute)
 - Eliza Leung (University of Adelaide)
+- Duarte Silva (Eindhoven University of Technology)
 
 Happy about every form of contribution -
 pull requests, feature requests, issues, questions, ... :)

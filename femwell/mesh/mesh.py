@@ -14,14 +14,14 @@ from shapely.geometry import (
     Point,
     Polygon,
 )
-from shapely.ops import linemerge, polygonize, split, unary_union
+from shapely.ops import linemerge, polygonize, snap, split, unary_union
 
 from femwell.mesh.meshtracker import MeshTracker
 
 initial_settings = np.seterr()  # remove when shapely updated to more recent geos
 
 
-def break_line_(line, other_line):
+def break_line_(line, other_line, snap_tol):
     np.seterr(invalid="ignore")
     intersections = line.intersection(other_line)
     np.seterr(**initial_settings)
@@ -31,7 +31,7 @@ def break_line_(line, other_line):
         ):
             # if type == "", intersection.type != 'Point':
             if intersection.geom_type == "Point":
-                line = linemerge(split(line, intersection))
+                line = snap(line, intersection, snap_tol)
             else:
                 new_coords_start, new_coords_end = intersection.boundary.geoms
                 line = linemerge(split(line, new_coords_start))
@@ -73,7 +73,9 @@ def mesh_from_Dict(
         rings = [
             LineString(list(object.exterior.coords))
             for object in listpoly
-            if not (object.geom_type in ["Point", "LineString"] or object.is_empty)
+            if not (
+                object.geom_type in ["Point", "LineString", "MultiLineString"] or object.is_empty
+            )
         ]
 
         union = unary_union(rings)
@@ -204,6 +206,7 @@ def mesh_from_OrderedDict(
         gmsh.option.setNumber("Mesh.Algorithm", gmsh_algorithm)
 
         model = geometry
+        meshtracker = MeshTracker(model=model)
 
         # Break up shapes in order so that plane is tiled with non-overlapping layers, overriding shapes according to an order
         shapes_tiled_dict = OrderedDict()
@@ -250,7 +253,7 @@ def mesh_from_OrderedDict(
                                 else second_shape
                             )
                             first_exterior_line = break_line_(
-                                first_exterior_line, second_exterior_line
+                                first_exterior_line, second_exterior_line, meshtracker.atol
                             )
                             # Second line interiors
                             for second_interior_line in (
@@ -260,7 +263,7 @@ def mesh_from_OrderedDict(
                             ):
                                 second_interior_line = LineString(second_interior_line)
                                 first_exterior_line = break_line_(
-                                    first_exterior_line, second_interior_line
+                                    first_exterior_line, second_interior_line, meshtracker.atol
                                 )
                 # First line interiors
                 if first_shape.geom_type in ["Polygon", "MultiPolygon"]:
@@ -286,7 +289,7 @@ def mesh_from_OrderedDict(
                                         else second_shape
                                     )
                                     first_interior_line = break_line_(
-                                        first_interior_line, second_exterior_line
+                                        first_interior_line, second_exterior_line, meshtracker.atol
                                     )
                                     # Interiors
                                     for second_interior_line in (
@@ -301,7 +304,9 @@ def mesh_from_OrderedDict(
                                         )
                                         np.seterr(**initial_settings)
                                         first_interior_line = break_line_(
-                                            first_interior_line, second_interior_line
+                                            first_interior_line,
+                                            second_interior_line,
+                                            meshtracker.atol,
                                         )
                         first_shape_interiors.append(first_interior_line)
                 if first_shape.geom_type in ["Polygon", "MultiPolygon"]:
@@ -318,7 +323,7 @@ def mesh_from_OrderedDict(
                 )
 
         # Add lines, reusing line segments
-        meshtracker = MeshTracker(model=model)
+
         for line_name, line in lines_broken_dict.items():
             meshtracker.add_get_xy_line(line, line_name)
 
