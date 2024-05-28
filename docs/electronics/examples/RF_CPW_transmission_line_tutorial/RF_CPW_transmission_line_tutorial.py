@@ -509,7 +509,7 @@ fig.tight_layout()
 # %% [markdown]
 # # Transmission line characterization
 #
-# So far we have been foccused on studying the eigenmodes of maxwell's equations for a particular structure. This allows us to calculate $\mathbf{E(x,y)}_i$ and $\mathbf{H(x,y)}_i$ for each of the available eigenmodes. However, we are interested in studying the structure as a transmission line and for that we must start merging towards circuit theory. However, that is not as straightforward as it may appear. First, our modes are not TEM fields, and, therefore, cannot exist in a transmission line. Second, this is far from a lossless line, and it is also supports multiple modes, which not only leads to the requirement of the expressing the line as a multiconductor transmission line, but can also lead to a non-reciprocal line, depending on the formalism you decide to follow [4,5]. It is this ambiguity that can lead to a big confusion when attempting to translate a waveguiding system to a circuit. Here we will follow the formalism of [4] and eventually fully characterize this system as a transmission line.
+# So far we have been foccused on studying the eigenmodes of maxwell's equations for a particular structure. This allows us to calculate $\mathbf{E(x,y)}_i$ and $\mathbf{H(x,y)}_i$ for each of the available eigenmodes. However, we are interested in studying the structure as a transmission line and for that we must start merging towards circuit theory. However, that is not as straightforward as it may appear. First, our modes are not TEM fields, and, therefore, cannot exist in a transmission line. Second, this is far from a lossless line, and it is also supports multiple modes, which not only leads to the requirement of the expressing the line as a multiconductor transmission line, but can also lead to a non-reciprocal line, depending on the formalism you decide to follow {cite}`Marks1992,Williams1997`. It is this ambiguity that can lead to a big confusion when attempting to translate a waveguiding system to a circuit. Here we will follow the formalism of {cite}`Marks1992` and eventually fully characterize this system as a transmission line.
 #
 
 # %% [markdown]
@@ -559,7 +559,7 @@ print(modes[1].transversality)
 # p_0 = v_0 i_0^*
 # $$
 #
-# It is important to impose the constraint that $Re(p_0)>0$[4]. By fixing the power, we now have only one degree of freedom left to define. We can either define a current or a voltage. Since we want to have a clear and illustrative analogy with a circuit we must choose either $v_0$ or $i_0$ as circuit quantities. In the case of the CPW operating the GSG mode, we can make the analogy as in the picture below.
+# It is important to impose the constraint that $Re(p_0)>0$ {cite}`Marks1992`. By fixing the power, we now have only one degree of freedom left to define. We can either define a current or a voltage. Since we want to have a clear and illustrative analogy with a circuit we must choose either $v_0$ or $i_0$ as circuit quantities. In the case of the CPW operating the GSG mode, we can make the analogy as in the picture below.
 #
 # <center>
 # <img src="support\CPW_TL.png" width="500" align="center"/>
