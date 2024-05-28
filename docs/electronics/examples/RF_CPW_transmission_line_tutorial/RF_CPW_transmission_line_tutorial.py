@@ -13,9 +13,11 @@
 #     name: python3
 # ---
 
-import time
+# # RF CPW transmission line
+#
 
-# %%
+# %% tags=["hide-input"]
+import time
 from collections import OrderedDict
 
 import enlighten
@@ -41,25 +43,15 @@ from femwell.visualization import plot_domains
 # To make things go smoother I advise to use %matplotlib widget so that you can inspect the mesh and other figures more clearly
 
 # %% [markdown]
-# In this notebook we aim to study a simple CPW structure by repicating the measurements from [1] as in the image below. We wish to retrieve data from the microwave index and attenuation. This case is a good example of when the losses inside the metal will contribute greatly to the losses and,  therefore, new conformal techniques were required to properly model the CPW. In our case, we will use FEMWELL to achieve the same results and confirm the theory and benchmark the software with the measurements.
+# In this notebook we aim to study a simple CPW structure by repicating the measurements from {cite}`Tuncer1994` as in the image below. We wish to retrieve data from the microwave index and attenuation. This case is a good example of when the losses inside the metal will contribute greatly to the losses and,  therefore, new conformal techniques were required to properly model the CPW. In our case, we will use FEMWELL to achieve the same results and confirm the theory and benchmark the software with the measurements.
+#
+# {cite}`Slade1992,Berkel2015`
 #
 # <center>
 # <img src="support\tuncer_results.png" width="500" align="center"/>
 # </center>
 #
-# Furthermore, this notebook will also provide insight on how to use it for the design of RF waveguides, by exploring the fine line between waveguide and circuit theories [4, 5].
-#
-# ## References
-#
-# [1] E. Tuncer, Beom-Taek Lee, M. S. Islam, and D. P. Neikirk, “Quasi-static conductor loss calculations in transmission lines using a new conformal mapping technique,” IEEE Trans. Microwave Theory Techn., vol. 42, no. 9, pp. 1807–1815, Sep. 1994, doi: 10.1109/22.310592.
-#
-# [2] G. W. Slade and K. J. Webb, “Computation of characteristic impedance for multiple microstrip transmission lines using a vector finite element method,” IEEE Trans. Microwave Theory Techn., vol. 40, no. 1, pp. 34–40, Jan. 1992, doi: 10.1109/22.108320.
-#
-# [3] - S. van Berkel, A. Garufo, A. Endo, N. LLombart, and A. Neto, �Characterization of printed transmission lines at high frequencies,� in The 9th European Conference on Antennas and Propagation (EuCAP 2015), (Lisbon, Portugal), Apr. 2015. (Software available at https://terahertz.tudelft.nl/Research/project.php?id=74&ti=27 )
-#
-# [4] R. B. Marks and D. F. Williams, “A general waveguide circuit theory,” J. RES. NATL. INST. STAN., vol. 97, no. 5, p. 533, Sep. 1992, doi: 10.6028/jres.097.024.
-#
-# [5] D. F. Williams, L. A. Hayden, and R. B. Marks, “A complete multimode equivalent-circuit theory for electrical design,” J. Res. Natl. Inst. Stand. Technol., vol. 102, no. 4, p. 405, Jul. 1997, doi: 10.6028/jres.102.029.
+# Furthermore, this notebook will also provide insight on how to use it for the design of RF waveguides, by exploring the fine line between waveguide and circuit theories {cite}`Marks1992,Williams1997`.
 #
 
 # %% [markdown]
@@ -321,12 +313,13 @@ for key, polygon in polygons.items():
 #
 # Now we mesh it
 
-# %%
+# %% tags=["hide-output"]
 # Mesh it
 mesh = from_meshio(
     mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=100, verbose=True)
 )
 
+# %%
 print(mesh.nelements)
 
 # %%
@@ -1012,11 +1005,12 @@ for key, polygon in polygons.items():
         ax.plot(*polygon.xy)
 
 
-# %%
+# %% tags=["hide-output"]
 # Mesh it
 mesh = from_meshio(
     mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=100, verbose=True)
 )
+# %%
 
 print(mesh.nelements)
 
@@ -1644,12 +1638,15 @@ else:
 #     else:
 #         ax.plot(*polygon.xy)
 # Mesh it
+
+# %% tags=["hide-output"]
 mesh = from_meshio(
     mesh_from_OrderedDict(polygons, resolutions, default_resolution_max=100, verbose=True)
 )
-
-
+# %%
 print(mesh.nelements)
+
+# %%
 manager = enlighten.get_manager()
 bar = manager.counter(total=len(freq), desc="Ticks", unit="ticks")
 
@@ -1914,3 +1911,11 @@ for data, ax, label in zip(
 
     ax.set_xscale("log")
 fig.tight_layout()
+
+# %% [markdown]
+# ## Bibliography
+#
+# ```{bibliography}
+# :style: unsrt
+# :filter: docname in docnames
+# ```
