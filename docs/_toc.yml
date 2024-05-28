@@ -46,7 +46,7 @@ parts:
     - file: photonics/examples/refinement.py
     - file: electronics/examples/capacitor.py
     - file: electronics/examples/coax_cable.py
-    - file: electronics/examples/RF CPW transmission line tutorial/RF CPW transmission line tutorial.py
+    - file: electronics/examples/RF_CPW_transmission_line_tutorial/RF_CPW_transmission_line_tutorial.py
     - file: electronics/examples/coplanar_waveguide_vary_width.py
     - file: electronics/examples/coplanar_waveguide_vary_gap.py
 
