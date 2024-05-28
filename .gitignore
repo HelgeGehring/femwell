@@ -5,6 +5,7 @@ docs/build/
 **/__pycache__/**
 build/
 docs/_build
+**/.ipynb_checkpoints/**
 
 *.msh
 *.xdmf
