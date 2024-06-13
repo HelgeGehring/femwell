@@ -16,6 +16,13 @@
 #
 # We follow the theory outlined in the documentation to compute the magnetic field of various currents distributions.
 
+# <div class="alert alert-block alert-danger">
+# The FEM results do not exactly yet match the analytical expectation:
+# - There seems to be a sign error when calculating the magnetic field.
+# - The potential values are slightly different.
+# - The magnetic field values are very different.
+# </div>
+
 # +
 import matplotlib.pyplot as plt
 import numpy as np
