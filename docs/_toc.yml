@@ -14,6 +14,7 @@ parts:
       - file: math/maxwell_quantities.md
       - file: math/waveguide_port.md
       - file: math/overlap_integrals.md
+      - file: math/quasistatic.md
     - file: math/thermal.md.md
     - file: math/dispersion.md
     - file: math/coupled_mode_theory.md
@@ -45,6 +46,7 @@ parts:
     - file: photonics/examples/depletion_waveguide.py
     - file: photonics/examples/refinement.py
     - file: electronics/examples/capacitor.py
+    - file: electronics/examples/inductor.py
     - file: electronics/examples/coax_cable.py
     - file: electronics/examples/RF_CPW_transmission_line_tutorial/RF_CPW_transmission_line_tutorial.py
     - file: electronics/examples/coplanar_waveguide_vary_width.py
