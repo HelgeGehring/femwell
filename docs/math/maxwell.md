@@ -301,41 +301,6 @@ where $R$ is the radius of curvature in $x$-direction.
 
 See discussion on choice of R in {cite}`Masi:10`
 
-## Calculating static potentials
-
-As in the static case
-
-$$
-    \nabla\times\vec{\mathcal{E}}
-    = - \mu \frac{\partial \vec{\mathcal{H}}}{\partial t}
-    = 0
-$$
-
-$\mathcal{E}$ can be written as
-
-$$
-    \vec{\mathcal{E}} = -\nabla \Phi
-$$ (EdivPhi)
-
-using {eq}`maxwell`, for $\Phi$ can be found that
-
-$$
-    -\nabla\cdot \left(\varepsilon \nabla \Phi\right) = \rho
-$$
-
-from which we can derive the weakform
-
-$$
-    \left(
-        \varepsilon \nabla \Phi
-        ,
-        \nabla v
-    \right)
-    = \rho v
-$$
-
-which is used to calculate the potential for a given structure.
-Using {eq}`EdivPhi` the electric field can be calculated from the potential.
 
 ## 2D Periodic
 
