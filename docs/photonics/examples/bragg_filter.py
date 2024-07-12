@@ -16,7 +16,7 @@
 # # Bragg filter
 
 # %% [markdown]
-# Reproducing an example of {cite}`Notaros2015`
+# Reproducing an example of {cite}`Notaros2015` (and soon {cite}`Fietz2011`)
 
 # %% tags=["hide-input"]
 
