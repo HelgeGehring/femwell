@@ -15,7 +15,7 @@
 # %% [markdown]
 # # Waveguide crosstalk (EME)
 #
-# In this notebook, we reproduce Fig. 4.19 of , which calculates the maximum cross talk between strips waveguides of different dimensions.
+# In this notebook, we reproduce Fig. 4.19 of {cite}`Chrostowski2015Mar`, which calculates the maximum cross talk between strips waveguides of different dimensions.
 #
 # First, we setup a coupled waveguide system:
 
@@ -396,3 +396,12 @@ plt.ylim([-60, 5])
 
 plt.ylabel("Normalized power in waveguide / dB")
 plt.xlabel("Length / um")
+
+
+# %% [markdown]
+# ## Bibliography
+#
+# ```{bibliography}
+# :style: unsrt
+# :filter: docname in docnames
+# ```
