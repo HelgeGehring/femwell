@@ -44,13 +44,9 @@ from femwell.visualization import plot_domains
 # To make things go smoother I advise to use %matplotlib widget so that you can inspect the mesh and other figures more clearly
 
 # %% [markdown]
-# In this notebook we aim to study a simple CPW structure by repicating the measurements from {cite}`Tuncer1994` as in the image below. We wish to retrieve data from the microwave index and attenuation. This case is a good example of when the losses inside the metal will contribute greatly to the losses and,  therefore, new conformal techniques were required to properly model the CPW. In our case, we will use FEMWELL to achieve the same results and confirm the theory and benchmark the software with the measurements.
+# In this notebook we aim to study a simple CPW structure by repicating the measurements from {cite}`Tuncer1994` in Fig.7 where they present the measurements from the microwave index and the propagation losses. This case is a good example of when the losses inside the metal will contribute greatly to the propagation constant and,  therefore, new conformal techniques were required to properly model the CPW. In our case, we will use FEMWELL to achieve the same results and confirm the theory and benchmark the software with the measurements.
 #
 # {cite}`Slade1992,Berkel2015`
-#
-# <center>
-# <img src="support\tuncer_results.png" width="500" align="center"/>
-# </center>
 #
 # Furthermore, this notebook will also provide insight on how to use it for the design of RF waveguides, by exploring the fine line between waveguide and circuit theories {cite}`Marks1992,Williams1997`.
 #
