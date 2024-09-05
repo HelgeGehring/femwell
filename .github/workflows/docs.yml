@@ -34,7 +34,7 @@ jobs:
         with:
           version: 1.8.3
           virtualenvs-create: false
-          installer-parallel: true
+          installer-parallel: false
       - name: Install dependencies
         run: |
           sudo apt-get install -y libglu1-mesa xvfb
