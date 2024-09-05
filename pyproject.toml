@@ -1,6 +1,6 @@
 [build-system]
-requires = ["poetry-core>=1.6.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ['setuptools>=74.0.0']
+build-backend = 'setuptools.build_meta'
 
 [tool.poetry]
 name = "femwell"
