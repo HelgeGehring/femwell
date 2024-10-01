@@ -22,7 +22,7 @@ def plot_domains(mesh, ax=None):
     basis0 = Basis(mesh, ElementTriP0())
 
     subdomains = list(mesh.subdomains.keys() - {"gmsh:bounding_entities"})
-    subdomain_colors = basis0.zeros() * np.NaN
+    subdomain_colors = basis0.zeros() * np.nan
     for i, subdomain in enumerate(subdomains):
         subdomain_colors[basis0.get_dofs(elements=subdomain)] = i
 
