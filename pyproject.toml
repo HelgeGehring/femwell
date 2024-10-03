@@ -24,7 +24,6 @@ license = {file = "LICENSE"}
 readme = "README.md"
 
 dependencies = [
-    "python>=3.8",
     "scikit-fem>=8.1.0",
     "gmsh>=4.13.1",
     "pygmsh",
