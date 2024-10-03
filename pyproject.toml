@@ -38,9 +38,6 @@ test = [
     "flake8"
 ]
 
-[project.urls]
-Documentation = "https://HelgeGehring.github.io/femwell/"
-
 docs = [
     "tqdm",
     "enlighten",
@@ -49,6 +46,9 @@ docs = [
     "jupytext",
     "pandas"
 ]
+
+[project.urls]
+Documentation = "https://HelgeGehring.github.io/femwell/"
 
 [tool.black]
 line-length = 100
