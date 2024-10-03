@@ -45,6 +45,10 @@ docs = [
     "pandas"
 ]
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["femwell*]
+
 [project.urls]
 Homepage = "https://github.com/HelgeGehring/femwell"
 Documentation = "https://HelgeGehring.github.io/femwell/"
