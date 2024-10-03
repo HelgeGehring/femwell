@@ -359,6 +359,17 @@ def mesh_from_OrderedDict(
                 "SurfacesList",
                 meshtracker.get_gmsh_xy_surfaces_from_label(label),
             )
+
+            gmsh.model.mesh.field.setNumbers(
+                n + 1,
+                "CurvesList",
+                meshtracker.get_gmsh_xy_lines_from_label(label),
+            )
+
+            gmsh.option.setNumber("Mesh.MeshSizeExtendFromBoundary", 0)
+            gmsh.option.setNumber("Mesh.MeshSizeFromPoints", 0)
+            gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", 0)
+
             # Around surface
             mesh_distance = mesh_setting["distance"]
             gmsh.model.mesh.field.add("Distance", n + 2)
