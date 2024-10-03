@@ -67,7 +67,7 @@ jobs:
         run: |
           sudo apt-get install -y libglu1-mesa
           mamba install slepc4py=*=complex* uv -y
-          uv pip install -r requirements.txt
+          uv pip install -r pyproject.toml
       - name: Build package
         env:
           UV_SYSTEM_PYTHON: 1
