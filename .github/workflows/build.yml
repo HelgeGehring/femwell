@@ -59,18 +59,17 @@ jobs:
       - name: Add conda to system path
         run: |
           echo $CONDA/bin >> $GITHUB_PATH
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: 1.8.3
-          virtualenvs-create: false
-          installer-parallel: true
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
       - name: Install dependencies
+        env:
+          UV_SYSTEM_PYTHON: 1
         run: |
           sudo apt-get install -y libglu1-mesa
-          pip install git+https://github.com/kinnala/scikit-fem.git
-          poetry install --no-interaction --no-root
-          mamba install slepc4py=*=complex* -y
+          mamba install slepc4py=*=complex* uv -y
+          uv pip install -r requirements.txt
       - name: Build package
+        env:
+          UV_SYSTEM_PYTHON: 1
         run: |
-          poetry build
+          uv build
