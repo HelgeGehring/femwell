@@ -2,7 +2,7 @@
 requires = ['setuptools>=73.0.0']
 build-backend = 'setuptools.build_meta'
 
-[tool.poetry]
+[project]
 name = "femwell"
 version = "0.0.1"
 authors = ["Helge Gehring"]
@@ -23,30 +23,32 @@ classifiers = [
 license = "GPLv3"
 readme = "README.md"
 
-[tool.poetry.urls]
+dependencies = [
+    "python >=3.8",
+    "scikit-fem >=8.1.0",
+    "gmsh = 4.13.1",
+    "pygmsh",
+    "matplotlib",
+    "meshwell>=1.0.2"
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "flake8"
+]
+
+[project.urls]
 Documentation = "https://HelgeGehring.github.io/femwell/"
 
-[tool.poetry.dependencies]
-python = ">=3.8"
-scikit-fem = ">=8.1.0"
-gmsh = "4.13.1"
-pygmsh = "*"
-matplotlib = "*"
-meshwell = ">=1.0.2"
-
-[tool.poetry.group.test.dependencies]
-pytest = "*"
-flake8 = "*"
-
-[tool.poetry.group.docs.dependencies]
-python = ">=3.10"
-tqdm = "*"
-enlighten = "*"
-pint = ">0.20.1"
-# sphinx-book-theme = "*"
-jupytext = "*"
-# myst-parser = "*"
-pandas = "*"
+docs = [
+    "tqdm",
+    "enlighten",
+    "pint>0.20.1",
+    "sphinx-book-theme",
+    "jupytext",
+    "pandas"
+]
 
 [tool.black]
 line-length = 100

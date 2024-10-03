@@ -15,11 +15,6 @@ repos:
     hooks:
       - id: black
 
-  - repo: https://github.com/python-poetry/poetry
-    rev: 1.8.0
-    hooks:
-      - id: poetry-check
-
   - repo: "https://github.com/domluna/JuliaFormatter.jl"
     rev: "v1.0.54"
     hooks:
