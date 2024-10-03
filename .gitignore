@@ -22,6 +22,14 @@ docs/_build
 .vscode/
 *.iml
 
+#These are the png images for the RF CPW tutorial
+!CPW_TL.png
+!geometry.png
+!lines_integrals.png
+!SizeMax_explanetion.png
+!symmetry_plane.png
+!tuncer_results.png
+
 # julia
 Manifest.toml
 
