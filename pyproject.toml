@@ -5,7 +5,7 @@ build-backend = 'setuptools.build_meta'
 [project]
 name = "femwell"
 version = "0.0.1"
-authors = ["Helge Gehring"]
+authors = [{name="Helge Gehring"}]
 description = "Mode solver for photonic and electric waveguides based on FEM"
 homepage = "https://github.com/HelgeGehring/femwell"
 keywords = [
