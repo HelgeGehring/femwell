@@ -329,9 +329,8 @@ class Mode:
 
         if component == "x" or component == "y":
             plot_basis = mfield_t_basis.with_element(ElementVector(ElementDG(ElementTriP1())))
-            mfield_xy = plot_basis.project(mfield_t_basis.interpolate(mfield_t))
+            mfield_xy = plot_basis.project(conv_func(mfield_t_basis.interpolate(mfield_t)))
             (mfield_x, mfield_x_basis), (mfield_y, mfield_y_basis) = plot_basis.split(mfield_xy)
-            mfield_x, mfield_y = conv_func(mfield_x), conv_func(mfield_y)
             if component == "x":
                 mfield_x_basis.plot(mfield_x, ax=ax, shading="gouraud")
             else:
