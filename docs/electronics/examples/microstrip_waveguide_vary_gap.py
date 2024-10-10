@@ -12,9 +12,9 @@
 #     name: python3
 # ---
 # %% [markdown]
-# # Coplanar waveguide - vary gap
+# # Microstrip waveguide - vary gap
 
-# In this example we calculate effective epsilon of the coplanar waveguides from {cite}`Jansen1978`
+# In this example we calculate effective epsilon of the microstrip waveguides from {cite}`Jansen1978`
 
 # %% tags=["hide-input"]
 
