@@ -49,8 +49,8 @@ parts:
     - file: electronics/examples/inductor.py
     - file: electronics/examples/coax_cable.py
     - file: electronics/examples/RF_CPW_transmission_line_tutorial/RF_CPW_transmission_line_tutorial.py
-    - file: electronics/examples/coplanar_waveguide_vary_width.py
-    - file: electronics/examples/coplanar_waveguide_vary_gap.py
+    - file: electronics/examples/microstrip_waveguide_vary_width.py
+    - file: electronics/examples/microstrip_waveguide_vary_gap.py
 
   - caption: Julia Examples
     chapters:
