@@ -55,3 +55,6 @@ Documentation = "https://HelgeGehring.github.io/femwell/"
 
 [tool.black]
 line-length = 100
+
+[tool.codespell]
+ignore-words-list = "te, te/tm, te, ba, fpr, fpr_spacing, ro, nd, donot, schem, hsi"
