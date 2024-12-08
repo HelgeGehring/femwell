@@ -113,7 +113,7 @@ $$
 \varphi_{1/3}(x)
 $$
 
-which can similary be solved using
+which can similarly be solved using
 
 $$
 \varphi_{1/3} = C \sin(k^` x) + D \cos(k^` x)
@@ -154,7 +154,7 @@ A \sin(k x) + B \cos(k x), &-L/2<&x&<L/2
 \end{cases}
 $$
 
-as the solutions need to be continous and differentiable, i.e.
+as the solutions need to be continuous and differentiable, i.e.
 
 $$
 \varphi_1(-L/2) = \varphi_2(-L/2) \quad \varphi_2(L/2) = \varphi_3(L/2)
@@ -174,7 +174,7 @@ $$
 \left.\frac{\mathrm{d}\varphi_3}{\mathrm{d}x}\right|_{x=L/2}
 $$
 
-which leads to $A=0$ and $G=H$ for the symmetric case and $B=0$ and $G=-H$ for the assymetric case.
+which leads to $A=0$ and $G=H$ for the symmetric case and $B=0$ and $G=-H$ for the asymmetric case.
 
 this leads for the symmetric case to the conditions
 
@@ -187,7 +187,7 @@ H \mathrm{e}^{-\alpha L/2} = B \cos(kL/2)
 \alpha = k \tan(kL/2)
 $$
 
-and for the assymetric case to
+and for the asymmetric case to
 
 $$
 H \mathrm{e}^{-\alpha L/2} = B \sin(kL/2)

@@ -76,7 +76,7 @@ def test_lines():
     top_edge = LineString([(-wsim / 2, -hcore / 2 + hclad), (wsim / 2, -hcore / 2 + hclad)])
     bottom_edge = LineString([(-wsim / 2, -hcore / 2 - hbox), (wsim / 2, -hcore / 2 - hbox)])
 
-    # The order in which objects are inserted into the OrderedDict determines overrrides
+    # The order in which objects are inserted into the OrderedDict determines overrides
     shapes = OrderedDict()
     shapes["left_edge"] = left_edge
     shapes["right_edge"] = right_edge

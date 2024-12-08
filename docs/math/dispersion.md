@@ -15,7 +15,7 @@ $$
     kx_3 = \omega t + \mathrm{const}.
 $$
 
-From this we can calulate the velocity of points of constant phase as
+From this we can calculate the velocity of points of constant phase as
 
 $$
     v_p = \frac{\mathrm{d}x_3}{\mathrm{d}t} = \frac{\omega}{k}.
@@ -77,7 +77,7 @@ $$
     v_g = \frac{\mathrm{d}x_3}{\mathrm{d}t} = \frac{\mathrm{d}\omega}{\mathrm{d}k}.
 $$
 
-As the energy of a wave is porportional to its field amplitude squared,
+As the energy of a wave is proportional to its field amplitude squared,
 the energie is concentrated in areas where the envelope is large.
 Thus, the energy (and therefore also information)
 travels with the group velocity,
@@ -95,7 +95,7 @@ $$
     \frac{\mathrm{d}}{\mathrm{d}\omega}v_g^{-1} \neq 0
 $$
 
-A dimensionless coefficient for the group velocity dispersion can be defiend as
+A dimensionless coefficient for the group velocity dispersion can be defined as
 
 $$
     D

@@ -36,7 +36,7 @@ from femwell.thermal import solve_thermal
 # We'll reproduce the TiN TOPS heater presented in {cite}`Jacques2019`.
 # First we set up the mesh:
 
-# It consists of a substrate, with a box layer ontop.
+# It consists of a substrate, with a box layer on top.
 # On the box layer, a waveguide is structured. In this example it's a silicon waveguide, which has a quite high thermal optical coefficient.
 
 # Above the waveguide, within the deposited cladding layer, a TiN resistor is placed for heating up the thermal phase shifter.

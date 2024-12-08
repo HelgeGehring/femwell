@@ -155,7 +155,7 @@ axs[2].set_ylabel("GVD")
 axs[2].set_xlabel("Wavelength / nm")
 axs[2].set_ylim(-1000, 200)
 axs[2].set_xlim(500, 2200)
-axs[2].set_title("GVD paramter")
+axs[2].set_title("GVD parameter")
 axs[2].legend()
 
 plt.tight_layout()

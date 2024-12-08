@@ -28,7 +28,7 @@ using Femwell.Thermal
 # %% [markdown]
 # We start with setting up a square domain.
 # For the boundary conditions, we tag the left and the right side of the model.
-# Furthermore, we create a function which returns 1 indipendent of the tag which is the parameter to descrie the constants of the simplified model.
+# Furthermore, we create a function which returns 1 independent of the tag which is the parameter to describe the constants of the simplified model.
 
 # %% tags=["hide-output", "remove-stderr"]
 domain = (-1.0, 1.0, -1.0, 1.0)
@@ -84,7 +84,7 @@ println("The computed value for the average current density is $average_current_
 
 
 # %% [markdown]
-# Using this value, we can caluclate the average power density as
+# Using this value, we can calculate the average power density as
 #
 # $$
 # p = k i^2

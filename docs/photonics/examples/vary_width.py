@@ -17,8 +17,8 @@
 # # Variation of the width
 #
 # To understand the propagation in a waveguide, it's often helpful to look at how the effective refractive indices of the modes change when adjusting the width of the waveguide.
-# As the modes continously change their refractive index, we can track them through their evolution.
-# We gray the area which would indicate a effective refractive index below the refractive index of the underlying layer (commonly refered to as box), as such modes would not be guided.
+# As the modes continuously change their refractive index, we can track them through their evolution.
+# We gray the area which would indicate a effective refractive index below the refractive index of the underlying layer (commonly referred to as box), as such modes would not be guided.
 # The refractive index of the box called "cutoff", as it defines the effective refractive index level under which modes stop being guided.
 
 # %% tags=["hide-input"]
