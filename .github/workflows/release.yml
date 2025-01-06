@@ -19,13 +19,10 @@ jobs:
     - name: Generate Changelog
       run: grep -B 9999 "##" -m2 CHANGELOG.md | head -n -1 | tail -n +4 > ${{ github.workspace }}-CHANGELOG.txt
     - name: Install uv
-      uses: astral-sh/setup-uv@v5
-    - name: Install dependencies
-      run: |
-        pip install toml-cli        
+      uses: astral-sh/setup-uv@v5     
     - name: Build and publish
       run: |
-        toml-cli set project.version $(git describe --tags --abbrev=0 | sed s/^v//)
+        uv tool run --from toml-cli toml set --toml-path pyproject.toml project.version $(git describe --tags --abbrev=0 | sed s/^v//)
         uv build
         uv publish --token ${{ secrets.PYPI_TOKEN }}
     - name: Release
