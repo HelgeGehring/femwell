@@ -41,6 +41,7 @@ jobs:
           uv pip install .
           uv pip install jupyter-book
           uv pip install --upgrade jupytext
+          uv pip install --upgrade enlighten
           uv pip install gdsfactory gplugins
           uv pip list
       

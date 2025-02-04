@@ -42,7 +42,8 @@ docs = [
     "pint>0.20.1",
     "sphinx-book-theme",
     "jupytext",
-    "pandas"
+    "pandas",
+    "enlighten"
 ]
 
 [tool.setuptools.packages.find]
