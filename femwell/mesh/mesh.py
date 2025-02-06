@@ -574,7 +574,7 @@ if __name__ == "__main__":
     #         Point(wsim/2, -hcore/2),
     #     ])
 
-    # # The order in which objects are inserted into the OrderedDict determines overrrides
+    # # The order in which objects are inserted into the OrderedDict determines overrides
     # # shapes = OrderedDict()
     # shapes = {}
     # # shapes["left_edge"] = left_edge

@@ -142,7 +142,7 @@ $$\begin{aligned}
 
 
 ## Interface between piecewise constant materials 
-It is instructive to consider the well-known case of an interface $I$ between two dielectric materials, which appear in many devices. We assume an interface between two materials called $1$ with dielectric constant $\varepsilon_1$ and $2$ with dielectric constant $\varepsilon_2$. The surface is defined by the normal vector of the interface $\mathbf{n}_{I}$ and there are no external surface charges or currents. For simplicity, we surpress the dependencies $\left(\mathbf{r},t\right)$ here. 
+It is instructive to consider the well-known case of an interface $I$ between two dielectric materials, which appear in many devices. We assume an interface between two materials called $1$ with dielectric constant $\varepsilon_1$ and $2$ with dielectric constant $\varepsilon_2$. The surface is defined by the normal vector of the interface $\mathbf{n}_{I}$ and there are no external surface charges or currents. For simplicity, we suppress the dependencies $\left(\mathbf{r},t\right)$ here. 
 
 All fields can then be split into the component parallel to the interface (hence perpendicular to the normal vector) and perpendicular to the interface (hence parallel to the normal vector). For example we consider the electric field: Define the normalized field vector $\hat{\mathbf{E}}=\mathbf{E}/E$ we split it into
 
@@ -249,7 +249,7 @@ $$\begin{aligned}
     + \epsilon E_3(\mathbf{r})
     = 0 \end{aligned}
 $$
-Now we have reduced the system to two dimensions by excuting the derivatives. 
+Now we have reduced the system to two dimensions by executing the derivatives. 
 
 ### Variational eigenvalue problem
 In FEM simulations, we solve these equations by a variational ansatz. That means, we take test functions, that are defined on the same space that the wave functions, and search for the optimum. To efficiently solve this, we rewrite the equations from above into an eigenvalue problem. 
