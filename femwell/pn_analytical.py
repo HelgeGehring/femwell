@@ -1,5 +1,5 @@
 """
-References: 
+References:
 
 From Chrostowski, L., & Hochberg, M. (2015). Silicon Photonics Design: From Devices to Systems. Cambridge University Press. doi: 10.1017/CBO9781316084168
     Citing:
