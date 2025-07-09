@@ -152,14 +152,13 @@ function calculate_modes(
     lhs, rhs = if radius == Inf
         μ_r = 1
         twothree = TensorValue([1 0 0; 0 1 0])
-        lhs_straight((u1, u2), (v1, v2)) =
-            ∫(
-                1 / μ_r * (curl(u1) ⊙ curl(v1) / k0^2 - ∇(u2) ⊙ v1) + (
-                    -u1 ⋅ twothree ⋅ ε ⋅ transpose(twothree) ⋅ v1 +
-                    u1 ⋅ twothree ⋅ ε ⋅ transpose(twothree) ⋅ ∇(v2) +
-                    u2 * VectorValue(0, 0, 1) ⋅ ε ⋅ VectorValue(0, 0, 1) * v2 * k0^2
-                ),
-            )dΩ
+        lhs_straight((u1, u2), (v1, v2)) = ∫(
+            1 / μ_r * (curl(u1) ⊙ curl(v1) / k0^2 - ∇(u2) ⊙ v1) + (
+                -u1 ⋅ twothree ⋅ ε ⋅ transpose(twothree) ⋅ v1 +
+                u1 ⋅ twothree ⋅ ε ⋅ transpose(twothree) ⋅ ∇(v2) +
+                u2 * VectorValue(0, 0, 1) ⋅ ε ⋅ VectorValue(0, 0, 1) * v2 * k0^2
+            ),
+        )dΩ
         rhs_straight((u1, u2), (v1, v2)) = ∫(-1 / μ_r * u1 ⊙ v1 / k0^2)dΩ
 
         lhs_straight, rhs_straight
@@ -179,20 +178,18 @@ function calculate_modes(
 
         radius_function(x) = x[1]
         r = interpolate_everywhere(radius_function, V2)
-        lhs_radial((u1, u2), (v1, v2)) =
-            ∫(
-                -(1 / d_θ * r / radius * curl(u1) ⋅ curl(v1)) +
-                (radius / r / (γ_θ * γ_θ) * (D_t ⋅ gradient(u2)) ⋅ v1) +
-                (k0^2 * ε * r / radius * (D_t ⋅ u1) ⋅ v1) -
-                (radius / r / (γ_θ * γ_θ) * (D_t ⋅ gradient(u2)) ⋅ gradient(v2)) +
-                (k0^2 * ε * d_θ * radius / r * u2 * v2),
-            )dΩ
+        lhs_radial((u1, u2), (v1, v2)) = ∫(
+            -(1 / d_θ * r / radius * curl(u1) ⋅ curl(v1)) +
+            (radius / r / (γ_θ * γ_θ) * (D_t ⋅ gradient(u2)) ⋅ v1) +
+            (k0^2 * ε * r / radius * (D_t ⋅ u1) ⋅ v1) -
+            (radius / r / (γ_θ * γ_θ) * (D_t ⋅ gradient(u2)) ⋅ gradient(v2)) +
+            (k0^2 * ε * d_θ * radius / r * u2 * v2),
+        )dΩ
 
-        rhs_radial((u1, u2), (v1, v2)) =
-            ∫(
-                (radius / r * (D_t ⋅ u1) ⋅ v1) -
-                (radius / r / (γ_θ * γ_θ) * (D_t ⋅ u1) ⋅ gradient(v2)),
-            )dΩ
+        rhs_radial((u1, u2), (v1, v2)) = ∫(
+            (radius / r * (D_t ⋅ u1) ⋅ v1) -
+            (radius / r / (γ_θ * γ_θ) * (D_t ⋅ u1) ⋅ gradient(v2)),
+        )dΩ
 
         lhs_radial, rhs_radial
     end
@@ -207,9 +204,9 @@ function calculate_modes(
     vals, vecs = eigs(A, B, sigma = k0_guess, nev = num)
 
     if radius == Inf
-        vecs[num_free_dofs(V1)+1:end, :] ./= 1im * sqrt.(vals)' / k0^2
+        vecs[(num_free_dofs(V1)+1):end, :] ./= 1im * sqrt.(vals)' / k0^2
     else
-        vecs[num_free_dofs(V1)+1:end, :] ./= 1im * sqrt.(vals)'
+        vecs[(num_free_dofs(V1)+1):end, :] ./= 1im * sqrt.(vals)'
     end
 
 
