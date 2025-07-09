@@ -6,7 +6,7 @@
 - Improve plotting function
 
 ## v0.1.10
-- Add backward compatability for "Fix Typo: Culomb -> Coulomb" until the end of the year
+- Add backward compatibility for "Fix Typo: Culomb -> Coulomb" until the end of the year
 
 ## v0.1.9
 - Improvements on the Docs

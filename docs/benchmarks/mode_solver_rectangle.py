@@ -18,8 +18,8 @@
 # %% [markdown]
 # Reproducing {cite}`Hadley2002`, where the modes of a analytically solvable geometry are calculated.
 # The error for all modes is calculated to be smaller than $\pm 1 \cdot 10^{-8}$.
-# We'll show that we get pretty close, but will stop at a resonable resolution to keep the runtime sensible.
-# Getting even higher accurancy will be left open for adaptive refinement.
+# We'll show that we get pretty close, but will stop at a reasonable resolution to keep the runtime sensible.
+# Getting even higher accuracy will be left open for adaptive refinement.
 # The results are presented here:
 
 # %% tags=["remove-stderr", "hide-input"]

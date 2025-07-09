@@ -255,7 +255,7 @@ if __name__ == "__main__":
             2.0,
             2.0,
             2.0,
-        ),  # how much of backgorund tag to add to each side of the simulatoin
+        ),  # how much of background tag to add to each side of the simulatoin
         filename="mesh_x1.msh",
     )
 
@@ -275,6 +275,6 @@ if __name__ == "__main__":
             2.0,
             2.0,
             2.0,
-        ),  # how much of backgorund tag to add to each side of the simulatoin
+        ),  # how much of background tag to add to each side of the simulatoin
         filename="mesh_x2.msh",
     )
