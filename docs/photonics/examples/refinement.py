@@ -54,14 +54,17 @@ epsilons_paper = [
 ]
 
 neff_values_paper = [1.27627404, 2.65679692, 1.387926425, 2.761465320]
-num = 3
+num = 1
 
 mesh = from_meshio(
-    mesh_from_OrderedDict(polygons_paper, {}, default_resolution_max=0.1, filename="mesh.msh")
+    mesh_from_OrderedDict(polygons_paper, {}, default_resolution_max=0.08, filename="mesh.msh")
 )
 mesh.draw().show()
 # %%
-for i in range(16):
+errors = []
+nelements = []
+
+for i in range(20):
     basis0 = Basis(mesh, ElementTriP0())
     epsilon = basis0.zeros()
     for subdomain, e in epsilons_paper[num].items():
@@ -71,8 +74,23 @@ for i in range(16):
         basis0, epsilon, wavelength=1.5, num_modes=1, order=1, metallic_boundaries=boundaries[num]
     )
     modes[0].show(modes[0].E.real, direction="x")
-    print(f"Error: {modes[0].n_eff - neff_values_paper[num]:.5g}")
+    error = modes[0].n_eff.real - neff_values_paper[num]
+    errors.append(error)
+    nelements.append(mesh.nelements)
+    print(f"Error {i:2d}: {error: .7f}, Elements: {mesh.nelements:10d}")
 
-    mesh = mesh.refined(adaptive_theta(eval_error_estimator(modes[0].basis, modes[0].E), theta=0.5))
+    mesh = mesh.refined(
+        adaptive_theta(eval_error_estimator(modes[0].basis, modes[0].E, epsilon), theta=0.5)
+    )
     mesh.draw().show()
+
+fig, axs = plt.subplots(2, 1)
+axs[0].plot(errors, label="Error")
+axs[0].axhline(y=0, color="r", linestyle="-")
+axs[0].set_ylabel("Error")
+axs[1].plot(nelements)
+axs[1].semilogy()
+axs[1].set_xlabel("Iteration")
+axs[1].set_ylabel("Number of elements")
+plt.show()
 # %%

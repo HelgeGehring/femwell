@@ -800,31 +800,37 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title="E", directi
     return fig, axs
 
 
-def eval_error_estimator(basis, u):
-    @Functional
-    def interior_residual(w):
-        h = w.h
-        x, y = w.x
-        return h**2  # * load_func(x, y) ** 2
+def eval_error_estimator(basis, u, epsilon):
+    # @Functional
+    # def interior_residual(w):
+    #     h = w.h
+    #     x, y = w.x
+    #     return h**2  # * load_func(x, y) ** 2
 
-    eta_K = interior_residual.elemental(basis, w=basis.interpolate(u))
+    # eta_K = interior_residual.elemental(basis, w=basis.interpolate(u))
 
     # facet jump
     fbasis = [InteriorFacetBasis(basis.mesh, basis.elem, side=i) for i in [0, 1]]
+    fbasis_epsilon = [
+        InteriorFacetBasis(basis.mesh, ElementTriP0(), side=i, quadrature=fbasis[0].quadrature)
+        for i in [0, 1]
+    ]
     w = {f"u{str(i + 1)}": fbasis[i].interpolate(u) for i in [0, 1]}
+    w2 = {f"epsilon{str(i + 1)}": fbasis_epsilon[i].interpolate(epsilon) for i in [0, 1]}
 
     @Functional
     def edge_jump(w):
         return w.h * (
             np.abs(dot(grad(w["u1"][1]) - grad(w["u2"][1]), w.n)) ** 2
-            + np.abs(dot(w["u1"][0] - w["u2"][0], w.n)) ** 2
+            + np.abs(dot(w["u1"][0] * w["epsilon1"][0] - w["u2"][0] * w["epsilon2"][0], w.n)) ** 2
         )
 
     tmp = np.zeros(basis.mesh.facets.shape[1])
-    tmp[fbasis[0].find] = edge_jump.elemental(fbasis[0], **w)
+    tmp[fbasis[0].find] = edge_jump.elemental(fbasis[0], **w, **w2)
     eta_E = np.sum(0.5 * tmp[basis.mesh.t2f], axis=0)
 
-    return eta_K + eta_E
+    return eta_E
+    # return eta_K + eta_E
 
 
 if __name__ == "__main__":
