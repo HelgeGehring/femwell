@@ -79,9 +79,16 @@ for i in range(20):
     nelements.append(mesh.nelements)
     print(f"Error {i:2d}: {error: .7f}, Elements: {mesh.nelements:10d}")
 
-    mesh = mesh.refined(
-        adaptive_theta(eval_error_estimator(modes[0].basis, modes[0].E, epsilon), theta=0.5)
+    elements_to_refine = adaptive_theta(
+        eval_error_estimator(modes[0].basis, modes[0].E, epsilon), theta=0.5
     )
+
+    fig, ax = plt.subplots()
+    mesh.restrict(elements=elements_to_refine).draw(color="red", linewidth=2, ax=ax)
+    mesh.draw(ax=ax).show()
+
+    mesh = mesh.refined(elements_to_refine)
+
     mesh.draw().show()
 
 fig, axs = plt.subplots(2, 1)
