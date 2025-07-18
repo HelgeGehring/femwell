@@ -818,11 +818,16 @@ def eval_error_estimator(basis, u, epsilon):
     w = {f"u{str(i + 1)}": fbasis[i].interpolate(u) for i in [0, 1]}
     w2 = {f"epsilon{str(i + 1)}": fbasis_epsilon[i].interpolate(epsilon) for i in [0, 1]}
 
+    # norm_0 = np.linalg.norm(w["u1"][0]*w2["epsilon1"])
+    # norm_1 = np.linalg.norm(grad(w["u1"][1]))*10
+    norm_0 = norm_1 = 1
+
     @Functional
     def edge_jump(w):
         return w.h * (
-            np.abs(dot(grad(w["u1"][1]) - grad(w["u2"][1]), w.n)) ** 2
+            np.abs(dot(grad(w["u1"][1]) - grad(w["u2"][1]), w.n)) ** 2 / norm_1**2
             + np.abs(dot(w["u1"][0] * w["epsilon1"][0] - w["u2"][0] * w["epsilon2"][0], w.n)) ** 2
+            / norm_0**2
         )
 
     tmp = np.zeros(basis.mesh.facets.shape[1])
