@@ -33,8 +33,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import shapely
-from meshwell.model import Model
+from meshwell.cad import cad
+from meshwell.mesh import mesh
 from meshwell.polysurface import PolySurface
+from meshwell.resolution import ThresholdField
 from skfem import Basis, ElementDG, ElementTriP0, Functional
 from skfem.helpers import dot
 from skfem.io.meshio import from_meshio
@@ -80,59 +82,61 @@ def parallel_plate_capacitor_mesh(
     )
     air_polygon = capacitor_polygon.buffer(20, resolution=8)
 
-    model = Model()
-
     top_plate = PolySurface(
         polygons=top_plate_polygon,
-        model=model,
         physical_name="top_plate",
         mesh_bool=False,
-        resolution={"resolution": 0.5, "DistMax": 2},
         mesh_order=1,
     )
     bottom_plate = PolySurface(
         polygons=bottom_plate_polygon,
-        model=model,
         physical_name="bottom_plate",
         mesh_bool=False,
-        resolution={"resolution": 0.5, "DistMax": 2},
         mesh_order=2,
     )
     dielectric = PolySurface(
         polygons=dielectric_polygon,
-        model=model,
         physical_name="dielectric",
         mesh_bool=True,
         mesh_order=3,
     )
     air = PolySurface(
         polygons=air_polygon,
-        model=model,
         physical_name="air",
         mesh_bool=True,
         mesh_order=4,
     )
 
-    return from_meshio(
-        model.mesh(
-            entities_list=[top_plate, bottom_plate, dielectric, air],
-            filename="mesh.msh",
-            default_characteristic_length=0.5,
-        )
+    cad(
+        entities_list=[top_plate, bottom_plate, dielectric, air],
+        output_file="/tmp/capacitor_example.xao",
     )
 
+    mesh_output = mesh(
+        dim=3,
+        input_file="/tmp/capacitor_example.xao",
+        output_file="/tmp/capacitor_example.msh",
+        resolution_specs={
+            "top_plate": [ThresholdField(apply_to="curves", sizemin=0.2, distmax=10, sizemax=2)],
+            "bottom_plate": [ThresholdField(apply_to="curves", sizemin=0.2, distmax=10, sizemax=2)],
+        },
+        default_characteristic_length=2,
+    )
 
-mesh = parallel_plate_capacitor_mesh(
+    return from_meshio(mesh_output)
+
+
+output_mesh = parallel_plate_capacitor_mesh(
     width=2,
     separation=separation,
     thickness=metal_thickness,
 )
-mesh.draw().show()
+output_mesh.draw().show()
 
-plot_domains(mesh)
+plot_domains(output_mesh)
 plt.show()
 
-plot_subdomain_boundaries(mesh)
+plot_subdomain_boundaries(output_mesh)
 
 
 # %% [markdown]
@@ -140,8 +144,8 @@ plot_subdomain_boundaries(mesh)
 
 
 # %%
-def potential(mesh, dV=delta_voltage, dielectric_epsilon=16):
-    basis_epsilon = Basis(mesh, ElementTriP0())
+def potential(input_mesh, dV=delta_voltage, dielectric_epsilon=16):
+    basis_epsilon = Basis(input_mesh, ElementTriP0())
     epsilon = basis_epsilon.ones()
 
     epsilon[basis_epsilon.get_dofs(elements=("dielectric"))] = dielectric_epsilon
@@ -160,7 +164,7 @@ def potential(mesh, dV=delta_voltage, dielectric_epsilon=16):
     return basis_u, u, basis_epsilon, epsilon
 
 
-basis_u, u, basis_epsilon, epsilon = potential(mesh, dV=delta_voltage)
+basis_u, u, basis_epsilon, epsilon = potential(output_mesh, dV=delta_voltage)
 
 # %%
 fig, ax = plt.subplots()
@@ -194,13 +198,13 @@ def capacitance(
     dV=delta_voltage,
     dielectric_epsilon=dielectric_epsilon,
 ):
-    mesh = parallel_plate_capacitor_mesh(
+    output_mesh = parallel_plate_capacitor_mesh(
         width=width,
         separation=separation,
         thickness=thickness,
     )
     basis_u, u, basis_epsilon, epsilon = potential(
-        mesh, dV=dV, dielectric_epsilon=dielectric_epsilon
+        output_mesh, dV=dV, dielectric_epsilon=dielectric_epsilon
     )
 
     @Functional(dtype=complex)
