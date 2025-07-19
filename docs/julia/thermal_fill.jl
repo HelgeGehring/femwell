@@ -21,7 +21,7 @@
 # Optically, these structures are supposed to be far enough away that their influence on the structures can be neglected.
 # But for thermal considerations, those fill structures can have an impact on the temperature distribution on the chip and thus e.g. on the crosstalk between thermal phase shifters.
 # As it's computationally challenging to include all the small cuboids in the model (which is especially for the meshing a major challenge),
-# a preferable approach is to consider the filled area as a homogenous area of higher thermal conductivity.
+# a preferable approach is to consider the filled area as a homogeneous area of higher thermal conductivity.
 # For this, we calculate the effective thermal conductivity of the filled area by examining a single unit cell.
 
 # To have an intuitively understandable problem, we consider half of the unit cell to be filled with a highly thermally conductive material (metal/silicon) surrounded by a material with low thermal conductance (e.g. silicon dioxide)
