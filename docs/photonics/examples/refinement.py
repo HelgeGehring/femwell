@@ -27,7 +27,7 @@ import shapely.affinity
 from skfem import Basis, ElementTriP0, adaptive_theta
 from skfem.io.meshio import from_meshio
 
-from femwell.maxwell.waveguide import compute_modes, eval_error_estimator
+from femwell.maxwell.waveguide import compute_modes
 from femwell.mesh import mesh_from_OrderedDict
 
 # %%
@@ -71,17 +71,16 @@ for i in range(20):
         epsilon[basis0.get_dofs(elements=subdomain)] = e
 
     modes = compute_modes(
-        basis0, epsilon, wavelength=1.5, num_modes=1, order=1, metallic_boundaries=boundaries[num]
+        basis0, epsilon, wavelength=1.5, order=1, metallic_boundaries=boundaries[num]
     )
-    modes[0].show(modes[0].E.real, direction="x")
+    modes[0].plot(modes[0].E.real, direction="x")
+    plt.show()
     error = modes[0].n_eff.real - neff_values_paper[num]
     errors.append(error)
     nelements.append(mesh.nelements)
     print(f"Error {i:2d}: {error: .7f}, Elements: {mesh.nelements:10d}")
 
-    elements_to_refine = adaptive_theta(
-        eval_error_estimator(modes[0].basis, modes[0].E, epsilon), theta=0.5
-    )
+    elements_to_refine = adaptive_theta(modes[0].eval_error_estimator(), theta=0.5)
 
     fig, ax = plt.subplots()
     mesh.restrict(elements=elements_to_refine).draw(color="red", linewidth=2, ax=ax)
