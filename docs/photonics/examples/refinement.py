@@ -78,17 +78,20 @@ for i in range(20):
     error = modes[0].n_eff.real - neff_values_paper[num]
     errors.append(error)
     nelements.append(mesh.nelements)
-    print(f"Error {i:2d}: {error: .7f}, Elements: {mesh.nelements:10d}")
-
     elements_to_refine = adaptive_theta(modes[0].eval_error_estimator(), theta=0.5)
+    print(
+        f"Error {i:2d}: {error: .7f},\tElements: {mesh.nelements:10d}\tSelected: {len(elements_to_refine)}"
+    )
 
-    fig, ax = plt.subplots()
-    mesh.restrict(elements=elements_to_refine).draw(color="red", linewidth=2, ax=ax)
-    mesh.draw(ax=ax).show()
-
+    fig, ax = plt.subplots(1, 2)
+    for a in ax:
+        a.set_aspect("equal")
+    mesh.draw(ax=ax[0])
+    mesh_restricted = mesh.restrict(elements=elements_to_refine)
+    mesh_restricted.draw(color="red", linewidth=2, ax=ax[0])
     mesh = mesh.refined(elements_to_refine)
-
-    mesh.draw().show()
+    mesh.draw(ax=ax[1])
+    mesh_restricted.draw(color="red", linewidth=2, ax=ax[1]).show()
 
 fig, axs = plt.subplots(2, 1)
 axs[0].plot(errors, label="Error")
