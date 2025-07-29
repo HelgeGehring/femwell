@@ -15,12 +15,9 @@ from shapely.geometry import (
 )
 from shapely.ops import linemerge, split
 
-GmshLabel = int | str
+GmshLabel = int
 
 class MeshTracker:
-    gmsh_points: list[Point]
-    model: Geometry # gmsh model
-    atol: float # absolute tolerance
     def __init__(self, model: Geometry, atol: float =1e-6):
         """
         Map between shapely and gmsh
@@ -28,7 +25,7 @@ class MeshTracker:
         We can also track information about the entities using labels (useful for selective mesh refinement later)
         """
         self.shapely_points = []
-        self.gmsh_points = []
+        self.gmsh_points : list[Point] = []
         self.points_labels = []
         self.shapely_xy_segments : list[LineString] = []
         self.gmsh_xy_segments = []
@@ -37,8 +34,8 @@ class MeshTracker:
         self.shapely_xy_surfaces = []
         self.gmsh_xy_surfaces = []
         self.xy_surfaces_labels = []
-        self.model = model
-        self.atol = atol
+        self.model = model  # gmsh model
+        self.atol = atol # absolute tolerance
 
     """
     Retrieve existing geometry
