@@ -1,11 +1,11 @@
 import matplotlib.colors
 import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
 import numpy as np
+from matplotlib.axes import Axes
 from skfem import Basis, ElementTriP0, Mesh
 
 
-def plot_subdomain_boundaries(mesh: Mesh, ax: Axes | None =None) -> Axes:
+def plot_subdomain_boundaries(mesh: Mesh, ax: Axes | None = None) -> Axes:
     if ax is None:
         fig, ax = plt.subplots()
         ax.set_aspect(1)

@@ -3,8 +3,8 @@ from typing import Dict, List, Optional, Tuple
 
 import gmsh
 import numpy as np
-from pygmsh.geo import Geometry
 import shapely
+from pygmsh.geo import Geometry
 from shapely.geometry import (
     LinearRing,
     LineString,
@@ -17,17 +17,18 @@ from shapely.ops import linemerge, split
 
 GmshLabel = int
 
+
 class MeshTracker:
-    def __init__(self, model: Geometry, atol: float =1e-6):
+    def __init__(self, model: Geometry, atol: float = 1e-6):
         """
         Map between shapely and gmsh
         Shapely is useful for built-in geometry equivalencies and extracting orientation, instead of doing it manually
         We can also track information about the entities using labels (useful for selective mesh refinement later)
         """
         self.shapely_points = []
-        self.gmsh_points : list[Point] = []
+        self.gmsh_points: list[Point] = []
         self.points_labels = []
-        self.shapely_xy_segments : list[LineString] = []
+        self.shapely_xy_segments: list[LineString] = []
         self.gmsh_xy_segments = []
         self.xy_segments_main_labels = []
         self.xy_segments_secondary_labels = []
@@ -35,7 +36,7 @@ class MeshTracker:
         self.gmsh_xy_surfaces = []
         self.xy_surfaces_labels = []
         self.model = model  # gmsh model
-        self.atol = atol # absolute tolerance
+        self.atol = atol  # absolute tolerance
 
     """
     Retrieve existing geometry
@@ -47,7 +48,9 @@ class MeshTracker:
                 return index
         return None
 
-    def get_xy_segment_index_and_orientation(self, xy_point1: Point, xy_point2: Point) -> tuple[GmshLabel | None, bool]:
+    def get_xy_segment_index_and_orientation(
+        self, xy_point1: Point, xy_point2: Point
+    ) -> tuple[GmshLabel | None, bool]:
         xy_line = shapely.geometry.LineString([xy_point1, xy_point2])
         for index, shapely_line in enumerate(self.shapely_xy_segments):
             if xy_line.equals(shapely_line):
@@ -59,7 +62,7 @@ class MeshTracker:
     def get_gmsh_points_from_label(self, label: GmshLabel):
         indices = [idx for idx, value in enumerate(self.points_labels) if value == label]
         return [self.gmsh_points[index]._id for index in indices]
-    
+
     def get_gmsh_xy_lines_from_label(self, label: GmshLabel):
         indices = [idx for idx, value in enumerate(self.xy_segments_main_labels) if value == label]
         return [self.gmsh_xy_segments[index]._id for index in indices]
@@ -104,11 +107,13 @@ class MeshTracker:
             self.points_labels.append(label)
         return gmsh_point
 
-    def add_get_xy_segment(self, shapely_xy_point1: Point, shapely_xy_point2 : Point, label: GmshLabel | None):
+    def add_get_xy_segment(
+        self, shapely_xy_point1: Point, shapely_xy_point2: Point, label: GmshLabel | None
+    ):
         """
         Add a shapely segment (2-point line) to the gmsh model in the xy plane, or retrieve the existing gmsh segment with equivalent coordinates (within tol.)
 
-        Args: 
+        Args:
             shapely_xy_point1 (shapely.geometry.Point): first x, y coordinates
             shapely_xy_point2 (shapely.geometry.Point): second x, y coordinates
         """
@@ -158,7 +163,9 @@ class MeshTracker:
         self.model.add_physical(segments, f"{label}")
         self.model.add_physical(list(points), f"{label}_points")
 
-    def add_xy_surface(self, shapely_xy_polygons, label: GmshLabel | None = None, physical: bool=True):
+    def add_xy_surface(
+        self, shapely_xy_polygons, label: GmshLabel | None = None, physical: bool = True
+    ):
         """
         Add a xy surface corresponding to shapely_xy_polygon, or retrieve the existing gmsh model surface with equivalent coordinates (within tol.)
 
