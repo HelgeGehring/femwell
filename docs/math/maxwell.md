@@ -1,14 +1,24 @@
-# Electromagnetic field simulations
+# Introduction to optical waveguides
+An *optical waveguide* is a structure which is able to confine and guide the electromagnetic field in the optical spectrum.
 
-### Some useful relations
+An optical waveguide usually consists (but not mandatorily) in at least two region of space:
 
-We here put some useful equations connecting the (angular) frequency $\omega$, the wave length $\lambda$ and the wave number $k$ in various ways (so you don't have to think about them again). The equations include also the (regular) frequency $f$ and the speed of light $c$.
+- the *core*, with an higher refractive index
+- the *cladding*, with a lower refractive index
 
-$$\begin{aligned}
-    \omega=2\pi f = c k  = \frac{2\pi c}{\lambda}\\
-    \lambda = \frac{c}{f} = \frac{2\pi c}{\omega} = \frac{2\pi}{k} \\
-    k =\frac{2\pi}{\lambda}=\frac{2\pi f}{c} = \frac{\omega}{c}
-\end{aligned}$$
+```{figure} opt-wg-geom.svg
+:name: fig-opt-wg-geom
+:alt: typical geometry of an optical waveguide
+:align: center
+
+example of an optical waveguide geometry composed by a core of higher refractive index and a cladding of lower refractive index.
+```
+
+The specific geometry and refractive index distribution can widely vary, however most waveguides used in optics and photonics have a geometry like that represented in {numref}`fig-opt-wg-geom`
+
+The most famous example of an optical waveguide is the *optical fiber*. Indeed in an optical fiber the electromagnetic field is confined within the core of the fiber, which has a higher refractive index than the cladding, and the electromagntic waves can flow along the fiber.Intuitively this behavior can be explained imagining that the light inside the core of a fiber is undergoes a total internal reflection when it hits the core-cladding interface trapping the light. However, a more accurate description of the waveguide properties require a description in terms of Maxwell equations.
+
+In this page we will briefly present such an approach and we will see the physical and mathematical framework inside which femwell operate to compute the waveguides modes. This discussion do not pretend to be completely accurate and exhaustive but it is meant to serve as a tutorial for new user not used to waveguide analysis and as a reference on the approach employed by femwell for the most experienced users.
 
 ## Maxwell's equations for dielectric materials
 
