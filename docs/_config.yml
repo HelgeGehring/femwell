@@ -9,7 +9,7 @@ logo: ../logo_inline.svg
 # Force re-execution of notebooks on each build.
 # See https://jupyterbook.org/content/execute.html
 execute:
-  execute_notebooks: cache
+  execute_notebooks: off
   timeout: -1
   allow_errors: false
 
@@ -39,7 +39,7 @@ html:
 
 parse:
   myst_enable_extensions:
-    # - amsmath
+    - amsmath
     - colon_fence
     # - deflist
     - dollarmath
@@ -58,6 +58,7 @@ only_build_toc_files: true
 
 sphinx:
   config:
+    numfig: True
     nb_execution_show_tb: True
     nb_custom_formats:
         .py:
