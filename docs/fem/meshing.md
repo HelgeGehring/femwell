@@ -43,7 +43,7 @@ mesh.draw().show()
 
 In case of overlapping polygons, femwell operate in a similar way to [Lumerical](https://optics.ansys.com/hc/en-us/articles/360034915233-Understanding-mesh-order-for-overlapping-objects) and gives priority to the shapes defined first in the dictionary passed to `mesh_from_OrderedDict`. For example in the code snippet above, the core and the cladding overlap, but core shape have the priority because it comes first in the `polygons` dictionary.
 
-### Controlling the mesh size
+## Controlling the mesh size
 
 In femwell you can control mesh size by specifying up to two parameters for every polygon:
 
@@ -64,10 +64,9 @@ mesh = from_meshio(mesh_from_OrderedDict(polygons, resolutions, default_resoluti
 
 For more detailed information on how the mesh size is determined, you can refer to the this [official gshm example](https://gmsh.info/doc/texinfo/gmsh.html#t10)
 
-### Physical region
+## Physical region
+
 Up to now femwell support only homogenously filled materials with constant refractive index (there is no support for graded, continously varying materials). Every material region correspond to a *physical interface* and These physical interfaces coincide with the polynomials passed to `mesh_from_OrderedDict`. So if we define three polygons: core, box and cladding as in the previous example, then three different physical interfaces with the same name will be created.
-
-
 
 ## Custom Meshes
 
