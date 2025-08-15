@@ -13,6 +13,7 @@
 # ---
 
 # %% [markdown]
+# (sec-waveguide-modes)=
 # # Optical waveguide modes
 
 # %% tags=["remove-stderr", "hide-input", "thebe-init"]
