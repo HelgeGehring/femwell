@@ -89,7 +89,14 @@ Using the vector identity $\mathbf{\nabla}\times \mathbf{\nabla}\times \mathbf{E
 \mathbf{\nabla}^2 \mathbf{E} - \frac{1}{c^2} \varepsilon_\text{r} \frac{\partial^2 \mathbf{E}}{\partial t^2} =0.
 ```
 
-In this way we have obtained an equation in the $E$ field only and we have seen that this equation is indeed the wave equation.
+In this way we have obtained an equation in the $E$ field only and we have seen that this equation is indeed the wave equation. This means that all solutions of the Maxwell equations are also solutions for the wave equation, however, the converse is not necessarily true. Indeed, a solution of the wave equation does not always respect the divergence equation for the electric field
+
+```{math}
+:label: eq-maxwell-E-div
+\mathbf{\nabla} \cdot \left(\varepsilon_\text{r} (\mathbf{r},t) \mathbf{E} (\mathbf{r},t)\right) = 0
+```
+
+Solutions that do not respect Eq. [](eq-maxwell-E-div) are called *spourious solutions* and are unphysical, so they should be discarded.
 
 Since in optics and photonics we want to study a system when excited with a monochromatic source at frequency $\omega$ it is convenient to study equation [](eq-wave) when the electric field oscillates sinusoidally. For this reason from now on we adopt a [phasor representation](https://en.wikipedia.org/wiki/Phasor)
 
@@ -154,7 +161,30 @@ An optical waveguide has a constant cross-section along the $z$ axis making it t
 
 Before attempting to analyse and solve the Helmoltz equation [](eq-helm) in the specific case of optical waveguides, it is convenient to exploit the specific symmetry of these structures. Indeed, as you can see from {numref}`fig-opt-wg-symm` a waveguide has a constant cross-section for all its length and this gives the waveguide a translational symmetry that can make Eq. [](eq-helm) easier to solve.
 
+Thank to the translational symmetry along the z-axis we can assume that the electromagnetic field distribution depend only on the transverse coordinates $\mathbf{r_\perp}= (x, y)$ and not on $z$ if not for a phase factor. In formula this becomes
 
+```{math}
+:label: eq-ansatz-bloch
+E(\mathbf{r}) = E_\perp(\mathbf{r}_\perp)e^{-j \beta z}.
+```
+
+The readers that are interested in a more formal justification of this Ansatz can look at the Bloch's theorem that establish a formal connection between symmetries and ansatz of the type expressed by Eq. [](eq-ansatz-bloch) \cite{Joannopoulous}.
+
+Substituting [](eq-ansatz-bloch) into [](eq-helm) we get
+
+```{math}
+:label: eq-helm-transv
+\mathbf{\nabla}_\perp^2 \mathbf{E}_\perp + (k_0 n^2- \beta^2) \mathbf{E}_\perp =0,
+```
+
+where we introduced the transverse laplacian operator
+
+```{math}
+:label: eq-trans-lapl
+\mathbf{\nabla}_\perp^2 = \frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2},
+```
+
+and $k_0 = \omega/c$.
 
 ## Reduction to two dimensions
 
