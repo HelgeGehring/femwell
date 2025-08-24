@@ -25,9 +25,9 @@ $$
     \vec{H}_\nu(\vec{x})\mathrm{e}^{i\beta x_3}
 $$
 
-We use as previously Maxwell's equations, but here we include a spatially dependen pertubation,
+We use as previously Maxwell's equations, but here we include a spatially dependen perturbation,
 which is represented by the additionally included polarization $\mathcal{P}$.
-As we investigate a linear system, we assume that the pertubation at the same frequency $\omega$ 
+As we investigate a linear system, we assume that the perturbation at the same frequency $\omega$ 
 
 $$  
     &

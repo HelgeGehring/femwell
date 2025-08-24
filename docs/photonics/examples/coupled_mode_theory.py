@@ -118,7 +118,7 @@ modes_both = compute_modes(basis0, epsilon, wavelength=wavelength, mu_r=1, num_m
 modes_both[0].show(modes_both[0].E.real, direction="x")
 modes_both[1].show(modes_both[1].E.real, direction="x")
 print(
-    "Refractive index of symmetric and assymetric mode:",
+    "Refractive index of symmetric and asymmetric mode:",
     modes_both[0].n_eff,
     ", ",
     modes_both[1].n_eff,
