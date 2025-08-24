@@ -241,6 +241,9 @@ class Mode:
             )
         )
 
+    def calculate_pertubated_k(self, delta_epsilon):
+        return self.calculate_pertubated_neff(delta_epsilon) * 2 * np.pi / self.wavelength
+
     def calculate_pertubated_neff(self, delta_epsilon):
         return (
             self.n_eff
@@ -527,6 +530,7 @@ def compute_modes(
     num_modes=1,
     order=1,
     metallic_boundaries=False,
+    with_manual_boundaries=None,
     radius=np.inf,
     n_guess=None,
     solver="scipy",
@@ -597,6 +601,16 @@ def compute_modes(
                 -A,
                 -B,
                 D=basis.get_dofs(None if metallic_boundaries is True else metallic_boundaries),
+                x=basis.zeros(dtype=complex),
+            ),
+            solver=solver(k=num_modes, sigma=sigma),
+        )
+    elif with_manual_boundaries is not None:
+        lams, xs = solve(
+            *condense(
+                -A,
+                -B,
+                D=basis.get_dofs(set(with_manual_boundaries.keys())),
                 x=basis.zeros(dtype=complex),
             ),
             solver=solver(k=num_modes, sigma=sigma),
