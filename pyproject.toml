@@ -27,7 +27,7 @@ dependencies = [
     "gmsh>=4.13.1",
     "pygmsh",
     "matplotlib",
-    "meshwell==2.0.0"
+    "meshwell==2.1.1"
 ]
 
 [project.optional-dependencies]
