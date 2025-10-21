@@ -1,13 +1,12 @@
 [build-system]
-requires = ["poetry-core>=1.6.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry]
+[project]
 name = "femwell"
 version = "0.0.1"
-authors = ["Helge Gehring"]
+authors = [{name="Helge Gehring"}]
 description = "Mode solver for photonic and electric waveguides based on FEM"
-homepage = "https://github.com/HelgeGehring/femwell"
 keywords = [
     "integrated photonics",
     "silicon photonics",
@@ -20,33 +19,40 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering"
 ]
-license = "GPLv3"
+license = {file = "LICENSE"}
 readme = "README.md"
 
-[tool.poetry.urls]
+dependencies = [
+    "scikit-fem>=8.1.0",
+    "gmsh>=4.13.1",
+    "pygmsh",
+    "matplotlib",
+    "meshwell==2.0.0"
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "flake8"
+]
+
+docs = [
+    "tqdm",
+    "enlighten",
+    "pint>0.20.1",
+    "sphinx-book-theme",
+    "jupytext",
+    "pandas",
+    "enlighten"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["femwell*"]
+
+[project.urls]
+Homepage = "https://github.com/HelgeGehring/femwell"
 Documentation = "https://HelgeGehring.github.io/femwell/"
-
-[tool.poetry.dependencies]
-python = ">=3.8"
-scikit-fem = ">=8.1.0"
-gmsh = "4.13.0"
-pygmsh = "*"
-matplotlib = "*"
-meshwell = ">=1.0.2"
-
-[tool.poetry.group.test.dependencies]
-pytest = "*"
-flake8 = "*"
-
-[tool.poetry.group.docs.dependencies]
-python = ">=3.10"
-tqdm = "*"
-enlighten = "*"
-pint = ">0.20.1"
-# sphinx-book-theme = "*"
-jupytext = "*"
-# myst-parser = "*"
-pandas = "*"
 
 [tool.black]
 line-length = 100

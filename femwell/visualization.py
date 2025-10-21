@@ -1,10 +1,11 @@
 import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
-from skfem import Basis, ElementTriP0
+from matplotlib.axes import Axes
+from skfem import Basis, ElementTriP0, Mesh
 
 
-def plot_subdomain_boundaries(mesh, ax=None):
+def plot_subdomain_boundaries(mesh: Mesh, ax: Axes | None = None) -> Axes:
     if ax is None:
         fig, ax = plt.subplots()
         ax.set_aspect(1)
@@ -15,14 +16,14 @@ def plot_subdomain_boundaries(mesh, ax=None):
     return ax
 
 
-def plot_domains(mesh, ax=None):
+def plot_domains(mesh: Mesh, ax: Axes | None = None) -> Axes:
     if ax is None:
         fig, ax = plt.subplots()
         ax.set_aspect(1)
     basis0 = Basis(mesh, ElementTriP0())
 
     subdomains = list(mesh.subdomains.keys() - {"gmsh:bounding_entities"})
-    subdomain_colors = basis0.zeros() * np.NaN
+    subdomain_colors = basis0.zeros() * np.nan
     for i, subdomain in enumerate(subdomains):
         subdomain_colors[basis0.get_dofs(elements=subdomain)] = i
 

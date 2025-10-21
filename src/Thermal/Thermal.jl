@@ -2,6 +2,8 @@ module Thermal
 
 using Gridap
 using Gridap.Algebra
+using GridapODEs.ODETools
+using GridapODEs.TransientFETools
 
 export calculate_temperature, temperature, calculate_temperature_transient, heat_flux
 

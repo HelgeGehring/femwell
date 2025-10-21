@@ -329,7 +329,7 @@ class Mode:
 
         if component == "x" or component == "y":
             plot_basis = mfield_t_basis.with_element(ElementVector(ElementDG(ElementTriP1())))
-            mfield_xy = plot_basis.project(mfield_t_basis.interpolate(conv_func(mfield_t)))
+            mfield_xy = plot_basis.project(conv_func(mfield_t_basis.interpolate(mfield_t)))
             (mfield_x, mfield_x_basis), (mfield_y, mfield_y_basis) = plot_basis.split(mfield_xy)
             if component == "x":
                 mfield_x_basis.plot(mfield_x, ax=ax, shading="gouraud")
@@ -462,6 +462,37 @@ class Mode:
             plt.colorbar(ax.collections[-1])
 
         return fig, ax
+
+    def eval_error_estimator(self):
+        # facet jump
+        fbasis = [InteriorFacetBasis(self.basis.mesh, self.basis.elem, side=i) for i in [0, 1]]
+        fbasis_epsilon = [
+            InteriorFacetBasis(
+                self.basis.mesh, self.basis_epsilon_r.elem, side=i, quadrature=fbasis[0].quadrature
+            )
+            for i in [0, 1]
+        ]
+        w = {f"u{str(i + 1)}": fbasis[i].interpolate(self.E) for i in [0, 1]}
+        w2 = {f"epsilon{str(i + 1)}": fbasis_epsilon[i].interpolate(self.epsilon_r) for i in [0, 1]}
+
+        # norm_0 = np.linalg.norm(w["u1"][0]*w2["epsilon1"])
+        # norm_1 = np.linalg.norm(grad(w["u1"][1]))*10
+        norm_0 = norm_1 = 1
+
+        @Functional
+        def edge_jump(w):
+            return w.h * (
+                np.abs(dot(grad(w["u1"][1]) - grad(w["u2"][1]), w.n)) ** 2 / norm_1**2
+                + np.abs(dot(w["u1"][0] * w["epsilon1"][0] - w["u2"][0] * w["epsilon2"][0], w.n))
+                ** 2
+                / norm_0**2
+            )
+
+        tmp = np.zeros(self.basis.mesh.facets.shape[1])
+        tmp[fbasis[0].find] = edge_jump.elemental(fbasis[0], **w, **w2)
+        eta_E = np.sum(0.5 * tmp[self.basis.mesh.t2f], axis=0)
+
+        return eta_E
 
 
 @dataclass(frozen=True)
@@ -798,33 +829,6 @@ def plot_mode(basis, mode, plot_vectors=False, colorbar=True, title="E", directi
             plt.tight_layout()
 
     return fig, axs
-
-
-def eval_error_estimator(basis, u):
-    @Functional
-    def interior_residual(w):
-        h = w.h
-        x, y = w.x
-        return h**2  # * load_func(x, y) ** 2
-
-    eta_K = interior_residual.elemental(basis, w=basis.interpolate(u))
-
-    # facet jump
-    fbasis = [InteriorFacetBasis(basis.mesh, basis.elem, side=i) for i in [0, 1]]
-    w = {f"u{str(i + 1)}": fbasis[i].interpolate(u) for i in [0, 1]}
-
-    @Functional
-    def edge_jump(w):
-        return w.h * (
-            np.abs(dot(grad(w["u1"][1]) - grad(w["u2"][1]), w.n)) ** 2
-            + np.abs(dot(w["u1"][0] - w["u2"][0], w.n)) ** 2
-        )
-
-    tmp = np.zeros(basis.mesh.facets.shape[1])
-    tmp[fbasis[0].find] = edge_jump.elemental(fbasis[0], **w)
-    eta_E = np.sum(0.5 * tmp[basis.mesh.t2f], axis=0)
-
-    return eta_K + eta_E
 
 
 if __name__ == "__main__":

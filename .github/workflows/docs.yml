@@ -18,7 +18,7 @@ jobs:
         run: |
           echo "date=$(/bin/date --date='TZ="America/Los_Angeles"' -u "+%Y%m%d")" >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup Mambaforge
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -29,23 +29,21 @@ jobs:
       - name: Add conda to system path
         run: |
           echo $CONDA/bin >> $GITHUB_PATH
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: 1.8.1
-          virtualenvs-create: false
-          installer-parallel: true
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
       - name: Install dependencies
+        env:
+          UV_SYSTEM_PYTHON: 1
         run: |
           sudo apt-get install -y libglu1-mesa xvfb
-          poetry install --no-interaction
-          pip install --upgrade scipy
           mamba install slepc4py=*=complex* -y
           mamba install julia
-          pip install jupyter-book
-          pip install --upgrade jupytext
-          pip install gdsfactory gplugins
-          pip list
+          uv pip install .
+          uv pip install jupyter-book
+          uv pip install --upgrade jupytext
+          uv pip install --upgrade enlighten
+          uv pip install gdsfactory gplugins
+          uv pip list
       
       - uses: julia-actions/setup-julia@v2
         with:
