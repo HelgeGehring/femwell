@@ -18,7 +18,7 @@ jobs:
         run: |
           echo "date=$(/bin/date --date='TZ="America/Los_Angeles"' -u "+%Y%m%d")" >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Setup Mambaforge
         uses: conda-incubator/setup-miniconda@v3
         with:
