@@ -61,7 +61,7 @@ jobs:
         continue-on-error: true
         run: |
           julia --project=~/work/femwell/femwell -e 'using Pkg; Pkg.precompile()'
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: |
             docs/_build/.jupyter_cache
