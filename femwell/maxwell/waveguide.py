@@ -225,8 +225,15 @@ class Mode:
     def calculate_confinement_factor(self, elements):
         @Functional
         def factor(w):
-            return np.sqrt(w["epsilon"]) * (
-                dot(np.conj(w["E"][0]), w["E"][0]) + np.conj(w["E"][1]) * w["E"][1]
+            if len(w.epsilon.shape) == 3:  # Diagonal anisotropy
+                epsilon_t = w.epsilon[:2]
+                epsilon_z = w.epsilon[2]
+            else:  # Isotropic material
+                epsilon_t = w.epsilon
+                epsilon_z = w.epsilon
+            return (
+                dot(np.sqrt(epsilon_t) * np.conj(w["E"][0]), w["E"][0])
+                + np.sqrt(epsilon_z) * np.conj(w["E"][1]) * w["E"][1]
             )
 
         basis = self.basis.with_elements(elements)
