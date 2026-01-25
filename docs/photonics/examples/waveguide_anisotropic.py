@@ -1,6 +1,6 @@
 # %% [markdown]
 # # Modes of waveguides with diagonal anisotropy
-# Example based on https://ieeexplore.ieee.org/abstract/document/9095209
+# Example based on {cite}`Wang2020`.
 
 # %%
 from collections import OrderedDict
@@ -110,7 +110,7 @@ for mode in modes:
 # %% [markdown]
 # ## Sweep over propagation angle phi (Fig. 1 reproduction)
 # Now that we observe anisotropic behavior, we compare propagation-direction-dependent effective index with the reference.
-# Following the IEEE paper (DOI: 10.1109/JPHOT.2020.2995317), we sweep the propagation
+# Following {cite}`Wang2020`, we sweep the propagation
 # angle phi from 0° (Y-propagation) to 90° (Z-propagation) and compute the effective
 # indices of the two fundamental modes at 1.31 μm and 1.55 μm wavelengths.
 #
@@ -315,8 +315,7 @@ ax.set_xlabel("Propagation angle φ (degrees)", fontsize=12)
 ax.set_ylabel("Effective refractive index", fontsize=12)
 ax.set_title(
     "Effective indices vs propagation angle for X-cut LiNbO3 ridge waveguide\n"
-    f"(w={wg_width} μm, t_total={wg_thickness} μm, r_slab={slab_thickness/wg_thickness:.2f})\n"
-    "Comparison with IEEE paper DOI: 10.1109/JPHOT.2020.2995317"
+    f"(w={wg_width} μm, t_total={wg_thickness} μm, r_slab={slab_thickness/wg_thickness:.2f})"
 )
 ax.legend(loc="center left", bbox_to_anchor=(1.02, 0.5), fontsize=9)
 ax.grid(True, alpha=0.3)
@@ -324,3 +323,11 @@ ax.set_xlim(0, 90)
 
 plt.tight_layout()
 plt.show()
+
+# %% [markdown]
+# ## Bibliography
+#
+# ```{bibliography}
+# :style: unsrt
+# :filter: docname in docnames
+# ```
