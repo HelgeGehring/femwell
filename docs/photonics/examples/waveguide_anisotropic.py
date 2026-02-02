@@ -1,3 +1,17 @@
+# ---
+# jupyter:
+#   jupytext:
+#     formats: py:percent,md:myst
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.15.0
+#   kernelspec:
+#     display_name: Python 3
+#     name: python3
+# ---
+
 # %% [markdown]
 # # Modes of waveguides with diagonal anisotropy
 # Example based on {cite}`Wang2020`.
