@@ -133,6 +133,9 @@ for mode in modes:
 # - phi=90°: both modes see n_o (propagating along Z axis)
 #
 # The rotation is achieved by transforming the dielectric tensor in the xy-plane.
+#
+# Note: for propagation angles that are not 0° or 90°, there will also be a non-zero `epsilon_xz` which is not implemented here (it results in a quadratic eigenvalue problem).
+# The error in the effective index is not very large for this example, but it could become important with larger birefringence.
 
 
 # %%
