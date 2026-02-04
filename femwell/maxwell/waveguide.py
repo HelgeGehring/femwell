@@ -19,9 +19,11 @@ from skfem import (
     ElementDG,
     ElementTriN1,
     ElementTriN2,
+    ElementTriN3,
     ElementTriP0,
     ElementTriP1,
     ElementTriP2,
+    ElementTriP3,
     ElementVector,
     Functional,
     InteriorFacetBasis,
@@ -29,6 +31,7 @@ from skfem import (
     Mesh,
     condense,
     solve,
+    CellBasis
 )
 from skfem.helpers import cross, curl, dot, grad, inner
 from skfem.utils import solver_eigen_scipy
@@ -530,6 +533,7 @@ def compute_modes(
     radius=np.inf,
     n_guess=None,
     solver="scipy",
+    int_order =  None,
 ) -> Modes:
     """Computes the modes of a waveguide.
 
@@ -561,10 +565,12 @@ def compute_modes(
         element = ElementTriN1() * ElementTriP1()
     elif order == 2:
         element = ElementTriN2() * ElementTriP2()
+    elif order == 3:
+        element = ElementTriN3() * ElementTriP3()
     else:
-        raise AssertionError("Only order 1 and 2 implemented by now.")
+        raise AssertionError("Only orders 1-3 implemented so far.")
 
-    basis = basis_epsilon_r.with_element(element)
+    basis = CellBasis(basis_epsilon_r.mesh, element, intorder=int_order) #  at order 3, it might be useful to adjust the int_order due to the higher complexity and prevent under integration
     basis_epsilon_r = basis.with_element(basis_epsilon_r.elem)  # adjust quadrature
 
     @BilinearForm(dtype=epsilon_r.dtype)
