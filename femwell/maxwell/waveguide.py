@@ -225,8 +225,15 @@ class Mode:
     def calculate_confinement_factor(self, elements):
         @Functional
         def factor(w):
-            return np.sqrt(w["epsilon"]) * (
-                dot(np.conj(w["E"][0]), w["E"][0]) + np.conj(w["E"][1]) * w["E"][1]
+            if len(w.epsilon.shape) == 3:  # Diagonal anisotropy
+                epsilon_t = w.epsilon[:2]
+                epsilon_z = w.epsilon[2]
+            else:  # Isotropic material
+                epsilon_t = w.epsilon
+                epsilon_z = w.epsilon
+            return (
+                dot(np.sqrt(epsilon_t) * np.conj(w["E"][0]), w["E"][0])
+                + np.sqrt(epsilon_z) * np.conj(w["E"][1]) * w["E"][1]
             )
 
         basis = self.basis.with_elements(elements)
@@ -569,19 +576,28 @@ def compute_modes(
 
     @BilinearForm(dtype=epsilon_r.dtype)
     def aform(e_t, e_z, v_t, v_z, w):
-        epsilon = w.epsilon * (1 + w.x[0] / radius) ** 2
+        if len(w.epsilon.shape) == 3:  # Diagonal anisotropy
+            epsilon_t = w.epsilon[:2] * (1 + w.x[0] / radius)
+            epsilon_z = w.epsilon[2] / (1 + w.x[0] / radius)
+        else:  # Isotropic material
+            epsilon_t = w.epsilon * (1 + w.x[0] / radius)
+            epsilon_z = w.epsilon / (1 + w.x[0] / radius)
+        mu_t = mu_r * (1 + w.x[0] / radius)
+        mu_z = mu_r / (1 + w.x[0] / radius)
 
         return (
-            1 / mu_r * curl(e_t) * curl(v_t) / k0**2
-            - epsilon * dot(e_t, v_t)
-            + 1 / mu_r * dot(grad(e_z), v_t)
-            + epsilon * inner(e_t, grad(v_z))
-            - epsilon * e_z * v_z * k0**2
+            1 / mu_z * curl(e_t) * curl(v_t) / k0**2
+            - dot(epsilon_t * e_t, v_t)
+            + dot(1 / mu_t * grad(e_z), v_t)
+            + inner(epsilon_t * e_t, grad(v_z))
+            - epsilon_z * e_z * v_z * k0**2
         )
 
     @BilinearForm(dtype=epsilon_r.dtype)
     def bform(e_t, e_z, v_t, v_z, w):
-        return -1 / mu_r * dot(e_t, v_t) / k0**2
+        mu_t = mu_r * (1 + w.x[0] / radius)
+
+        return -dot(1 / mu_t * e_t, v_t) / k0**2
 
     A = aform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
     B = bform.assemble(basis, epsilon=basis_epsilon_r.interpolate(epsilon_r))
