@@ -577,7 +577,9 @@ def compute_modes(
     else:
         raise AssertionError("Only orders 1-3 implemented so far.")
 
-    basis = CellBasis(basis_epsilon_r.mesh, element, intorder=int_order) #  at order 3, it might be useful to adjust the int_order due to the higher complexity and prevent under integration
+    # It might be useful to adjust the int_order due to prevent
+    #  under-integration for higher orders when permitivity changes
+    basis = CellBasis(basis_epsilon_r.mesh, element, intorder=int_order) 
     basis_epsilon_r = basis.with_element(basis_epsilon_r.elem)  # adjust quadrature
 
     @BilinearForm(dtype=epsilon_r.dtype)
