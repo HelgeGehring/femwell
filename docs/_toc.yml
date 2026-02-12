@@ -4,8 +4,9 @@
 format: jb-book
 root: index
 parts:
-  - caption: Installation
+  - caption: 
     chapters:
+      - file: introduction
       - file: install
   - caption: Derivation of the equations
     chapters:
@@ -20,6 +21,11 @@ parts:
     - file: math/coupled_mode_theory.md
     - file: math/schroedinger.md
     
+  - caption: Finite element method
+    chapters:
+    - file: fem/fem_intro.md
+    - file: fem/meshing.md
+
   - caption: Examples
     chapters:
     - file: photonics/examples/waveguide_modes.py
