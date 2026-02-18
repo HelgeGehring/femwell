@@ -16,6 +16,7 @@ from scipy.constants import epsilon_0, speed_of_light
 from skfem import (
     Basis,
     BilinearForm,
+    CellBasis,
     ElementDG,
     ElementTriN1,
     ElementTriN2,
@@ -31,7 +32,6 @@ from skfem import (
     Mesh,
     condense,
     solve,
-    CellBasis
 )
 from skfem.helpers import cross, curl, dot, grad, inner
 from skfem.utils import solver_eigen_scipy
@@ -540,7 +540,7 @@ def compute_modes(
     radius=np.inf,
     n_guess=None,
     solver="scipy",
-    int_order =  None,
+    int_order=None,
 ) -> Modes:
     """Computes the modes of a waveguide.
 
@@ -577,9 +577,10 @@ def compute_modes(
     else:
         raise AssertionError("Only orders 1-3 implemented so far.")
 
-    # It might be useful to adjust the int_order due to prevent
-    #  under-integration for higher orders when permitivity changes
-    basis = CellBasis(basis_epsilon_r.mesh, element, intorder=int_order) 
+    # Based on Strang & Fix (1973), Chapter 4.3:
+    # It might be useful to adjust the int_order to prevent under-integration
+    # when permittivity is a function of position rather than a constant.
+    basis = CellBasis(basis_epsilon_r.mesh, element, intorder=int_order)
     basis_epsilon_r = basis.with_element(basis_epsilon_r.elem)  # adjust quadrature
 
     @BilinearForm(dtype=epsilon_r.dtype)
