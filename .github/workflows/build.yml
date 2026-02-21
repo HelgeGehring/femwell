@@ -55,7 +55,7 @@ jobs:
             miniforge-version: latest
             activate-environment: env
             use-mamba: true
-            python-version: "3.11"
+            python-version: "3.12"
       - name: Add conda to system path
         run: |
           echo $CONDA/bin >> $GITHUB_PATH
@@ -66,7 +66,7 @@ jobs:
           UV_SYSTEM_PYTHON: 1
         run: |
           sudo apt-get install -y libglu1-mesa
-          mamba install slepc4py=*=complex* uv -y
+          mamba env create -f environment.yml
           uv pip install -r pyproject.toml
       - name: Build package
         env:
