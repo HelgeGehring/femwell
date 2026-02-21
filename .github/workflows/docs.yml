@@ -36,7 +36,7 @@ jobs:
           UV_SYSTEM_PYTHON: 1
         run: |
           sudo apt-get install -y libglu1-mesa xvfb
-          mamba install slepc4py=*=complex* -y
+          mamba env create -f environment.yml
           mamba install julia
           uv pip install .
           uv pip install "jupyter-book<2"
