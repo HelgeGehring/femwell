@@ -5,18 +5,18 @@ repos:
 #    - id: markdownlint
 
   - repo: https://github.com/pycqa/isort
-    rev: 6.0.1
+    rev: 7.0.0
     hooks:
       - id: isort
         args: [--profile, black]
 
   - repo: https://github.com/psf/black
-    rev: 25.1.0
+    rev: 26.1.0
     hooks:
       - id: black
 
   - repo: "https://github.com/domluna/JuliaFormatter.jl"
-    rev: "v2.1.2"
+    rev: "v2.3.0"
     hooks:
       - id: "julia-formatter"
 
