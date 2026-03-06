@@ -1,148 +1,122 @@
-# Electromagnetic field simulations
+# Introduction to optical waveguides
+An *optical waveguide* is a structure which is able to confine and guide the electromagnetic field in the optical spectrum.
 
-### Some useful relations
+An optical waveguide usually consists (but not mandatorily) in at least two region of space:
 
-We here put some useful equations connecting the (angular) frequency $\omega$, the wave length $\lambda$ and the wave number $k$ in various ways (so you don't have to think about them again). The equations include also the (regular) frequency $f$ and the speed of light $c$.
+- the *core*, with an higher refractive index
+- the *cladding*, with a lower refractive index
 
-$$\begin{aligned}
-    \omega=2\pi f = c k  = \frac{2\pi c}{\lambda}\\
-    \lambda = \frac{c}{f} = \frac{2\pi c}{\omega} = \frac{2\pi}{k} \\
-    k =\frac{2\pi}{\lambda}=\frac{2\pi f}{c} = \frac{\omega}{c}
-\end{aligned}$$
+```{figure} opt-wg-geom.svg
+:name: fig-opt-wg-geom
+:alt: typical geometry of an optical waveguide
+:align: center
+
+example of an optical waveguide geometry composed by a core of higher refractive index and a cladding of lower refractive index.
+```
+
+The specific geometry and refractive index distribution can widely vary, however most waveguides used in optics and photonics have a geometry like that represented in {numref}`fig-opt-wg-geom`
+
+The most famous example of an optical waveguide is the *optical fiber*. Indeed in an optical fiber the electromagnetic field is confined within the core of the fiber, which has a higher refractive index than the cladding, and the electromagntic waves can flow along the fiber.Intuitively this behavior can be explained imagining that the light inside the core of a fiber is undergoes a total internal reflection when it hits the core-cladding interface trapping the light. However, a more accurate description of the waveguide properties require a description in terms of Maxwell equations.
+
+In this page we will briefly present such an approach and we will see the physical and mathematical framework inside which femwell operate to compute the waveguides modes. This discussion do not pretend to be completely accurate and exhaustive but it is meant to serve as a tutorial for new user not used to waveguide analysis and as a reference on the approach employed by femwell for the most experienced users.
 
 ## Maxwell's equations for dielectric materials
 
-Starting point to describe a light field are always Maxwell's equations. We here will look at Maxwell's equations in materials, which can be described by the dielectric constant. Derivations of these equations can be found in most standard textbooks on electrodynamics. 
+The starting point to describe the electromagnetic field of an optical wavguide are Maxwell's equations which in their most general form they can be written as
 
-A general way to write the Maxwell's equations is 
+```{math}
+:label: eq-maxwell
+\begin{aligned}
+    \mathbf{\nabla}\cdot\mathbf{D}\left(\mathbf{r},t\right) &= \varrho_{\text{ext}}\left(\mathbf{r},t\right), \\
+    \mathbf{\nabla}\cdot\mathbf{B}\left(\mathbf{r},t\right) &= 0, \\
+    \mathbf{\nabla}\times\mathbf{E}\left(\mathbf{r},t\right) &= - \frac{\partial \mathbf{B}\left(\mathbf{r},t\right)} {\partial t}, \\ 
+    \mathbf{\nabla}\times\mathbf{H}\left(\mathbf{r},t\right)&= \mathbf{J}_\text{ext}\left(\mathbf{r},t\right) + \frac{\partial \mathbf{D}\left(\mathbf{r},t\right)} {\partial t}, 
+\end{aligned}
+```
 
-$$\begin{aligned}
-    \mathbf{\nabla}\cdot\mathbf{D}\left(\mathbf{r},t\right) &= \varrho_{\text{ext}}\left(\mathbf{r},t\right)\\
-    \mathbf{\nabla}\cdot\mathbf{B}\left(\mathbf{r},t\right) &= 0 \\
-    \mathbf{\nabla}\times\mathbf{E}\left(\mathbf{r},t\right) &= - \frac{\partial \mathbf{B}\left(\mathbf{r},t\right)} {\partial t} \\ 
-    \mathbf{\nabla}\times\mathbf{H}\left(\mathbf{r},t\right)&= \mathbf{J}_{ext}\left(\mathbf{r},t\right) + \frac{\partial \mathbf{D}\left(\mathbf{r},t\right)} {\partial t} 
-\end{aligned}$$ 
+where the four fields appearing in the equations are respectively
 
-with the four fields (note that a bold letter indicates a vector)
+- $\mathbf{E}\left(\mathbf{r},t\right)$ the electric field, 
+- $\mathbf{D}\left(\mathbf{r},t\right)$ the electric flux density (also known as electric displacemenet),
+- $\mathbf{H}\left(\mathbf{r},t\right)$ the magnetic field intensity, and
+- $\mathbf{B}\left(\mathbf{r},t\right)$ the magnetic flux density, 
 
--   $\mathbf{D}\left(\mathbf{r},t\right)$: electric displacement
+while $\varrho_{\text{ext}}$ and $\mathbf{J}_{\text{ext}}$ are the free charge and current density respectively. These are macroscopic equations, i.e., local averages over microscopic quantities.
 
--   $\mathbf{E}\left(\mathbf{r},t\right)$: electric field
+The specific electrical and magnetic properties of a material are specified through the *constitutive relationship*
 
--   $\mathbf{H}\left(\mathbf{r},t\right)$: magnetic displacement
+```{math}
+:label: eq-const
+\begin{aligned}
+    \mathbf{D}\left(\mathbf{r},t\right) &= \varepsilon_0 \varepsilon_\text{r} (\mathbf{r}) \mathbf{E}\left(\mathbf{r},t\right)\\
+    \mathbf{B}\left(\mathbf{r},t\right) &= {\mu_0} \mu_\text{r} (\mathbf{r}) \mathbf{H}\left(\mathbf{r},t\right)
+\end{aligned}
+```
 
--   $\mathbf{B}\left(\mathbf{r},t\right)$: magnetic field
+where $\varepsilon_0$ and $\mu_0$ are the vacuum *electric permittivity* and the *magnetic permeability* respectively while $\varepsilon_\text{r}$ and $\mu_\text{r}$ are the *relative permittivity and permeability* which describe the property of the material.
 
-In the equations $\varrho_{\text{ext}}$ and $\mathbf{J}_{\text{ext}}$ are the external charge and current density. These are macroscopic equations, i.e., local averages over microscopic quantities.
+Generally optical waveguides comprise *linear* and *non-magnetic* materials, so that we can assume $\mu_\text{r} = 1$ and that $\varepsilon_r$ is a function of the position $\mathbf{r}$ only and does not depend on $\mathbf{E}$. Moreover, in most of the case the material are isotropic, which implies that $\varepsilon_r$ is a scalar function of position, however in some relevant cases the core of the waveguide is realized with an anisotropic crystal. In those cases, $\varepsilon_r$ has to be regarded as a second-rank tensor.
 
-The coupling to matter can be described in the macroscopic equations via the polarisation $\mathbf{P}$ and the magnetisation $\mathbf{M}$
+The last assumption we do in the case of dielectric material is the absence of free charges and current, that is $\varrho_\text{ext} = 0$ and $\textbf{J}_\text{ext} = 0$
 
-$$\begin{aligned}
-    \mathbf{D}\left(\mathbf{r},t\right) &=& \varepsilon_0 \mathbf{E}\left(\mathbf{r},t\right) + \mathbf{P}\left(\mathbf{r},t\right)\\
-    \mathbf{H}\left(\mathbf{r},t\right) &=& \frac{1}{\mu_0} \mathbf{B}\left(\mathbf{r},t\right)- \mathbf{M}\left(\mathbf{r},t\right)    
-\end{aligned}$$ 
+By substituting [](eq-const) into [](eq-maxwell) the Maxwell equations can be written in terms of $E$ and $H$ only.
 
-with $\varepsilon_0$ the electric permittivity and $\mu_0$ the magnetic permeability. The polarisation $\mathbf{P}$ describes the dipole moment of the material connected to the internal charge density $\varrho_{\text{int}}(\mathbf{r})$
-
-$$\begin{aligned}
-    \mathbf{\nabla}\cdot\mathbf{P}\left(\mathbf{r},t\right) = - \varrho_{\text{int}}\left(\mathbf{r},t\right)
-\end{aligned}$$ 
-
-Now putting these back in the Maxwell equations we obtain 
-
-$$\begin{aligned}
-    \mathbf{\nabla}\cdot\mathbf{D}\left(\mathbf{r},t\right)=& \mathbf{\nabla}\cdot\left(\varepsilon_0 \mathbf{E}\left(\mathbf{r},t\right) + \mathbf{P}\left(\mathbf{r},t\right) \right) \\
-        \Rightarrow 
-        \mathbf{\nabla}\cdot\mathbf{E}\left(\mathbf{r},t\right) =& \frac{1}{\varepsilon_0} \left(  \mathbf{\nabla}\cdot\mathbf{D}\left(\mathbf{r},t\right) -  \mathbf{\nabla}\cdot\mathbf{P}\left(\mathbf{r},t\right) \right)\\
-        =& \frac{1}{\varepsilon_0} \left( \varrho_{\text{ext}}\left(\mathbf{r},t\right)+\varrho_{\text{int}}\left(\mathbf{r},t\right) \right) 
-        = \frac{1}{\varepsilon_0} \varrho\left(\mathbf{r},t\right) 
-\end{aligned}$$ 
-
-which constitutes a link between the electric field $\mathbf{E}$ and all polarization effects. Here $\varrho=\varrho_{\text{ext}}+\varrho_{\text{int}}$ is the sum of the external and internal charges. 
-
-For most effects in light-matter interaction, it is sufficient to consider linear materials, i.e., the relation between the polarisation and the electric field is given by a constant. For isotropic materials these constant is called *dielectric susceptibility* $\chi$ constant, while for anisotropic materials $\underline{\underline{\chi}}$ is a tensor. For the purpose of modelling dielectric materials, we assume that the polarization has the same time dependence that the electric field. We will keep the dependence on the space coordinate to account for composities of materials to bet modelling in a device, i.e., we account for spatially inhomogeneous (or structured) materials. 
-
-$$\mathbf{P}\left(\mathbf{r},t\right) = \varepsilon_0 \chi\left(\mathbf{r}\right) \mathbf{E}\left(\mathbf{r},t\right) \,.$$ 
-
-With this we can write 
-
-$$\begin{aligned}
-    \mathbf{D}\left(\mathbf{r},t\right)= & \varepsilon_0 \mathbf{E}\left(\mathbf{r},t\right) + \mathbf{P}\left(\mathbf{r},t\right) \\
-     =& ( \varepsilon_0 + \varepsilon_0 \chi\left(\mathbf{r}\right)) \mathbf{E}\left(\mathbf{r},t\right)  \\
-     =& \varepsilon_0 (1+\chi\left(\mathbf{r}\right))\mathbf{E}\left(\mathbf{r},t\right) \\
-     =&  \varepsilon_0 \varepsilon_r\left(\mathbf{r}\right) \mathbf{E}\left(\mathbf{r},t\right)
-\end{aligned}$$ 
-
-using the dielectric displacement $\varepsilon=1+ \chi$, also called dielectric constant. The dielectric constant is often given to quantify the response of a material to an external field, hence, it is an important quantity. Note that for the magnetic field, assuming again isotropic, linear materials, it holds analogously
-
-$$\mathbf{B}\left(\mathbf{r},t\right) = \mu_0 \mu_r\left(\mathbf{r}\right) \mathbf{H}\left(\mathbf{r},t\right)$$ 
-
-with the permeablitiy $\mu_r$. Most materials are non-magnetic, such that $\mu_r=1$. We summarize 
-
-$$\begin{aligned}
-    \varepsilon\left(\mathbf{r}\right) = \varepsilon_0 \varepsilon_r\left(\mathbf{r}\right)\\
-    \mu\left(\mathbf{r}\right) = \mu_0 \mu_r\left(\mathbf{r}\right)
-\end{aligned}$$ 
-
-We remind of the relation
-
-$$\begin{aligned}
-    c^2=\frac{1}{\mu_0\varepsilon_0}
-\end{aligned}$$ 
-
-Now we insert the description of the materials into the Maxwell equation, only two fields remain.
-
-$$\begin{aligned}
-    \mathbf{\nabla}\cdot \left( \varepsilon\left(\mathbf{r}\right)  \mathbf{E}\left(\mathbf{r},t\right) \right) &=& \varrho \left(\mathbf{r},t\right)\\
-     \mathbf{\nabla}\cdot \left( \mu \left(\mathbf{r}\right) \mathbf{H}\left(\mathbf{r},t\right) \right) &=& 0 \\
-    \mathbf{\nabla}\times\mathbf{E}\left(\mathbf{r},t\right) &=& - \mu \frac{\partial \mathbf{H}\left(\mathbf{r},t\right)} {\partial t} \\ 
-    \mathbf{\nabla}\times\mathbf{H}\left(\mathbf{r},t\right) &=& \mathbf{J}_{\text{ext}}\left(\mathbf{r},t\right) + \varepsilon \frac{\partial \mathbf{E}\left(\mathbf{r},t\right)} {\partial t} \,.
-\end{aligned}$$
+```{math}
+:label: eq-maxwell-dielectric
+\begin{aligned}
+    \mathbf{\nabla} \cdot \mathbf{D}\left(\mathbf{r},t\right) &= 0 \\
+    \mathbf{\nabla} \cdot \mathbf{H} (\mathbf{r},t) &= 0, \\
+    \mathbf{\nabla}\times\mathbf{E}(\mathbf{r},t) &= - \mu_0 \frac{\partial \mathbf{H}(\mathbf{r},t)} {\partial t}, \\ 
+    \mathbf{\nabla}\times\mathbf{H}(\mathbf{r},t)&= \varepsilon_0 \varepsilon_\text{r} (\mathbf{r}) \frac{\partial \mathbf{E}(\mathbf{r},t)} {\partial t}, 
+\end{aligned}
+```
 
 ## Wave equation
 
-From Maxwell's equation equations we can derive the wave equation. We start in the simplest case when there are no external sources, i.e., we set $\rho = 0$ and $\mathbf{J}=0$ and assume homogeneous $\varepsilon$ and $\mu$. Now we combine two of Maxwell's equations, namely $\mathbf{\nabla}\times \mathbf{E} = - \mu \frac{\partial \mathbf{H}}{\partial t}$ and
-$\varepsilon \mathbf{\nabla}\times \mathbf{H} = \frac{\partial \mathbf{E}}{\partial t}$ in the
-following way 
+As many users may be familiar from electromagnetic course, it is not always necessary to deal with the full set of Maxwell equations and both the electric and the magnetic fields as in [](eq-maxwell-dielectric). Indeed, if we consider 
 
-$$\begin{aligned}
-    \mathbf{\nabla}\times \mathbf{\nabla}\times \mathbf{E} = \mathbf{\nabla}\times \left( - \mu \frac{\partial \mathbf{H}}{\partial t}\right) = 
-        -\mu \varepsilon \frac{\partial^2 \mathbf{E}}{\partial t^2} 
-\end{aligned}$$ 
+```{math}
+\begin{aligned}
+    \mathbf{\nabla} \times \mathbf{\nabla} \times \mathbf{E} = \mathbf{\nabla}\times \left( - \mu_0 \frac{\partial \mathbf{H}}{\partial t}\right) = -\mu_0  \frac{\partial }{\partial t} \left(\mathbf{\nabla} \times \mathbf{H}\right) = 
+        -\mu_0 \varepsilon_0 \varepsilon_\text{r} \frac{\partial^2 \mathbf{E}}{\partial t^2} 
+\end{aligned}
+```
 
-For the rotation we can use the known vector identity for the nabla operator $\mathbf{\nabla}\times \mathbf{\nabla}\times \mathbf{E} =  \mathbf{\nabla} (\mathbf{\nabla}\cdot \mathbf{E}) - \Delta \mathbf{E}$.
-We can further make use of Maxwell's equation that $\mathbf{\nabla}\cdot \mathbf{E} = 0$ in the case without sources. This leads us to the wave equation
+Using the vector identity $\mathbf{\nabla}\times \mathbf{\nabla}\times \mathbf{E} =  \mathbf{\nabla} (\mathbf{\nabla}\cdot \mathbf{E}) - \mathbf{\nabla}^2 \mathbf{E}$ and exploiting the fact that  $\mathbf{\nabla} \times \mathbf{E} = 0$ we get to
 
-$$\begin{aligned}
-    \Delta \mathbf{E} - \frac{1}{c_{n}} \frac{\partial^2 \mathbf{E}}{\partial t^2} =0
-\end{aligned}$$
+```{math}
+:label: eq-wave
+\mathbf{\nabla}^2 \mathbf{E} - \frac{1}{c^2} \varepsilon_\text{r} \frac{\partial^2 \mathbf{E}}{\partial t^2} =0.
+```
 
-We have introduced the important relation that the
-light velocity in a medium is given by $c_n=1/\sqrt{\varepsilon\mu}$. In
-vacuum, we obtain the speed of light $c=1/\sqrt{\varepsilon_0\mu_0}$,
-while in matter the velocity is reduced by the refractive index via
-$c_n=c/n$ with the refractive index $n=\sqrt{\varepsilon_r \mu_r}$.
+In this way we have obtained an equation in the $E$ field only and we have seen that this equation is indeed the wave equation. This means that all solutions of the Maxwell equations are also solutions for the wave equation, however, the converse is not necessarily true. Indeed, a solution of the wave equation does not always respect the divergence equation for the electric field
 
-Solutions of the wave equation can be given in the basis of
-monochromatic plane waves 
+```{math}
+:label: eq-maxwell-E-div
+\mathbf{\nabla} \cdot \left(\varepsilon_\text{r} (\mathbf{r},t) \mathbf{E} (\mathbf{r},t)\right) = 0
+```
 
-$$\begin{aligned}
-    \mathbf{E} &=& \mathbf{E}_0 \cos(\mathbf{k} \cdot \mathbf{r} - \omega t + \varphi) \,. 
-\end{aligned}$$ 
+Solutions that do not respect Eq. [](eq-maxwell-E-div) are called *spourious solutions* and are unphysical, so they should be discarded.
 
-Here, $\mathbf{k}$ is the wave vector and indicates the propagation direction. $E_0$ is the amplitude of the wave. Because of Maxwell's equation in free space, all waves are transversal, i.e., the
-amplitude vector is perpendicular to the propagation direction $\mathbf{E}_0 \perp \mathbf{k}$. Note that this can be different in matter, in particular for nanostructured systems. The frequency is denoted by $\omega$ and there can be an additional phase $\varphi$.
+Since in optics and photonics we want to study a system when excited with a monochromatic source at frequency $\omega$ it is convenient to study equation [](eq-wave) when the electric field oscillates sinusoidally. For this reason from now on we adopt a [phasor representation](https://en.wikipedia.org/wiki/Phasor)
 
-In many situations it is useful to write the solution as complex light
-field 
+```{math}
+:label: eq-ansatz-phasor
+\mathbf{E}(\mathbf{r}, t) = \Re \left[ \tilde{\mathbf{E}}(\mathbf{r}, \omega) e^{i- \omega t} \right]
+```
 
-$$\begin{aligned}
-    \mathbf{E} &=& \mathbf{\tilde{E}}_0 e^{i(\mathbf{k} \cdot \mathbf{r}- \omega t  + \varphi)} \,
-\end{aligned}$$
+By substituting the ansatz in Eq. [](eq-ansatz-phasor) into [](eq-wave), we obtain the *Helmoltz equation*
 
+```{math}
+:label: eq-helm
+\mathbf{\nabla}^2 \tilde{\mathbf{E}} + \frac{\omega^2}{c^2} n^2(\textbf{r}, \omega) \tilde{\mathbf{E}} =0,
+```
 
-## Interface between piecewise constant materials 
-It is instructive to consider the well-known case of an interface $I$ between two dielectric materials, which appear in many devices. We assume an interface between two materials called $1$ with dielectric constant $\varepsilon_1$ and $2$ with dielectric constant $\varepsilon_2$. The surface is defined by the normal vector of the interface $\mathbf{n}_{I}$ and there are no external surface charges or currents. For simplicity, we surpress the dependencies $\left(\mathbf{r},t\right)$ here. 
+where we have introduced the *refractive index* $n$ defined as $\varepsilon_\text{r}(\mathbf r, \omega) = n^2 (\mathbf r, \omega)$. The phasor representation has the advantage that it contains derivatives only with respect to the space and not with the respect of time, while the frequency $\omega$ is just a parameter in the equation. Moreover the Helmoltz equation is *elliptic* making its solution through the finite element method easier to treat compared to the wave equation which is *iperbolic* \cite{QUARTERONI}. For these reason from now on we will always adopt the phasor representation as in [](eq-ansatz-phasor) and focus on the Helmoltz equation only. Then for keeping the notation simple we will always write $\mathbf{E}$ or $\mathbf{H}$ in place of $\tilde{\mathbf{E}}$ and $\tilde{\mathbf{H}}$.
+
+## Boundary Conditions
+% I would move this section to another page and maybe discuss it later or while explaining the finite element method 
+<!-- It is instructive to consider the well-known case of an interface $I$ between two dielectric materials, which appear in many devices. We assume an interface between two materials called $1$ with dielectric constant $\varepsilon_1$ and $2$ with dielectric constant $\varepsilon_2$. The surface is defined by the normal vector of the interface $\mathbf{n}_{I}$ and there are no external surface charges or currents. For simplicity, we surpress the dependencies $\left(\mathbf{r},t\right)$ here. 
 
 All fields can then be split into the component parallel to the interface (hence perpendicular to the normal vector) and perpendicular to the interface (hence parallel to the normal vector). For example we consider the electric field: Define the normalized field vector $\hat{\mathbf{E}}=\mathbf{E}/E$ we split it into
 
@@ -173,8 +147,44 @@ $$\mathbf{B}^{\perp}_1 =  \mathbf{B}^{\perp}_2  \quad \Leftrightarrow \quad
 
 In these equations we have used $\mathbf{D}=\varepsilon_0\varepsilon\mathbf{E}$ and $\mathbf{H}=\frac{1}{\mu_0}\mathbf{B} $.
 
-These equations are sometimes referred to as boundary conditions. It should be noted, that here boundary refers to the behaviour of the fields at the interface between two materials in contrast to boundary conditions at the edge of a simulation box.While the calculations can be done with keeping $\varepsilon(\mathbf{r})$, the boundary conditions can give a useful sanity check. They also indicate, that at interface a fine grid is required, while at areas of homogeneous materials larger grid can be chosen. 
+These equations are sometimes referred to as boundary conditions. It should be noted, that here boundary refers to the behaviour of the fields at the interface between two materials in contrast to boundary conditions at the edge of a simulation box.While the calculations can be done with keeping $\varepsilon(\mathbf{r})$, the boundary conditions can give a useful sanity check. They also indicate, that at interface a fine grid is required, while at areas of homogeneous materials larger grid can be chosen.  -->
 
+## Exploiting waveguide symmetry
+
+```{figure} opt-wg-symm.svg
+:name: fig-opt-wg-symm
+:alt: 3D view of a waveguide with definition of the coordinate axis
+:align: center
+
+An optical waveguide has a constant cross-section along the $z$ axis making it translational symmetric.
+```
+
+Before attempting to analyse and solve the Helmoltz equation [](eq-helm) in the specific case of optical waveguides, it is convenient to exploit the specific symmetry of these structures. Indeed, as you can see from {numref}`fig-opt-wg-symm` a waveguide has a constant cross-section for all its length and this gives the waveguide a translational symmetry that can make Eq. [](eq-helm) easier to solve.
+
+Thank to the translational symmetry along the z-axis we can assume that the electromagnetic field distribution depend only on the transverse coordinates $\mathbf{r_\perp}= (x, y)$ and not on $z$ if not for a phase factor. In formula this becomes
+
+```{math}
+:label: eq-ansatz-bloch
+E(\mathbf{r}) = E_\perp(\mathbf{r}_\perp)e^{-j \beta z}.
+```
+
+The readers that are interested in a more formal justification of this Ansatz can look at the Bloch's theorem that establish a formal connection between symmetries and ansatz of the type expressed by Eq. [](eq-ansatz-bloch) \cite{Joannopoulous}.
+
+Substituting [](eq-ansatz-bloch) into [](eq-helm) we get
+
+```{math}
+:label: eq-helm-transv
+\mathbf{\nabla}_\perp^2 \mathbf{E}_\perp + (k_0 n^2- \beta^2) \mathbf{E}_\perp =0,
+```
+
+where we introduced the transverse laplacian operator
+
+```{math}
+:label: eq-trans-lapl
+\mathbf{\nabla}_\perp^2 = \frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2},
+```
+
+and $k_0 = \omega/c$.
 
 ## Reduction to two dimensions
 
