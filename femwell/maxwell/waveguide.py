@@ -23,10 +23,12 @@ from skfem import (
     ElementTriP1,
     ElementTriP2,
     ElementVector,
+    FacetBasis,
     Functional,
     InteriorFacetBasis,
     LinearForm,
     Mesh,
+    bmat,
     condense,
     solve,
 )
@@ -534,6 +536,7 @@ def compute_modes(
     num_modes=1,
     order=1,
     metallic_boundaries=False,
+    surface_impedances={},
     radius=np.inf,
     n_guess=None,
     solver="scipy",
@@ -618,11 +621,37 @@ def compute_modes(
             solver=solver(k=num_modes, sigma=sigma),
         )
     else:
-        lams, xs = solve(
-            -A,
-            -B,
-            solver=solver(k=num_modes, sigma=sigma),
-        )
+        if not surface_impedances:
+            lams, xs = solve(
+                -A,
+                -B,
+                solver=solver(k=num_modes, sigma=sigma),
+            )
+        else:
+
+            @BilinearForm(dtype=complex)
+            def cform(e_t, e_z, v_t, v_z, w):
+                return e_z * v_z
+
+            basis_facet = FacetBasis(basis.mesh, basis.elem)
+            C = cform.assemble(basis_facet)
+
+            @BilinearForm(dtype=complex)
+            def dform(e_t, e_z, v_t, v_z, w):
+                return 0.01 * curl(e_t) * 1j * v_z
+
+            basis_facet = FacetBasis(
+                basis.mesh, basis.elem, facets=basis.mesh.boundaries["core___clad"]
+            )
+            D = dform.assemble(basis_facet)
+
+            I = scipy.sparse.identity(A.shape[0])
+            lams, xs = solve(
+                bmat([[-A, None], [C, I]]),
+                bmat([[-B, None], [D, I]]),
+                solver=solver(k=num_modes, sigma=sigma),
+            )
+            xs = xs[: A.shape[0]]
 
     xs[basis.split_indices()[1], :] /= 1j * np.sqrt(
         lams[np.newaxis, :] / k0**4
@@ -912,7 +941,8 @@ if __name__ == "__main__":
         mu_r=1,
         num_modes=6,
         order=2,
-        radius=3 * scale,
+        # radius=3 * scale,
+        surface_impedances={1: 2},
     )
     print(modes)
     print(modes[0].te_fraction)
