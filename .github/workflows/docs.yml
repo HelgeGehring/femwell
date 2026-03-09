@@ -48,7 +48,7 @@ jobs:
       - uses: julia-actions/setup-julia@v2
         with:
           version: '1.10.3'
-      - uses: julia-actions/cache@v2
+      - uses: julia-actions/cache@v3
         with:
           cache-name: ${{ runner.os }}-${{ steps.get-date.outputs.date }}
           cache-compiled: "true"
