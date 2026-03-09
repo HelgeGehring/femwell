@@ -18,7 +18,7 @@ jobs:
         run: |
           echo "date=$(/bin/date --date='TZ="America/Los_Angeles"' -u "+%Y%m%d")" >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Setup Mambaforge
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -30,13 +30,13 @@ jobs:
         run: |
           echo $CONDA/bin >> $GITHUB_PATH
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
       - name: Install dependencies
         env:
           UV_SYSTEM_PYTHON: 1
         run: |
           sudo apt-get install -y libglu1-mesa xvfb
-          mamba install "slepc4py=3.19*=complex*" -y
+          mamba env create -f environment.yml
           mamba install julia
           uv pip install .
           uv pip install "jupyter-book<2"
@@ -61,7 +61,7 @@ jobs:
         continue-on-error: true
         run: |
           julia --project=~/work/femwell/femwell -e 'using Pkg; Pkg.precompile()'
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: |
             docs/_build/.jupyter_cache
