@@ -20,19 +20,23 @@
 
 # %% tags=["remove-stderr", "hide-input", "thebe-init"]
 import math
-from collections import OrderedDict
+import os
+import tempfile
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import shapely
+from meshwell.cad import cad
+from meshwell.mesh import mesh
+from meshwell.polysurface import PolySurface
+from meshwell.resolution import ThresholdField
 from scipy.interpolate import UnivariateSpline
 from skfem import Basis, ElementTriP0
 from skfem.io import from_meshio
 from tqdm import tqdm
 
 from femwell.maxwell.waveguide import compute_modes
-from femwell.mesh import mesh_from_OrderedDict
 from femwell.visualization import plot_domains
 
 # %% [markdown]
@@ -48,20 +52,39 @@ wavelegnth_step = 50
 core = shapely.geometry.box(-width / 2, 0, +width / 2, height)
 cladding = shapely.geometry.box(-width * 2, 0, width * 2, height * 3)
 buried_oxide = shapely.geometry.box(-width * 2, -height * 2, width * 2, 0)
-polygon = OrderedDict(
-    core=core,
-    cladding=cladding,
-    buried_oxide=buried_oxide,
+
+# Create meshwell PolySurface entities with correct mesh_order (core=0, cladding=1, buried_oxide=2)
+core_surface = PolySurface(polygons=core, physical_name="core", mesh_order=0)
+cladding_surface = PolySurface(polygons=cladding, physical_name="cladding", mesh_order=1)
+buried_oxide_surface = PolySurface(
+    polygons=buried_oxide, physical_name="buried_oxide", mesh_order=2
 )
 
-# Define material property and resolution of waveguide
-resolutions = dict(
-    core={"resolution": 0.02, "distance": 0.3},
-    cladding={"resolution": 0.05, "distance": 0.3},
-    buried_oxide={"resolution": 0.05, "distance": 0.3},
-)
+# Define resolution specifications using ThresholdField
+resolution_specs = {
+    "core": [ThresholdField(sizemin=0.02, distmax=20, sizemax=0.5, apply_to="surfaces")],
+}
 
-mesh = from_meshio(mesh_from_OrderedDict(polygon, resolutions, default_resolution_max=2))
+# Create entities list
+entities = [core_surface, buried_oxide_surface, cladding_surface]
+
+# Generate CAD and mesh, using meshwell functional interface
+with tempfile.TemporaryDirectory() as tmp:
+    cad_path = os.path.join(tmp, "waveguide.xao")
+    msh_path = os.path.join(tmp, "waveguide.msh")
+    cad(entities_list=entities, output_file=cad_path)
+    output_mesh = mesh(
+        dim=2,
+        input_file=cad_path,
+        output_file=msh_path,
+        default_characteristic_length=0.5,
+        resolution_specs=resolution_specs,
+        n_threads=1,
+    )
+
+# %%
+# Load mesh for femwell
+mesh = from_meshio(output_mesh)
 mesh.draw().show()
 plot_domains(mesh)
 plt.show()
