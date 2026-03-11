@@ -7,6 +7,7 @@ from warnings import warn
 
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.typing as npt
 import scipy.constants
 import scipy.sparse.linalg
 from matplotlib.axes import Axes
@@ -16,6 +17,7 @@ from scipy.constants import epsilon_0, speed_of_light
 from skfem import (
     Basis,
     BilinearForm,
+    CellBasis,
     ElementDG,
     ElementTriN1,
     ElementTriN2,
@@ -27,6 +29,7 @@ from skfem import (
     InteriorFacetBasis,
     LinearForm,
     Mesh,
+    Solution,
     condense,
     solve,
 )
@@ -36,9 +39,11 @@ from skfem.utils import solver_eigen_scipy
 
 @dataclass(frozen=True)
 class Mode:
+    """Class collecting information on a waveguide mode obtained by looking for the eigensolutions of the waveguide problem. This class is mainly meant to by used by the function `compute_modes` to return the waveguide modes."""
+
     frequency: float
     """Frequency of the light"""
-    k: float
+    k: np.complex128
     """Propagation constant of the mode"""
     basis_epsilon_r: Basis
     """Basis used for epsilon_r"""
@@ -52,28 +57,28 @@ class Mode:
     """Magnetic field of the mode"""
 
     @property
-    def omega(self):
+    def omega(self) -> float:
         """Angular frequency of the light"""
         return 2 * np.pi * self.frequency
 
     @property
-    def k0(self):
+    def k0(self) -> float:
         """Vacuum propagation constant of the light"""
         return self.omega / speed_of_light
 
     @property
-    def wavelength(self):
+    def wavelength(self) -> float:
         """Vacuum wavelength of the light"""
         return speed_of_light / self.frequency
 
     @property
-    def n_eff(self):
+    def n_eff(self) -> np.complex128:
         """Effective refractive index of the mode"""
         return self.k / self.k0
 
     @cached_property
-    def poynting(self):
-        """Poynting vector of the mode"""
+    def poynting(self) -> tuple[CellBasis, Solution]:
+        """Return the Poynting vector of the mode as a tuple composed by (basis, projection)."""
 
         # Extraction of the fields
         (Ex, Ey), Ez = self.basis.interpolate(self.E)
@@ -95,22 +100,25 @@ class Mode:
         return poynting_basis, P_proj
 
     @property
-    def Sx(self):
+    def Sx(self) -> tuple[CellBasis, Solution]:
+        """x component of the Poynting vector S"""
         basis, _P = self.poynting
         return basis.split_bases()[0], _P[basis.split_indices()[0]]
 
     @property
-    def Sy(self):
+    def Sy(self) -> tuple[CellBasis, Solution]:
+        """y component of the Poynting vector S"""
         basis, _P = self.poynting
         return basis.split_bases()[1], _P[basis.split_indices()[1]]
 
     @property
-    def Sz(self):
+    def Sz(self) -> tuple[CellBasis, Solution]:
+        """z component of the Poynting vector S"""
         basis, _P = self.poynting
         return basis.split_bases()[2], _P[basis.split_indices()[2]]
 
     @cached_property
-    def te_fraction(self):
+    def te_fraction(self) -> float:
         """TE-fraction of the mode"""
 
         @Functional
@@ -127,14 +135,17 @@ class Mode:
         return ex_sum / (ex_sum + ey_sum)
 
     @cached_property
-    def tm_fraction(self):
+    def tm_fraction(self) -> float:
         """TM-fraction of the mode"""
 
         return 1 - self.te_fraction
 
     @cached_property
-    def transversality(self):
-        """TE-fraction of the mode"""
+    def transversality(self) -> float:
+        """transversality of the mode.
+
+        transversality is proportional to ratio between the amount of power stored in the transverse field (x-axis and y-axis fields) and the longitudinal (z-axis).
+        """
 
         @Functional
         def ex(w):
@@ -161,7 +172,7 @@ class Mode:
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(k: {self.k}, n_eff:{self.n_eff})"
 
-    def calculate_overlap(self, mode, elements=None):
+    def calculate_overlap(self, mode: "Mode") -> np.complex64:
         return calculate_overlap(self.basis, self.E, self.H, mode.basis, mode.E, mode.H)
 
     def calculate_coupling_coefficient(self, mode, delta_epsilon):
@@ -698,12 +709,12 @@ def calculate_energy_current_density(basis, xs):
 
 def calculate_overlap(
     basis_i: Basis,
-    E_i: np.ndarray,
-    H_i: np.ndarray,
+    E_i: npt.NDarray[np.complex128],
+    H_i: npt.NDarray[np.complex128],
     basis_j: Basis,
-    E_j: np.ndarray,
-    H_j: np.ndarray,
-) -> np.complex64:
+    E_j: npt.NDarray[np.complex128],
+    H_j: npt.NDarray[np.complex128],
+) -> np.complex128:
     """Calculates the fully vectorial overlap between two modes.
 
     If the modes do not share the basis, interpolation is performed automatically.
@@ -720,7 +731,7 @@ def calculate_overlap(
         np.complex64: Complex overlap between the two modes
     """
 
-    @Functional(dtype=np.complex64)
+    @Functional(dtype=np.complex128)
     def overlap(w):
         return cross(np.conj(w["E_i"][0]), w["H_j"][0]) + cross(w["E_j"][0], np.conj(w["H_i"][0]))
 
@@ -744,7 +755,7 @@ def calculate_overlap(
     H_j = basis_j_fix.project(et_basis.interpolate(et), dtype=np.cfloat)
     (ht_x, ht_x_basis), (ht_y, ht_y_basis) = basis_j_fix.split(H_j)
 
-    @Functional(dtype=np.complex64)
+    @Functional(dtype=np.complex128)
     def overlap(w):
         return cross(
             np.conj(w["E_i"][0]),
