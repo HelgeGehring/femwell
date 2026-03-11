@@ -206,7 +206,7 @@ display(figure)
 #   end
 # ```
 # 
-# And then add to each of the calculate-calls the sovler parameter:
+# And then add to each of the calculate-calls the solver parameter:
 #
 # ```julia
 #   solver = PETScLinearSolver()
