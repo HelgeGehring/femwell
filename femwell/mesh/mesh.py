@@ -329,6 +329,7 @@ def mesh_from_OrderedDict(
 
         # Add surfaces, reusing lines
         for polygon_name, polygon in polygons_broken_dict.items():
+            polygon = polygon.simplify(meshtracker.atol)
             meshtracker.add_xy_surface(polygon, polygon_name)
 
         # Embed lines in surfaces if required
