@@ -249,7 +249,7 @@ def mesh_from_OrderedDict(
                             # Second line exterior
                             second_exterior_line = (
                                 LineString(second_shape.exterior)
-                                if second_shape.geom_type == "Polygon"
+                                if second_shape.geom_type in ["Polygon", "MultiPolygon"]
                                 else second_shape
                             )
                             first_exterior_line = break_line_(
@@ -258,7 +258,7 @@ def mesh_from_OrderedDict(
                             # Second line interiors
                             for second_interior_line in (
                                 second_shape.interiors
-                                if second_shape.geom_type == "Polygon"
+                                if second_shape.geom_type in ["Polygon", "MultiPolygon"]
                                 else []
                             ):
                                 second_interior_line = LineString(second_interior_line)
@@ -285,7 +285,7 @@ def mesh_from_OrderedDict(
                                     # Exterior
                                     second_exterior_line = (
                                         LineString(second_shape.exterior)
-                                        if second_shape.geom_type == "Polygon"
+                                        if second_shape.geom_type in ["Polygon", "MultiPolygon"]
                                         else second_shape
                                     )
                                     first_interior_line = break_line_(
@@ -294,7 +294,7 @@ def mesh_from_OrderedDict(
                                     # Interiors
                                     for second_interior_line in (
                                         second_shape.interiors
-                                        if second_shape.geom_type == "Polygon"
+                                        if second_shape.geom_type in ["Polygon", "MultiPolygon"]
                                         else []
                                     ):
                                         second_interior_line = LineString(second_interior_line)
@@ -323,13 +323,11 @@ def mesh_from_OrderedDict(
                 )
 
         # Add lines, reusing line segments
-
         for line_name, line in lines_broken_dict.items():
             meshtracker.add_get_xy_line(line, line_name)
 
         # Add surfaces, reusing lines
         for polygon_name, polygon in polygons_broken_dict.items():
-            polygon = polygon.simplify(meshtracker.atol)
             meshtracker.add_xy_surface(polygon, polygon_name)
 
         # Embed lines in surfaces if required
