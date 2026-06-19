@@ -25,7 +25,7 @@ class PolygonMaterial:
 
     name: str
     points: Sequence[Point]
-    epsilon: complex
+    epsilon: complex | str
     resolution: float | None = None
     refinement_distance: float = 0.5
 
@@ -63,7 +63,8 @@ def solve_polygon_modes(
     Args:
         bbox: ``(xmin, ymin, xmax, ymax)`` simulation bounds.
         materials: Ordered material polygons. Earlier polygons override later
-            background material when the mesh is tiled.
+            background material when the mesh is tiled. Use ``epsilon="PEC"``
+            to model a polygon as a perfect-electric-conductor boundary.
         wavelength: Vacuum wavelength in the same length unit as the geometry.
         sample_points: Coordinates where E/H fields are returned.
         background_epsilon: Relative permittivity for the bbox remainder.
@@ -80,9 +81,11 @@ def solve_polygon_modes(
         A JSON-serializable list with mode metadata and sampled E/H components.
     """
 
+    dielectric_materials, pec_materials = _split_materials(materials)
     shapes, resolutions = _build_shapes(
         bbox=bbox,
-        materials=materials,
+        materials=dielectric_materials,
+        pec_materials=pec_materials,
         background_name=background_name,
         pec_lines=pec_lines,
     )
@@ -97,12 +100,16 @@ def solve_polygon_modes(
     basis_epsilon = Basis(mesh, ElementTriP0())
     epsilon = _build_epsilon_field(
         basis_epsilon=basis_epsilon,
-        materials=materials,
+        materials=dielectric_materials,
         background_name=background_name,
         background_epsilon=background_epsilon,
     )
 
-    metallic = _metallic_boundary_argument(metallic_boundaries, pec_lines)
+    metallic = _metallic_boundary_argument(
+        metallic_boundaries,
+        pec_lines,
+        pec_materials,
+    )
     modes = compute_modes(
         basis_epsilon,
         epsilon,
@@ -114,32 +121,55 @@ def solve_polygon_modes(
     )
 
     coordinates = _coordinates_array(sample_points)
-    return [_serialize_mode(mode, sample_points, coordinates) for mode in modes]
+    serialized_modes = []
+    for mode in modes:
+        serialized_mode = _serialize_mode(
+            mode,
+            sample_points,
+            coordinates,
+        )
+        serialized_modes.append(serialized_mode)
+    return serialized_modes
 
 
 def _build_shapes(
     *,
     bbox: BBox,
     materials: Sequence[PolygonMaterial],
+    pec_materials: Sequence[PolygonMaterial],
     background_name: str,
     pec_lines: Sequence[PECLine],
-) -> tuple[OrderedDict[str, LineString | Polygon], dict[str, dict[str, float]]]:
+) -> tuple[
+    OrderedDict[str, LineString | Polygon],
+    dict[str, dict[str, float]],
+]:
     shapes: OrderedDict[str, LineString | Polygon] = OrderedDict()
     resolutions: dict[str, dict[str, float]] = {}
+    pec_polygons = [Polygon(material.points) for material in pec_materials]
+    pec_region = shapely.union_all(pec_polygons) if pec_polygons else None
 
     for pec_line in pec_lines:
         shapes[pec_line.name] = LineString(pec_line.points)
 
+    for material, polygon in zip(pec_materials, pec_polygons):
+        shapes[material.name] = LineString(polygon.exterior.coords)
+
     for material in materials:
-        shapes[material.name] = Polygon(material.points)
+        polygon = Polygon(material.points)
+        shapes[material.name] = _remove_pec_region(polygon, pec_region)
         if material.resolution is not None:
             resolutions[material.name] = {
                 "resolution": material.resolution,
                 "distance": material.refinement_distance,
             }
 
-    shapes[background_name] = shapely.box(*bbox)
+    background = shapely.box(*bbox)
+    shapes[background_name] = _remove_pec_region(background, pec_region)
     return shapes, resolutions
+
+
+def _remove_pec_region(shape, pec_region):
+    return shape.difference(pec_region) if pec_region else shape
 
 
 def _build_epsilon_field(
@@ -152,27 +182,60 @@ def _build_epsilon_field(
     epsilon_values = [background_epsilon, *(m.epsilon for m in materials)]
     dtype = complex if _has_complex_values(epsilon_values) else float
     epsilon = basis_epsilon.zeros(dtype=dtype)
-    epsilon[basis_epsilon.get_dofs(elements=background_name)] = background_epsilon
+    background_dofs = basis_epsilon.get_dofs(elements=background_name)
+    epsilon[background_dofs] = background_epsilon
 
     for material in materials:
-        epsilon[basis_epsilon.get_dofs(elements=material.name)] = material.epsilon
+        material_dofs = basis_epsilon.get_dofs(elements=material.name)
+        epsilon[material_dofs] = material.epsilon
 
     return epsilon
 
 
 def _has_complex_values(values: Iterable[complex]) -> bool:
-    return any(np.iscomplexobj(value) and np.imag(value) != 0 for value in values)
+    return any(_is_complex_value(value) for value in values)
+
+
+def _is_complex_value(value: complex) -> bool:
+    return np.iscomplexobj(value) and np.imag(value) != 0
+
+
+def _split_materials(
+    materials: Sequence[PolygonMaterial],
+) -> tuple[list[PolygonMaterial], list[PolygonMaterial]]:
+    dielectric_materials: list[PolygonMaterial] = []
+    pec_materials: list[PolygonMaterial] = []
+
+    for material in materials:
+        if _is_pec_epsilon(material.epsilon):
+            pec_materials.append(material)
+        else:
+            dielectric_materials.append(material)
+
+    return dielectric_materials, pec_materials
+
+
+def _is_pec_epsilon(epsilon: complex | str) -> bool:
+    if not isinstance(epsilon, str):
+        return False
+
+    if epsilon.strip().upper() == "PEC":
+        return True
+
+    raise ValueError('string epsilon values must be "PEC"')
 
 
 def _metallic_boundary_argument(
     metallic_boundaries: bool | Sequence[str],
     pec_lines: Sequence[PECLine],
+    pec_materials: Sequence[PolygonMaterial],
 ) -> bool | list[str]:
     if metallic_boundaries is True:
         return True
 
     boundary_names = list(metallic_boundaries or [])
     boundary_names.extend(pec_line.name for pec_line in pec_lines)
+    boundary_names.extend(material.name for material in pec_materials)
     return boundary_names if boundary_names else False
 
 
@@ -180,7 +243,11 @@ def _coordinates_array(points: Sequence[Point]) -> np.ndarray:
     return np.asarray(points, dtype=float).T
 
 
-def _serialize_mode(mode, points: Sequence[Point], coordinates: np.ndarray) -> dict:
+def _serialize_mode(
+    mode,
+    points: Sequence[Point],
+    coordinates: np.ndarray,
+) -> dict:
     e_values = _sample_field(mode.basis, mode.E, coordinates)
     h_values = _sample_field(mode.basis, mode.H, coordinates)
 

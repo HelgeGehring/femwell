@@ -21,7 +21,17 @@ def main() -> None:
                 ],
                 epsilon=2.25,
                 resolution=0.2,
-            )
+            ),
+            PolygonMaterial(
+                name="pec_insert",
+                points=[
+                    (-0.75, -0.75),
+                    (-0.75, -0.55),
+                    (-0.55, -0.55),
+                    (-0.55, -0.75),
+                ],
+                epsilon="PEC",
+            ),
         ],
         background_epsilon=1.0,
         wavelength=1.55,
