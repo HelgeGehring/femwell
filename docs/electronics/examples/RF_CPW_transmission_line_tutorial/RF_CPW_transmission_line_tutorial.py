@@ -33,7 +33,7 @@ from femwell.mesh import mesh_from_OrderedDict
 # The geometry to reproduce is the following:
 #
 # <center>
-# <img src="support\geometry.png" width="500" align="center"/>
+# <img src="support\geometry.svg" width="500" align="center"/>
 # </center>
 #
 # Furthermore, this notebook will also provide insight on how to use it for the design of RF waveguides, by exploring the fine line between waveguide and circuit theories [4, 5].
@@ -514,7 +514,7 @@ print(modes[1].transversality)
 # It is important to impose the constraint that $Re(p_0)>0$[4]. By fixing the power, we now have only one degree of freedom left to define. We can either define a current or a voltage. Since we want to have a clear and illustrative analogy with a circuit we must choose either $v_0$ or $i_0$ as circuit quantities. In the case of the CPW operating the GSG mode, we can make the analogy as in the picture below.
 #
 # <center>
-# <img src="support\CPW_TL.png" width="500" align="center"/>
+# <img src="support\CPW_TL.svg" width="500" align="center"/>
 # </center>
 #
 # With this model, it is now clear that we can define $i_0$ as:
@@ -836,7 +836,7 @@ cpw.plot_mode(modes, Nx=100, Ny=50, xmin=0, xmax=40, ymin=-10, ymax=10)
 # Now you have to be careful and account for a small artifact. Not only you are dealing with half the field, but the current integral that you do is half of the one calculated previously. Plus, the calculated fields also have different normalizations. Interestingly, if we apply the exact same algorithms without accounting for this fact, what we end up with the values corresponding to a circuit in parallel as below:
 #
 # <center>
-# <img src="support\symmetry_plane.png" width="800" align="center"/>
+# <img src="support\symmetry_plane.svg" width="800" align="center"/>
 # </center>
 #
 
