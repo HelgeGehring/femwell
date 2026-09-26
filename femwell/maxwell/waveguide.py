@@ -254,7 +254,7 @@ class Mode:
             + self.calculate_coupling_coefficient(self, delta_epsilon)
             * scipy.constants.epsilon_0
             * scipy.constants.speed_of_light
-            * 0.5
+            * 0.25
         )
 
     def calculate_intensity(self) -> Tuple[NDArray, Basis]:
