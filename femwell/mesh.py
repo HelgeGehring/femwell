@@ -366,9 +366,9 @@ def mesh_from_polygons(
         gmsh.model.mesh.field.setNumbers(n, "FieldsList", refinement_fields)
         gmsh.model.mesh.field.setAsBackgroundMesh(n)
 
-        gmsh.model.mesh.MeshSizeFromPoints = 0
-        gmsh.model.mesh.MeshSizeFromCurvature = 0
-        gmsh.model.mesh.MeshSizeExtendFromBoundary = 0
+        gmsh.option.setNumber("Mesh.MeshSizeFromPoints", 0)
+        gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", 0)
+        gmsh.option.setNumber("Mesh.MeshSizeExtendFromBoundary", 0)
 
         # Fuse edges (bandaid)
         gmsh.model.occ.synchronize()

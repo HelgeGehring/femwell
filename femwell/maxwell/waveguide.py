@@ -134,7 +134,7 @@ class Mode:
 
     @cached_property
     def transversality(self):
-        """TE-fraction of the mode"""
+        """Transversality of the mode: int(|E_x|^2 + |E_y|^2) / int(|E|^2)"""
 
         @Functional
         def ex(w):
@@ -696,6 +696,23 @@ def calculate_energy_current_density(basis, xs):
     return basis_energy, scipy.sparse.linalg.spsolve(b_operator, a_operator)
 
 
+def _same_mesh(mesh_i, mesh_j) -> bool:
+    """True if both meshes have identical nodes and elements.
+
+    ``Basis.X`` and ``Basis.W`` hold the quadrature points and weights of the
+    reference element, which are the same for any mesh of the same element
+    type, so they cannot tell two different meshes apart.
+    """
+    if mesh_i is mesh_j:
+        return True
+    return (
+        mesh_i.p.shape == mesh_j.p.shape
+        and mesh_i.t.shape == mesh_j.t.shape
+        and np.array_equal(mesh_i.t, mesh_j.t)
+        and np.allclose(mesh_i.p, mesh_j.p)
+    )
+
+
 def calculate_overlap(
     basis_i: Basis,
     E_i: np.ndarray,
@@ -724,9 +741,7 @@ def calculate_overlap(
     def overlap(w):
         return cross(np.conj(w["E_i"][0]), w["H_j"][0]) + cross(w["E_j"][0], np.conj(w["H_i"][0]))
 
-    if basis_i == basis_j or (
-        np.isclose(basis_i.X, basis_j.X).all() and np.isclose(basis_i.W, basis_j.W).all()
-    ):
+    if basis_i == basis_j or _same_mesh(basis_i.mesh, basis_j.mesh):
         return 0.5 * overlap.assemble(
             basis_i,
             E_i=basis_i.interpolate(E_i),
@@ -737,11 +752,11 @@ def calculate_overlap(
     basis_j_fix = basis_j.with_element(ElementVector(ElementTriP1()))
 
     (et, et_basis), (ez, ez_basis) = basis_j.split(E_j)
-    E_j = basis_j_fix.project(et_basis.interpolate(et), dtype=np.cfloat)
+    E_j = basis_j_fix.project(et_basis.interpolate(et), dtype=np.complex128)
     (et_x, et_x_basis), (et_y, et_y_basis) = basis_j_fix.split(E_j)
 
     (et, et_basis), (ez, ez_basis) = basis_j.split(H_j)
-    H_j = basis_j_fix.project(et_basis.interpolate(et), dtype=np.cfloat)
+    H_j = basis_j_fix.project(et_basis.interpolate(et), dtype=np.complex128)
     (ht_x, ht_x_basis), (ht_y, ht_y_basis) = basis_j_fix.split(H_j)
 
     @Functional(dtype=np.complex64)
@@ -769,7 +784,7 @@ def calculate_scalar_product(basis_i, E_i, basis_j, H_j):
     basis_j_fix = basis_j.with_element(ElementVector(ElementTriP1()))
 
     (et, et_basis), (ez, ez_basis) = basis_j.split(H_j)
-    H_j = basis_j_fix.project(et_basis.interpolate(et), dtype=np.cfloat)
+    H_j = basis_j_fix.project(et_basis.interpolate(et), dtype=np.complex128)
     (ht_x, ht_x_basis), (ht_y, ht_y_basis) = basis_j_fix.split(H_j)
 
     @Functional(dtype=np.complex64)

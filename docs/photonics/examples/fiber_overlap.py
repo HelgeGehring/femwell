@@ -83,8 +83,13 @@ for mfd in tqdm(mfds):
         dtype=complex,
     )
 
-    efficiency = overlap(
-        basis_fiber, modes[0].basis.interpolate(modes[0].E)[0][1], basis_fiber.interpolate(x_fiber)
+    efficiency = (
+        overlap(
+            basis_fiber,
+            modes[0].basis.interpolate(modes[0].E)[0][1],
+            basis_fiber.interpolate(x_fiber),
+        )
+        ** 2
     )
     efficiencies.append(efficiency)
 

@@ -33,6 +33,11 @@ def e_field_gaussian(r, z, mfr, refractive_index, wavelength):
 
 
 def overlap(basis, E_i, E_j):
+    """Normalized field overlap |<E_i, E_j>| / (||E_i|| ||E_j||).
+
+    This is an amplitude coefficient. The power coupling efficiency between
+    the two fields is its square, ``overlap(...) ** 2``.
+    """
     @Functional(dtype=np.complex64)
     def overlap_integral(w):
         return w["E_i"] * np.conj(w["E_j"])

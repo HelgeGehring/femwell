@@ -155,9 +155,9 @@ def mesh_from_Dict(
             gmsh.model.mesh.field.setNumbers(n, "FieldsList", refinement_fields)
             gmsh.model.mesh.field.setAsBackgroundMesh(n)
 
-            gmsh.model.mesh.MeshSizeFromPoints = 0
-            gmsh.model.mesh.MeshSizeFromCurvature = 0
-            gmsh.model.mesh.MeshSizeExtendFromBoundary = 0
+            gmsh.option.setNumber("Mesh.MeshSizeFromPoints", 0)
+            gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", 0)
+            gmsh.option.setNumber("Mesh.MeshSizeExtendFromBoundary", 0)
 
             # Fuse edges (bandaid)
             # gmsh.model.occ.synchronize()
@@ -395,9 +395,9 @@ def mesh_from_OrderedDict(
         gmsh.model.mesh.field.setNumbers(n, "FieldsList", refinement_fields)
         gmsh.model.mesh.field.setAsBackgroundMesh(n)
 
-        gmsh.model.mesh.MeshSizeFromPoints = 0
-        gmsh.model.mesh.MeshSizeFromCurvature = 0
-        gmsh.model.mesh.MeshSizeExtendFromBoundary = 0
+        gmsh.option.setNumber("Mesh.MeshSizeFromPoints", 0)
+        gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", 0)
+        gmsh.option.setNumber("Mesh.MeshSizeExtendFromBoundary", 0)
 
         # Tag all interfacial lines
         for surface1, surface2 in combinations(polygons_broken_dict.keys(), 2):
