@@ -222,6 +222,183 @@ class Mode:
             basis = self.basis.with_elements(elements)
         return calculate_overlap(basis, self.E, self.H, basis, self.E, self.H)
 
+    def calculate_voltage(self, start, end) -> complex:
+        """Calculates the voltage between two points as the line integral of the transverse E-field.
+
+        V = ∫ E_t · dl along the straight path from `start` to `end`, which equals
+        phi(start) - phi(end) for a quasi-static field. Choose `start` on the signal conductor and
+        `end` on the reference conductor to get a positive voltage for a signal at positive
+        potential.
+
+        The path is split where it crosses mesh facets and a 3-point Gauss-Legendre rule is applied
+        on every piece, so the integral is exact for polynomial fields up to order 5 along the path
+        (this covers the first and second order edge elements).
+
+        The whole path, including both endpoints, has to be inside the meshed domain or on its
+        boundary. A path through a region which was cut out of the mesh (e.g. a PEC conductor)
+        raises a ValueError. For a polyline, add the results of its segments.
+
+        Args:
+            start (array-like): (x, y) of the start point of the path.
+            end (array-like): (x, y) of the end point of the path.
+
+        Returns:
+            complex: Voltage in the units of E times the units of the coordinates
+        """
+        start = np.asarray(start, dtype=float)
+        end = np.asarray(end, dtype=float)
+        if start.shape != (2,) or end.shape != (2,):
+            raise ValueError("start and end have to be points (x, y).")
+        d = end - start
+        if not np.any(d):
+            raise ValueError("start and end must be different points.")
+
+        # Parameters t of the crossings of the path with the facets of the mesh
+        mesh = self.basis.mesh
+        p0 = mesh.p[:, mesh.facets[0]]
+        e = mesh.p[:, mesh.facets[1]] - p0
+        denom = d[0] * e[1] - d[1] * e[0]
+        not_parallel = np.abs(denom) > 1e-12 * np.linalg.norm(d) * np.linalg.norm(e, axis=0)
+        r = p0 - start[:, None]
+        with np.errstate(divide="ignore", invalid="ignore"):
+            t = (r[0] * e[1] - r[1] * e[0]) / denom
+            s = (r[0] * d[1] - r[1] * d[0]) / denom
+        hit = not_parallel & (t > 0) & (t < 1) & (s >= 0) & (s <= 1)
+        breaks = np.unique(np.concatenate([[0.0, 1.0], t[hit]]))
+
+        # Gauss-Legendre on every piece between two crossings
+        x_gauss, w_gauss = np.polynomial.legendre.leggauss(3)
+        lower, upper = breaks[:-1, None], breaks[1:, None]
+        t_quad = ((lower + upper) / 2 + (upper - lower) / 2 * x_gauss[None, :]).ravel()
+        w_quad = ((upper - lower) / 2 * w_gauss[None, :]).ravel()
+        points = start[:, None] + d[:, None] * t_quad[None, :]
+
+        (et, et_basis), _ = self.basis.split(self.E)
+        E = et_basis.interpolator(et)(points)
+        return np.sum(w_quad * (d @ E))
+
+    def calculate_current(self, elements=None, facets=None) -> complex:
+        """Calculates the current in z-direction from Ampère's law.
+
+        I = ∮ H_t · dl, with the contour traversed counter-clockwise, i.e. right-handed about the
+        +z axis (the propagation direction). This is the current in +z direction through the
+        enclosed region.
+
+        Specify exactly one of `elements` and `facets`:
+
+        - `elements`: the conductor is part of the mesh. The contour is the boundary of this
+          region of elements. `elements` is anything which is accepted by skfem's
+          `Mesh.normalize_elements`: a subdomain name, a list of names, an array of element
+          indices or a callable which takes the midpoints of the elements.
+        - `facets`: the conductor is cut out of the mesh (e.g. a PEC set with
+          `metallic_boundaries`). The facets have to be on the boundary of the mesh, e.g. a boundary
+          name like "surface_core". The result is the +z current in the conductor which is
+          beyond these facets. For a coax, "surface_core" gives the current in the core and
+          "surface" the current in the shield, which is about -I_core. Facets inside the mesh are
+          refused, as their orientation is not defined by the conductor.
+
+        Fields on the surface of thin, lossy metals are badly resolved. Better results are
+        obtained with `order=2` and with a region containing the conductor plus a margin of
+        dielectric, e.g. `elements=lambda x: shapely.contains_xy(contour, x[0], x[1])`. The region
+        must only contain the conductor(s) whose current is wanted.
+
+        Args:
+            elements: Region of elements enclosing the conductor.
+            facets: Boundary facets (name, list of names or indices) next to a cut-out conductor.
+
+        Returns:
+            complex: Current in the units of H times the units of the coordinates
+        """
+        if (elements is None) == (facets is None):
+            raise ValueError("Specify either elements or facets.")
+
+        mesh = self.basis.mesh
+        if elements is not None:
+            contour = mesh.facets_around(elements)
+            sign = 1
+        else:
+            # np.asarray drops the orientation of an OrientedBoundary
+            contour = np.asarray(mesh.normalize_facets(facets))
+            if np.any(mesh.f2t[1, contour] != -1):
+                raise ValueError(
+                    "facets must lie on the mesh boundary; for a meshed conductor use elements=."
+                )
+            # The normal points out of the domain, i.e. into the conductor
+            sign = -1
+
+        @Functional(dtype=complex)
+        def circulation(w):
+            # (n x H) . z with the normal pointing out of the enclosed region
+            return w.n[0] * w["H"][1] - w.n[1] * w["H"][0]
+
+        (ht, ht_basis), _ = self.basis.split(self.H)
+        facet_basis = ht_basis.boundary(facets=contour)
+        return sign * circulation.assemble(facet_basis, H=facet_basis.interpolate(ht))
+
+    def calculate_impedance(
+        self,
+        definition: Literal["PV", "PI", "VI"],
+        start=None,
+        end=None,
+        elements=None,
+        facets=None,
+    ) -> complex:
+        """Calculates the characteristic impedance of a transmission-line mode.
+
+        With the complex power P = 1/2 ∫ (E_t × H_t*) · z dA, the voltage V from
+        `calculate_voltage` and the current I from `calculate_current`:
+
+        - "PV": Z = |V|² / (2 P*)
+        - "PI": Z = 2 P / |I|²
+        - "VI": Z = V / I
+
+        Note that P is not `calculate_power()`: that one is normalised without the factor 1/2 and
+        drops the imaginary part. Its real part satisfies Re(P) = calculate_power() / 2.
+
+        For a TEM line P = V I* / 2 and all three definitions agree. For quasi-TEM lines such as
+        a microstrip they legitimately differ (a microstrip at 10 GHz, order 2: Z_PI 60.6 Ω,
+        Z_VI 62.9 Ω, Z_PV 65.3 Ω). Z_PV and Z_PI do not depend on the normalisation of the
+        mode nor on the direction of the path or contour.
+
+        The fields have the time dependence exp(jωt), so a lossy dielectric (negative imaginary
+        part of epsilon_r) gives a positive imaginary part of Z. With V from the signal to the
+        reference conductor and I the +z current in the signal conductor, Z_VI is positive.
+
+        Use `order=2` for anything which needs the current. See `calculate_current` for the choice
+        of the contour.
+
+        Args:
+            definition ("PV", "PI", "VI"): Which definition of the impedance to use.
+            start (array-like, optional): Start of the voltage path, needed for "PV" and "VI".
+            end (array-like, optional): End of the voltage path, needed for "PV" and "VI".
+            elements (optional): Region enclosing the signal conductor, for "PI" and "VI".
+            facets (optional): Boundary facets next to the signal conductor, for "PI" and "VI".
+                Specify exactly one of elements and facets.
+
+        Returns:
+            complex: Impedance in Ohm
+        """
+        if definition not in ("PV", "PI", "VI"):
+            raise ValueError("A valid definition is 'PV', 'PI' or 'VI'.")
+        if definition in ("PV", "VI") and (start is None or end is None):
+            raise ValueError(f"Definition '{definition}' needs start and end of the voltage path.")
+
+        if definition == "VI":
+            return self.calculate_voltage(start, end) / self.calculate_current(
+                elements=elements, facets=facets
+            )
+
+        @Functional(dtype=complex)
+        def complex_power_flux(w):
+            return cross(w["E"][0], np.conj(w["H"][0]))
+
+        S = complex_power_flux.assemble(
+            self.basis, E=self.basis.interpolate(self.E), H=self.basis.interpolate(self.H)
+        )
+        if definition == "PV":
+            return abs(self.calculate_voltage(start, end)) ** 2 / np.conj(S)
+        return S / abs(self.calculate_current(elements=elements, facets=facets)) ** 2
+
     def calculate_confinement_factor(self, elements):
         @Functional
         def factor(w):

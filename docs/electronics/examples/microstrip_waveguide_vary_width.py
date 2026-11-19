@@ -86,6 +86,7 @@ for i, width in enumerate(tqdm(widths)):
         )
     )
     mesh = mesh.scaled((1e-3,) * 2)
+    core_interface = box(-width / 2, -0.005 / 2, width / 2, 0.005 / 2).buffer(0.005 / 10)
 
     for j, frequency in enumerate(tqdm(frequencies, leave=False)):
         basis0 = Basis(mesh, ElementTriP0(), intorder=4)
@@ -110,30 +111,22 @@ for i, width in enumerate(tqdm(widths)):
 
         epsilon_effs[i, j] = modes.n_effs**2
 
-        # In work
+        # Power-current impedance: the current is the circulation of H on a contour just outside
+        # of the strip (the mesh coordinates are in m, the shapely contour is in mm)
+        characteristic_impedances[i, j] = modes[0].calculate_impedance(
+            "PI",
+            elements=lambda x: shapely.contains_xy(core_interface, x[0] * 1e3, x[1] * 1e3),
+        )
+        print("characteristic impedance", characteristic_impedances[i, j])
 
-        conductors = ("core_interface",)
-
-        from skfem import Functional
-        from skfem.helpers import inner
-
-        @Functional(dtype=np.complex64)
-        def current_form(w):
-            return inner(np.array([w.n[1], -w.n[0]]), w.H)
-
-        currents = np.zeros((len(conductors), len(modes)))
-
-        for mode_i, mode in enumerate(modes):
-            # modes[0].show("H", part="real", plot_vectors=True, colorbar=True)
-
-            (ht, ht_basis), (hz, hz_basis) = mode.basis.split(mode.H)
-            for conductors_i, conductor in enumerate(conductors):
-                facet_basis = ht_basis.boundary(facets=mesh.boundaries[conductor])
-                current = abs(current_form.assemble(facet_basis, H=facet_basis.interpolate(ht)))
-                currents[conductors_i, mode_i] = current
-
-        characteristic_impedances[i, j] = np.linalg.inv(currents).T @ np.linalg.inv(currents)
-        print("characteristic impedances", characteristic_impedances[i, j])
+# %% [markdown]
+# The characteristic impedance is the power-current impedance $Z_{PI} = 2P/|I|^2$.
+# The current $I$ follows from Ampère's law on a contour just outside of the strip.
+# The other definitions are available from the same mode, e.g.
+# `modes[0].calculate_impedance("PV", start=(0, 0), end=(0, -(0.005 / 2 + 0.64) * 1e-3))`
+# for the power-voltage impedance, and `"VI"` (with `elements=`) for the voltage-current
+# impedance. For quasi-TEM lines like the microstrip they differ from each other; the
+# Jansen-Kirschning model of the microstrip characteristic impedance uses the power-current form.
 
 # %% tags=["hide-input"]
 plt.figure(figsize=(10, 14))
